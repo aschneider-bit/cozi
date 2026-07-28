@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cozi - Settle Up</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cozi-header: #3BAFD4;
+            --cozi-header-dark: #2E9BBE;
+            --cozi-blue: #3BAFD4;
+            --cozi-dark: #2c2c2c;
+            --cozi-gray: #8e8e93;
+            --cozi-light-gray: #f2f2f7;
+            --cozi-border: #e5e5ea;
+            --cozi-green: #34C759;
+            --cozi-red: #FF3B30;
+            --cozi-white: #ffffff;
+            --cozi-orange-accent: #F5A623;
+            --cozi-nav-active: #3BAFD4;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #e8e8ed;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: var(--cozi-white);
+            border-radius: 44px;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.08);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            height: 50px;
+            background: var(--cozi-header);
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 0 24px 6px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-icons {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        /* Cozi Header */
+        .cozi-header {
+            background: var(--cozi-header);
+            padding: 10px 16px 14px;
+            color: white;
+        }
+
+        .cozi-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cozi-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cozi-header-icon {
+            width: 28px;
+            height: 28px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cozi-header-icon svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+        }
+
+        .cozi-header-title {
+            font-size: 17px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .cozi-header-title .dropdown-arrow {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+
+        .cozi-header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .cozi-header-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        /* Back header variant */
+        .cozi-header-back {
+            background: var(--cozi-header);
+            padding: 10px 16px 14px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 4px 8px 4px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .cozi-header-back h1 {
+            font-size: 17px;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .cozi-header-back .header-right-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            background: var(--cozi-white);
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Bottom Navigation - 6 items */
+        .bottom-nav {
+            display: flex;
+            border-top: 1px solid var(--cozi-border);
+            background: white;
+            padding: 6px 0 24px;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            padding: 4px 0;
+            border: none;
+            background: none;
+            color: var(--cozi-gray);
+            font-size: 9px;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            color: var(--cozi-nav-active);
+        }
+
+        .nav-icon {
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 13px;
+        }
+
+        .nav-item.active .nav-icon {
+            background: rgba(59, 175, 212, 0.1);
+        }
+
+        .nav-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Dashboard Summary Card */
+        .summary-card {
+            margin: 16px;
+            padding: 18px;
+            background: var(--cozi-light-gray);
+            border-radius: 12px;
+        }
+
+        .summary-label {
+            font-size: 13px;
+            color: var(--cozi-gray);
+            margin-bottom: 4px;
+        }
+
+        .summary-amount {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .summary-amount.positive {
+            color: var(--cozi-green);
+        }
+
+        .summary-amount.negative {
+            color: var(--cozi-red);
+        }
+
+        .summary-breakdown {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--cozi-border);
+        }
+
+        .summary-breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            font-size: 14px;
+        }
+
+        .summary-breakdown-row .name {
+            color: var(--cozi-dark);
+        }
+
+        .summary-breakdown-row .owes-you {
+            color: var(--cozi-green);
+            font-weight: 600;
+        }
+
+        .summary-breakdown-row .you-owe {
+            color: var(--cozi-red);
+            font-weight: 600;
+        }
+
+        .settle-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 8px;
+            padding: 3px 10px;
+            background: var(--cozi-green);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Section */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 16px 10px;
+        }
+
+        .section-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--cozi-dark);
+        }
+
+        .section-header-btn {
+            font-size: 14px;
+            color: var(--cozi-blue);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Event Cards */
+        .event-list {
+            padding: 0 16px 100px;
+        }
+
+        .event-card {
+            display: flex;
+            align-items: center;
+            padding: 14px;
+            border: 1px solid var(--cozi-border);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+
+        .event-card:active {
+            background: var(--cozi-light-gray);
+        }
+
+        .event-card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .event-card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .event-card-info h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--cozi-dark);
+        }
+
+        .event-card-info p {
+            font-size: 12px;
+            color: var(--cozi-gray);
+            margin-top: 2px;
+        }
+
+        .event-card-amount {
+            font-size: 14px;
+            font-weight: 700;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        .event-card-amount.positive { color: var(--cozi-green); }
+        .event-card-amount.negative { color: var(--cozi-red); }
+        .event-card-amount.settled { color: var(--cozi-gray); font-weight: 500; font-size: 13px; }
+
+        /* FAB */
+        .fab {
+            position: absolute;
+            bottom: 94px;
+            right: 20px;
+            height: 44px;
+            padding: 0 18px;
+            border-radius: 22px;
+            background: var(--cozi-blue);
+            color: white;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(59, 175, 212, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 10;
+        }
+
+        .fab svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Form Styles */
+        .form-content {
+            padding: 20px 16px 40px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--cozi-gray);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 12px;
+            border: 1px solid var(--cozi-border);
+            border-radius: 10px;
+            font-size: 16px;
+            color: var(--cozi-dark);
+            background: var(--cozi-light-gray);
+            -webkit-appearance: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--cozi-blue);
+            background: white;
+        }
+
+        .form-group input::placeholder {
+            color: #c7c7cc;
+        }
+
+        /* Person chips - payer selector */
+        .payer-chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .payer-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px 8px 8px;
+            border-radius: 24px;
+            background: var(--cozi-light-gray);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 2px solid transparent;
+            color: var(--cozi-dark);
+            transition: all 0.12s;
+        }
+
+        .payer-chip.selected {
+            border-color: var(--cozi-blue);
+            background: rgba(59, 175, 212, 0.08);
+        }
+
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .avatar-sm {
+            width: 22px;
+            height: 22px;
+            border-radius: 11px;
+            font-size: 10px;
+        }
+
+        .avatar-lg {
+            width: 38px;
+            height: 38px;
+            border-radius: 19px;
+            font-size: 14px;
+        }
+
+        /* Split options */
+        .split-pills {
+            display: flex;
+            gap: 8px;
+        }
+
+        .split-pill {
+            padding: 8px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            background: var(--cozi-light-gray);
+            border: 1px solid var(--cozi-border);
+            color: var(--cozi-dark);
+            transition: all 0.12s;
+        }
+
+        .split-pill.active {
+            background: var(--cozi-blue);
+            color: white;
+            border-color: var(--cozi-blue);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: var(--cozi-blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .btn-primary:active {
+            background: var(--cozi-header-dark);
+        }
+
+        /* Event Detail Screen */
+        .event-detail-banner {
+            padding: 20px 16px;
+            background: var(--cozi-light-gray);
+        }
+
+        .event-detail-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: var(--cozi-gray);
+        }
+
+        .event-detail-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .event-balance-bar {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--cozi-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .event-balance-bar .balance-text {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .event-balance-bar .balance-text strong {
+            color: var(--cozi-green);
+        }
+
+        .event-balance-bar .expand-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: var(--cozi-gray);
+            cursor: pointer;
+        }
+
+        /* People row */
+        .people-row {
+            display: flex;
+            gap: 16px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--cozi-border);
+        }
+
+        .person-bubble {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .person-bubble span {
+            font-size: 11px;
+            color: var(--cozi-gray);
+        }
+
+        /* Balances section */
+        .balances-card {
+            margin: 12px 16px;
+            padding: 14px;
+            background: var(--cozi-light-gray);
+            border-radius: 12px;
+        }
+
+        .balance-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .balance-line:not(:last-child) {
+            border-bottom: 1px solid var(--cozi-border);
+        }
+
+        .balance-line-text {
+            font-size: 14px;
+            color: var(--cozi-dark);
+        }
+
+        .balance-line-text strong {
+            font-weight: 700;
+        }
+
+        .settle-btn {
+            padding: 6px 14px;
+            background: var(--cozi-green);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .settle-btn:active {
+            background: #2db84e;
+        }
+
+        /* Transactions */
+        .transactions-section {
+            padding: 0 16px 100px;
+        }
+
+        .transactions-section h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--cozi-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 16px 0 8px;
+        }
+
+        .txn-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--cozi-border);
+        }
+
+        .txn-date {
+            width: 36px;
+            text-align: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .txn-date .month {
+            font-size: 10px;
+            color: var(--cozi-gray);
+            text-transform: uppercase;
+        }
+
+        .txn-date .day {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--cozi-dark);
+        }
+
+        .txn-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--cozi-light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .txn-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .txn-info h4 {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--cozi-dark);
+        }
+
+        .txn-info p {
+            font-size: 12px;
+            color: var(--cozi-gray);
+            margin-top: 1px;
+        }
+
+        .txn-item {
+            position: relative;
+            border-bottom: 1px solid var(--cozi-border);
+            cursor: pointer;
+        }
+
+        .txn-inner {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+        }
+
+        .txn-tap-actions {
+            display: none;
+            padding: 8px 0 12px 48px;
+            gap: 8px;
+        }
+
+        .txn-item.expanded .txn-tap-actions {
+            display: flex;
+        }
+
+        .txn-tap-btn {
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        .txn-tap-btn.edit {
+            background: rgba(59, 175, 212, 0.12);
+            color: var(--cozi-blue);
+        }
+
+        .txn-tap-btn.delete {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--cozi-red);
+        }
+
+        .txn-amount {
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        .txn-amount.lent { color: var(--cozi-green); }
+        .txn-amount.borrowed { color: var(--cozi-red); }
+        .txn-amount.neutral { color: var(--cozi-gray); }
+
+        .txn-lent-label {
+            font-size: 10px;
+            color: var(--cozi-green);
+            text-align: right;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .modal h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--cozi-dark);
+        }
+
+        .modal .form-group {
+            margin-bottom: 16px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: var(--cozi-light-gray);
+            border: none;
+            color: var(--cozi-dark);
+        }
+
+        .btn-confirm {
+            background: var(--cozi-green);
+            border: none;
+            color: white;
+        }
+
+        /* Toast */
+        .toast {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--cozi-dark);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 200;
+            display: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .toast.show {
+            display: block;
+            animation: fadeInOut 2.2s ease;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            12% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+        }
+
+        /* Invite list in add expense */
+        .invite-list {
+            margin-top: 4px;
+        }
+
+        .invite-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--cozi-border);
+        }
+
+        .invite-row input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--cozi-blue);
+            border-radius: 6px;
+        }
+
+        .invite-name {
+            font-size: 15px;
+            color: var(--cozi-dark);
+            font-weight: 500;
+        }
+
+        /* Settled badge */
+        .settled-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: rgba(52, 199, 89, 0.1);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--cozi-green);
+        }
+
+        /* Action pills row */
+        .action-pills {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--cozi-border);
+            overflow-x: auto;
+        }
+
+        .action-pill {
+            padding: 8px 14px;
+            border-radius: 18px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            border: 1px solid var(--cozi-border);
+            background: white;
+            color: var(--cozi-dark);
+        }
+
+        .action-pill.primary {
+            background: var(--cozi-green);
+            color: white;
+            border-color: var(--cozi-green);
+        }
+
+        /* New event inline section in add expense */
+        .inline-new-event {
+            margin-top: 8px;
+            padding: 14px;
+            background: var(--cozi-light-gray);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .inline-new-event.visible {
+            display: block;
+        }
+
+        .inline-new-event input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--cozi-border);
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+            margin-bottom: 10px;
+        }
+
+        .inline-new-event input:focus {
+            outline: none;
+            border-color: var(--cozi-blue);
+        }
+
+        .inline-new-event .inline-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--cozi-gray);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        /* Add new person inline */
+        .add-person-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            cursor: pointer;
+            color: var(--cozi-blue);
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .add-person-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 14px;
+            border: 2px dashed var(--cozi-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--cozi-blue);
+        }
+
+        /* Percent split inputs */
+        .percent-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--cozi-border);
+        }
+
+        .percent-person {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--cozi-dark);
+        }
+
+        .percent-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            color: var(--cozi-dark);
+        }
+
+        .percent-field {
+            width: 56px !important;
+            padding: 8px !important;
+            text-align: center;
+            border: 1px solid var(--cozi-border) !important;
+            border-radius: 8px !important;
+            font-size: 15px !important;
+            background: var(--cozi-light-gray) !important;
+        }
+
+        .percent-field:focus {
+            border-color: var(--cozi-blue) !important;
+            background: white !important;
+        }
+
+        .percent-total {
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--cozi-gray);
+            text-align: right;
+        }
+
+        .percent-total.error {
+            color: var(--cozi-red);
+        }
+
+        /* People row management */
+        .people-row-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px 0;
+        }
+
+        .people-row-header h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--cozi-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .people-manage-btn {
+            font-size: 13px;
+            color: var(--cozi-blue);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .people-row.managing .person-bubble {
+            position: relative;
+        }
+
+        .person-remove-btn {
+            display: none;
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            background: var(--cozi-red);
+            color: white;
+            font-size: 12px;
+            line-height: 18px;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .people-row.managing .person-remove-btn {
+            display: block;
+        }
+
+        .person-add-bubble {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .person-add-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 19px;
+            border: 2px dashed var(--cozi-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--cozi-blue);
+        }
+
+        .person-add-bubble span {
+            font-size: 11px;
+            color: var(--cozi-blue);
+        }
+
+        /* Group picker */
+        .group-pick-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .group-pick-item {
+            display: flex;
+            align-items: center;
+            padding: 14px;
+            border: 1px solid var(--cozi-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+
+        .group-pick-item:active {
+            background: var(--cozi-light-gray);
+        }
+
+        .group-pick-info {
+            margin-left: 12px;
+        }
+
+        .group-pick-info h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--cozi-dark);
+        }
+
+        .group-pick-info p {
+            font-size: 12px;
+            color: var(--cozi-gray);
+            margin-top: 2px;
+        }
+
+        .group-divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+        }
+
+        .group-divider::before,
+        .group-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--cozi-border);
+        }
+
+        .group-divider span {
+            padding: 0 12px;
+            font-size: 13px;
+            color: var(--cozi-gray);
+        }
+
+        .btn-new-group {
+            width: 100%;
+            padding: 14px;
+            border: 2px dashed var(--cozi-blue);
+            border-radius: 12px;
+            background: rgba(59, 175, 212, 0.04);
+            color: var(--cozi-blue);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .new-group-form {
+            display: none;
+            margin-top: 16px;
+            padding: 16px;
+            background: var(--cozi-light-gray);
+            border-radius: 12px;
+        }
+
+        .new-group-form.visible {
+            display: block;
+        }
+
+        /* Selected group banner on add expense */
+        .selected-group-banner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: rgba(59, 175, 212, 0.08);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(59, 175, 212, 0.2);
+        }
+
+        .selected-group-label {
+            font-size: 13px;
+            color: var(--cozi-gray);
+        }
+
+        .selected-group-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--cozi-dark);
+            flex: 1;
+        }
+
+        .selected-group-change {
+            font-size: 13px;
+            color: var(--cozi-blue);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <!-- ==================== DASHBOARD SCREEN ==================== -->
+        <div class="screen active" id="screen-dashboard">
+            <div class="status-bar">
+                <span>12:50</span>
+            </div>
+            <div class="cozi-header" style="text-align:center;">
+                <div class="cozi-header-title" style="justify-content:center;">
+                    Settle Up
+                </div>
+            </div>
+            <div class="content">
+                <div class="summary-card">
+                    <div class="summary-label">Overall, you are owed</div>
+                    <div class="summary-amount positive">$122.44</div>
+                    <div class="summary-breakdown">
+                        <div class="summary-breakdown-row">
+                            <span class="name">Chad</span>
+                            <span>
+                                <span class="owes-you">owes you $132.47</span>
+                                <button class="settle-cta" onclick="openSettleModal('Chad', 132.47)">Settle</button>
+                            </span>
+                        </div>
+                        <div class="summary-breakdown-row">
+                            <span class="name">Nick</span>
+                            <span>
+                                <span class="you-owe">you owe $10.03</span>
+                                <button class="settle-cta" onclick="openSettleModal('Nick', 10.03)">Settle</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h2>Events</h2>
+                </div>
+
+                <div class="event-list">
+                    <div class="event-card" onclick="showScreen('screen-event-detail')">
+                        <div class="event-card-icon" style="background: #E3F2FD;">&#9971;&#65039;</div>
+                        <div class="event-card-info">
+                            <h3>Golf Trip</h3>
+                            <p>Feb 1-3 &middot; 3 people</p>
+                        </div>
+                        <div class="event-card-amount positive">+$122.44</div>
+                    </div>
+
+                    <div class="event-card" onclick="showScreen('screen-event-detail-2')">
+                        <div class="event-card-icon" style="background: #FFF3E0;">&#127968;</div>
+                        <div class="event-card-info">
+                            <h3>Household</h3>
+                            <p>Ongoing &middot; 2 people</p>
+                        </div>
+                        <div class="event-card-amount negative">-$45.00</div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-card-icon" style="background: #E8F5E9;">&#127958;&#65039;</div>
+                        <div class="event-card-info">
+                            <h3>Lake House Weekend</h3>
+                            <p>Jul 12-14 &middot; 5 people</p>
+                        </div>
+                        <div class="event-card-amount settled">Settled &#10003;</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="fab" onclick="showScreen('screen-pick-group')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add expense
+            </button>
+
+            <nav class="bottom-nav">
+                <button class="nav-item">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg></div>
+                    <span>Home</span>
+                </button>
+                <button class="nav-item">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                    <span>Calendar</span>
+                </button>
+                <button class="nav-item">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+                    <span>Lists</span>
+                </button>
+                <button class="nav-item active">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div>
+                    <span>Settle Up</span>
+                </button>
+                <button class="nav-item">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><line x1="7" y1="2" x2="7" y2="22"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></div>
+                    <span>Meals</span>
+                </button>
+                <button class="nav-item">
+                    <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+                    <span>Family</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- ==================== PICK GROUP SCREEN ==================== -->
+        <div class="screen" id="screen-pick-group">
+            <div class="status-bar">
+                <span>12:50</span>
+            </div>
+            <div class="cozi-header-back">
+                <button class="back-btn" onclick="showScreen('screen-dashboard')">&#8249;</button>
+                <h1>Choose an Event</h1>
+                <span></span>
+            </div>
+            <div class="content">
+                <div class="form-content">
+                    <div class="group-pick-list">
+                        <div class="group-pick-item" onclick="pickGroup('Golf Trip')">
+                            <div class="event-card-icon" style="background: #E3F2FD;">&#9971;&#65039;</div>
+                            <div class="group-pick-info">
+                                <h3>Golf Trip</h3>
+                                <p>You, Chad, Nick</p>
+                            </div>
+                        </div>
+                        <div class="group-pick-item" onclick="pickGroup('Household')">
+                            <div class="event-card-icon" style="background: #FFF3E0;">&#127968;</div>
+                            <div class="group-pick-info">
+                                <h3>Household</h3>
+                                <p>You, Riley</p>
+                            </div>
+                        </div>
+                        <div class="group-pick-item" onclick="pickGroup('Lake House Weekend')">
+                            <div class="event-card-icon" style="background: #E8F5E9;">&#127958;&#65039;</div>
+                            <div class="group-pick-info">
+                                <h3>Lake House Weekend</h3>
+                                <p>You, Chad, Nick, Riley, Mike</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="group-divider">
+                        <span>or</span>
+                    </div>
+
+                    <div class="new-group-section" id="new-group-section">
+                        <button class="btn-new-group" onclick="toggleNewGroup()">+ Create New Event</button>
+                        <div class="new-group-form" id="new-group-form">
+                            <div class="form-group">
+                                <label>Event Name</label>
+                                <input type="text" placeholder="e.g. Beach Vacation" id="new-group-name">
+                            </div>
+                            <div class="form-group">
+                                <label>People</label>
+                                <div class="invite-list">
+                                    <div class="invite-row">
+                                        <input type="checkbox" checked disabled>
+                                        <div class="avatar" style="background: #E91E63;">A</div>
+                                        <span class="invite-name">You</span>
+                                    </div>
+                                    <div class="invite-row">
+                                        <input type="checkbox" id="ng-chad">
+                                        <div class="avatar" style="background: #1E88E5;">C</div>
+                                        <span class="invite-name">Chad</span>
+                                    </div>
+                                    <div class="invite-row">
+                                        <input type="checkbox" id="ng-nick">
+                                        <div class="avatar" style="background: #7B1FA2;">N</div>
+                                        <span class="invite-name">Nick</span>
+                                    </div>
+                                    <div class="invite-row">
+                                        <input type="checkbox" id="ng-riley">
+                                        <div class="avatar" style="background: #F57C00;">R</div>
+                                        <span class="invite-name">Riley</span>
+                                    </div>
+                                    <div class="add-person-row" onclick="showInviteModal()">
+                                        <div class="add-person-icon">+</div>
+                                        Invite someone new
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn-primary" onclick="createAndPickGroup()">Create Event & Continue</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== ADD EXPENSE SCREEN ==================== -->
+        <div class="screen" id="screen-add-expense">
+            <div class="status-bar">
+                <span>12:50</span>
+            </div>
+            <div class="cozi-header-back">
+                <button class="back-btn" onclick="showScreen('screen-pick-group')">&#8249;</button>
+                <h1>Add Expense</h1>
+                <button class="header-right-btn" onclick="saveExpense()">Save</button>
+            </div>
+            <div class="content">
+                <div class="form-content">
+                    <div class="selected-group-banner" id="selected-group-banner">
+                        <span class="selected-group-label">Event:</span>
+                        <span class="selected-group-name" id="selected-group-name">Golf Trip</span>
+                        <button class="selected-group-change" onclick="showScreen('screen-pick-group')">Change</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" placeholder="What was this for?" id="expense-desc">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <input type="number" placeholder="$0.00" id="expense-amount" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="expense-start-date" value="2026-07-28" onchange="defaultEndDate()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" id="expense-end-date" value="2026-07-28">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Who Paid</label>
+                        <div class="payer-chips">
+                            <div class="payer-chip selected" onclick="selectPayer(this)">
+                                <div class="avatar" style="background: #E91E63;">A</div>
+                                You
+                            </div>
+                            <div class="payer-chip" onclick="selectPayer(this)">
+                                <div class="avatar" style="background: #1E88E5;">C</div>
+                                Chad
+                            </div>
+                            <div class="payer-chip" onclick="selectPayer(this)">
+                                <div class="avatar" style="background: #7B1FA2;">N</div>
+                                Nick
+                            </div>
+                            <div class="payer-chip" onclick="selectPayer(this)">
+                                <div class="avatar" style="background: #F57C00;">R</div>
+                                Riley
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Split</label>
+                        <div class="split-pills">
+                            <div class="split-pill active" onclick="selectSplitMode('equal')">Equal</div>
+                            <div class="split-pill" onclick="selectSplitMode('percent')">By %</div>
+                        </div>
+                        <div class="percent-inputs" id="percent-inputs" style="display:none; margin-top:12px;">
+                            <div class="percent-row">
+                                <div class="percent-person"><div class="avatar avatar-sm" style="background:#E91E63;">A</div> You</div>
+                                <div class="percent-input-wrap"><input type="number" class="percent-field" value="25" min="0" max="100">%</div>
+                            </div>
+                            <div class="percent-row">
+                                <div class="percent-person"><div class="avatar avatar-sm" style="background:#1E88E5;">C</div> Chad</div>
+                                <div class="percent-input-wrap"><input type="number" class="percent-field" value="25" min="0" max="100">%</div>
+                            </div>
+                            <div class="percent-row">
+                                <div class="percent-person"><div class="avatar avatar-sm" style="background:#7B1FA2;">N</div> Nick</div>
+                                <div class="percent-input-wrap"><input type="number" class="percent-field" value="25" min="0" max="100">%</div>
+                            </div>
+                            <div class="percent-row">
+                                <div class="percent-person"><div class="avatar avatar-sm" style="background:#F57C00;">R</div> Riley</div>
+                                <div class="percent-input-wrap"><input type="number" class="percent-field" value="25" min="0" max="100">%</div>
+                            </div>
+                            <div class="percent-total" id="percent-total">Total: 100%</div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="saveExpense()">Add Expense</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== EVENT DETAIL SCREEN (Golf Trip) ==================== -->
+        <div class="screen" id="screen-event-detail">
+            <div class="status-bar">
+                <span>12:50</span>
+            </div>
+            <div class="cozi-header-back">
+                <button class="back-btn" onclick="showScreen('screen-dashboard')">&#8249;</button>
+                <h1>Golf Trip</h1>
+                <button class="header-right-btn">&#9881;</button>
+            </div>
+            <div class="content">
+                <div class="event-detail-banner">
+                    <div class="event-detail-meta">
+                        <span>&#128197; Feb 1 - 3</span>
+                        <span>&#128101; 3 people</span>
+                    </div>
+                </div>
+
+                <div class="event-balance-bar">
+                    <span class="balance-text">You are owed <strong>$122.44</strong> overall</span>
+                    <button class="expand-btn">&#8963;</button>
+                </div>
+
+                <div class="people-row-header">
+                    <h3>People</h3>
+                    <button class="people-manage-btn" onclick="toggleManagePeople('people-row-golf')">Edit</button>
+                </div>
+                <div class="people-row" id="people-row-golf">
+                    <div class="person-bubble">
+                        <button class="person-remove-btn" onclick="removePerson(this)">&#215;</button>
+                        <div class="avatar avatar-lg" style="background: #E91E63;">A</div>
+                        <span>You</span>
+                    </div>
+                    <div class="person-bubble">
+                        <button class="person-remove-btn" onclick="removePerson(this)">&#215;</button>
+                        <div class="avatar avatar-lg" style="background: #1E88E5;">C</div>
+                        <span>Chad</span>
+                    </div>
+                    <div class="person-bubble">
+                        <button class="person-remove-btn" onclick="removePerson(this)">&#215;</button>
+                        <div class="avatar avatar-lg" style="background: #7B1FA2;">N</div>
+                        <span>Nick</span>
+                    </div>
+                    <div class="person-add-bubble" onclick="showInviteModal()">
+                        <div class="person-add-circle">+</div>
+                        <span>Add</span>
+                    </div>
+                </div>
+
+                <div class="balances-card">
+                    <div class="balance-line">
+                        <span class="balance-line-text">Chad owes you <strong style="color:var(--cozi-green);">$132.47</strong></span>
+                        <button class="settle-btn" onclick="openSettleModal('Chad', 132.47)">Settle</button>
+                    </div>
+                    <div class="balance-line">
+                        <span class="balance-line-text">You owe Nick <strong style="color:var(--cozi-red);">$10.03</strong></span>
+                        <button class="settle-btn" onclick="openSettleModal('Nick', 10.03)">Settle</button>
+                    </div>
+                </div>
+
+                <div class="transactions-section">
+                    <h3>February 2024</h3>
+
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Feb</div><div class="day">3</div></div>
+                            <div class="txn-icon">&#127860;</div>
+                            <div class="txn-info"><h4>Uber Eats - Beer</h4><p>You paid $40.72</p></div>
+                            <div><div class="txn-lent-label">you lent</div><div class="txn-amount lent">$30.54</div></div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Uber Eats - Beer')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Uber Eats - Beer')">Delete</button>
+                        </div>
+                    </div>
+
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Feb</div><div class="day">2</div></div>
+                            <div class="txn-icon">&#128176;</div>
+                            <div class="txn-info"><h4>Nick paid Riley B.</h4><p>Payment $32.73</p></div>
+                            <div class="txn-amount neutral">$32.73</div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Nick paid Riley B.')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Nick paid Riley B.')">Delete</button>
+                        </div>
+                    </div>
+
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Feb</div><div class="day">2</div></div>
+                            <div class="txn-icon">&#9971;&#65039;</div>
+                            <div class="txn-info"><h4>Green Fees</h4><p>Chad paid $635.23</p></div>
+                            <div><div class="txn-lent-label" style="color:var(--cozi-red);">you borrowed</div><div class="txn-amount borrowed">$158.81</div></div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Green Fees')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Green Fees')">Delete</button>
+                        </div>
+                    </div>
+
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Feb</div><div class="day">1</div></div>
+                            <div class="txn-icon">&#128664;</div>
+                            <div class="txn-info"><h4>Nick paid Riley B.</h4><p>Payment $460.00</p></div>
+                            <div class="txn-amount neutral">$460.00</div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Nick paid Riley B.')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Nick paid Riley B.')">Delete</button>
+                        </div>
+                    </div>
+
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Feb</div><div class="day">1</div></div>
+                            <div class="txn-icon">&#127866;</div>
+                            <div class="txn-info"><h4>Pioneer Creek Booze</h4><p>Riley paid $33.75</p></div>
+                            <div><div class="txn-lent-label" style="color:var(--cozi-red);">you borrowed</div><div class="txn-amount borrowed">$11.25</div></div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Pioneer Creek Booze')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Pioneer Creek Booze')">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="fab" onclick="showScreen('screen-pick-group')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add expense
+            </button>
+        </div>
+
+        <!-- ==================== EVENT DETAIL 2 (Household) ==================== -->
+        <div class="screen" id="screen-event-detail-2">
+            <div class="status-bar">
+                <span>12:50</span>
+            </div>
+            <div class="cozi-header-back">
+                <button class="back-btn" onclick="showScreen('screen-dashboard')">&#8249;</button>
+                <h1>Household</h1>
+                <button class="header-right-btn">&#9881;</button>
+            </div>
+            <div class="content">
+                <div class="event-detail-banner">
+                    <div class="event-detail-meta">
+                        <span>&#128197; Ongoing</span>
+                        <span>&#128101; 2 people</span>
+                    </div>
+                </div>
+
+                <div class="event-balance-bar">
+                    <span class="balance-text">You owe <strong style="color:var(--cozi-red);">$45.00</strong> overall</span>
+                    <button class="expand-btn">&#8963;</button>
+                </div>
+
+                <div class="people-row-header">
+                    <h3>People</h3>
+                    <button class="people-manage-btn" onclick="toggleManagePeople('people-row-household')">Edit</button>
+                </div>
+                <div class="people-row" id="people-row-household">
+                    <div class="person-bubble">
+                        <button class="person-remove-btn" onclick="removePerson(this)">&#215;</button>
+                        <div class="avatar avatar-lg" style="background: #E91E63;">A</div>
+                        <span>You</span>
+                    </div>
+                    <div class="person-bubble">
+                        <button class="person-remove-btn" onclick="removePerson(this)">&#215;</button>
+                        <div class="avatar avatar-lg" style="background: #F57C00;">R</div>
+                        <span>Riley</span>
+                    </div>
+                    <div class="person-add-bubble" onclick="showInviteModal()">
+                        <div class="person-add-circle">+</div>
+                        <span>Add</span>
+                    </div>
+                </div>
+
+                <div class="balances-card">
+                    <div class="balance-line">
+                        <span class="balance-line-text">You owe Riley <strong style="color:var(--cozi-red);">$45.00</strong></span>
+                        <button class="settle-btn" onclick="openSettleModal('Riley', 45.00)">Settle</button>
+                    </div>
+                </div>
+
+                <div class="transactions-section">
+                    <h3>July 2026</h3>
+
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Jul</div><div class="day">25</div></div>
+                            <div class="txn-icon">&#128722;</div>
+                            <div class="txn-info"><h4>Groceries - Costco</h4><p>Riley paid $90.00</p></div>
+                            <div><div class="txn-lent-label" style="color:var(--cozi-red);">you borrowed</div><div class="txn-amount borrowed">$45.00</div></div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Groceries - Costco')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Groceries - Costco')">Delete</button>
+                        </div>
+                    </div>
+
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Jul</div><div class="day">18</div></div>
+                            <div class="txn-icon">&#9889;</div>
+                            <div class="txn-info"><h4>Electric Bill</h4><p>You paid $120.00</p></div>
+                            <div><div class="txn-lent-label">you lent</div><div class="txn-amount lent">$60.00</div></div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Electric Bill')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Electric Bill')">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="fab" onclick="showScreen('screen-pick-group')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add expense
+            </button>
+        </div>
+
+        <!-- ==================== SETTLE UP MODAL ==================== -->
+        <div class="modal-overlay" id="settle-modal">
+            <div class="modal">
+                <h3>Record Payment</h3>
+                <div class="form-group">
+                    <label>Settling with</label>
+                    <input type="text" id="settle-person" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" id="settle-amount" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Method</label>
+                    <select>
+                        <option>Cash</option>
+                        <option>Venmo</option>
+                        <option>Zelle</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-cancel" onclick="closeSettleModal()">Cancel</button>
+                    <button class="btn-confirm" onclick="confirmSettle()">Record Payment</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== INVITE MODAL ==================== -->
+        <div class="modal-overlay" id="invite-modal">
+            <div class="modal">
+                <h3>Invite Someone</h3>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="invite-name" placeholder="Enter name">
+                </div>
+                <div class="form-group">
+                    <label>Email or Phone</label>
+                    <input type="text" id="invite-contact" placeholder="Email or phone number">
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-cancel" onclick="closeInviteModal()">Cancel</button>
+                    <button class="btn-confirm" style="background:var(--cozi-blue);" onclick="confirmInvite()">Send Invite</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function selectPayer(el) {
+            el.closest('.payer-chips').querySelectorAll('.payer-chip').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function pickGroup(name) {
+            document.getElementById('selected-group-name').textContent = name;
+            showScreen('screen-add-expense');
+        }
+
+        function toggleNewGroup() {
+            const form = document.getElementById('new-group-form');
+            form.classList.toggle('visible');
+        }
+
+        function createAndPickGroup() {
+            const name = document.getElementById('new-group-name').value;
+            if (!name) {
+                showToast('Please enter an event name');
+                return;
+            }
+            document.getElementById('selected-group-name').textContent = name;
+            showScreen('screen-add-expense');
+            showToast('Event created: ' + name);
+        }
+
+        function defaultEndDate() {
+            const start = document.getElementById('expense-start-date').value;
+            document.getElementById('expense-end-date').value = start;
+        }
+
+        function selectSplitMode(mode) {
+            document.querySelectorAll('.split-pill').forEach(c => c.classList.remove('active'));
+            if (mode === 'equal') {
+                document.querySelectorAll('.split-pill')[0].classList.add('active');
+                document.getElementById('percent-inputs').style.display = 'none';
+            } else {
+                document.querySelectorAll('.split-pill')[1].classList.add('active');
+                document.getElementById('percent-inputs').style.display = 'block';
+            }
+        }
+
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('percent-field')) {
+                const fields = document.querySelectorAll('.percent-field');
+                let total = 0;
+                fields.forEach(f => total += parseInt(f.value) || 0);
+                const totalEl = document.getElementById('percent-total');
+                totalEl.textContent = 'Total: ' + total + '%';
+                totalEl.classList.toggle('error', total !== 100);
+            }
+        });
+
+
+        function saveExpense() {
+            const desc = document.getElementById('expense-desc').value;
+            const amount = document.getElementById('expense-amount').value;
+            if (!desc || !amount) {
+                showToast('Please fill in description and amount');
+                return;
+            }
+            showToast('Expense added: ' + desc + ' ($' + parseFloat(amount).toFixed(2) + ')');
+            setTimeout(() => showScreen('screen-dashboard'), 1200);
+        }
+
+        function openSettleModal(person, amount) {
+            document.getElementById('settle-person').value = person;
+            document.getElementById('settle-amount').value = amount.toFixed(2);
+            document.getElementById('settle-modal').classList.add('active');
+        }
+
+        function closeSettleModal() {
+            document.getElementById('settle-modal').classList.remove('active');
+        }
+
+        function confirmSettle() {
+            const person = document.getElementById('settle-person').value;
+            const amount = document.getElementById('settle-amount').value;
+            closeSettleModal();
+            showToast('Payment of $' + parseFloat(amount).toFixed(2) + ' to ' + person + ' recorded');
+        }
+
+        function toggleManagePeople(rowId) {
+            const row = document.getElementById(rowId);
+            const btn = row.previousElementSibling.querySelector('.people-manage-btn');
+            row.classList.toggle('managing');
+            btn.textContent = row.classList.contains('managing') ? 'Done' : 'Edit';
+        }
+
+        function removePerson(btn) {
+            const bubble = btn.closest('.person-bubble');
+            const name = bubble.querySelector('span').textContent;
+            if (name === 'You') {
+                showToast("You can't remove yourself");
+                return;
+            }
+            bubble.style.transition = 'opacity 0.25s, transform 0.25s';
+            bubble.style.opacity = '0';
+            bubble.style.transform = 'scale(0.5)';
+            setTimeout(() => bubble.remove(), 250);
+            showToast('Removed ' + name);
+        }
+
+        function showInviteModal() {
+            document.getElementById('invite-modal').classList.add('active');
+        }
+
+        function closeInviteModal() {
+            document.getElementById('invite-modal').classList.remove('active');
+        }
+
+        function confirmInvite() {
+            const name = document.getElementById('invite-name').value;
+            if (!name) {
+                showToast('Please enter a name');
+                return;
+            }
+            closeInviteModal();
+            showToast('Invite sent to ' + name);
+        }
+
+        function toggleTxn(el) {
+            const wasExpanded = el.classList.contains('expanded');
+            document.querySelectorAll('.txn-item.expanded').forEach(item => item.classList.remove('expanded'));
+            if (!wasExpanded) el.classList.add('expanded');
+        }
+
+        function editExpense(name) {
+            document.querySelectorAll('.txn-item.expanded').forEach(item => item.classList.remove('expanded'));
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-add-expense').classList.add('active');
+            document.getElementById('expense-desc').value = name;
+            showToast('Editing: ' + name);
+        }
+
+        function deleteExpense(btn, name) {
+            const txnItem = btn.closest('.txn-item');
+            txnItem.style.transition = 'opacity 0.3s, max-height 0.3s';
+            txnItem.style.opacity = '0';
+            txnItem.style.maxHeight = '0';
+            txnItem.style.overflow = 'hidden';
+            setTimeout(() => txnItem.remove(), 300);
+            showToast('Deleted: ' + name);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('show');
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+    </script>
+</body>
+</html>
