@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cozi Kid Debit Card — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange:      #E75526;
+    --orange-dk:   #BF5624;
+    --orange-lt:   #FFE2D2;
+    --blue:        #159AD2;
+    --blue-dk:     #10739E;
+    --blue-lt:     #D9F3FF;
+    --charcoal:    #414349;
+    --grey:        #727272;
+    --grey-lt:     #EEEEEE;
+    --dark-sage:   #467151;
+    --sage-lt:     #E3F5E7;
+    --purple:      #9C5483;
+    --text:        #414349;
+    --text-dark:   #414349;
+    --text-muted:  #727272;
+    --bg-page:     #FFFFFF;
+    --bg-section:  #F5F5F5;
+    --bg-card:     #FFFFFF;
+    --border:      #e0e0e0;
+    --font: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: #e8edf2;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+
+  /* ── Phone frame ── */
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: #000;
+    border-radius: 50px;
+    box-shadow:
+      0 0 0 2px #555,
+      0 0 0 4px #222,
+      0 32px 80px rgba(0,0,0,.45);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* notch */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 130px; height: 34px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    z-index: 100;
+  }
+
+  /* status bar */
+  .status-bar {
+    height: 44px;
+    background: var(--blue);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 24px 6px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+  .status-bar span { color: #fff; font-size: 12px; font-weight: 600; }
+
+  /* screen container */
+  .screen-wrap {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    background: var(--bg-section);
+  }
+
+  /* individual screens */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-section);
+    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+  .screen.offscreen-right { transform: translateX(100%); }
+  .screen.offscreen-left  { transform: translateX(-100%); }
+
+  /* scrollable body */
+  .screen-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .screen-body::-webkit-scrollbar { display: none; }
+
+  /* ── Bottom nav ── */
+  .bottom-nav {
+    height: 83px;
+    background: #fff;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 10px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    min-width: 56px;
+  }
+  .nav-icon { font-size: 22px; line-height: 1; }
+  .nav-label { font-size: 10px; color: var(--text-muted); }
+  .nav-item.active .nav-label { color: var(--blue); font-weight: 600; }
+  .nav-item.active .nav-icon { filter: drop-shadow(0 0 0 var(--blue)); }
+
+  /* ── App header ── */
+  .app-header {
+    background: var(--blue);
+    padding: 12px 16px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .app-header h1 { color: #fff; font-size: 18px; font-weight: 700; }
+  .header-actions { display: flex; gap: 12px; }
+  .header-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px; }
+
+  /* tab bar */
+  .tab-bar {
+    display: flex;
+    background: var(--blue-dk);
+    flex-shrink: 0;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    color: rgba(255,255,255,.7);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+  }
+  .tab.active { color: #fff; border-bottom-color: #fff; }
+
+  /* week nav */
+  .week-nav {
+    background: #fff;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .week-arrow { background: none; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; padding: 4px 6px; }
+  .week-days { display: flex; gap: 4px; flex: 1; justify-content: center; }
+  .day-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 600; color: var(--text-muted); cursor: pointer;
+  }
+  .day-circle span:first-child { font-size: 8px; }
+  .day-circle span:last-child { font-size: 11px; }
+  .day-circle.today { background: var(--blue); color: #fff; }
+
+  /* person section */
+  .person-section { margin: 12px 12px 0; }
+  .person-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #fff;
+    border-radius: 10px 10px 0 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .person-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .person-name { font-size: 14px; font-weight: 700; color: var(--text-dark); flex: 1; }
+  .allowance-chip {
+    background: var(--blue-lt);
+    color: var(--blue-dk);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    border: 1px solid rgba(59,187,233,.3);
+  }
+  .allowance-chip:hover { background: var(--blue); color: #fff; }
+
+  /* chore item */
+  .chore-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .chore-item:last-child { border-radius: 0 0 10px 10px; border-bottom: none; }
+  .chore-check {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--border);
+    cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .chore-check.checked { background: var(--dark-sage); border-color: var(--dark-sage); }
+  .chore-check.checked::after { content: '✓'; color: #fff; font-size: 11px; font-weight: 700; }
+  .chore-label { font-size: 13px; color: var(--text); flex: 1; }
+  .chore-label.done { text-decoration: line-through; color: var(--text-muted); }
+  .add-chore {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 12px;
+    background: #fff;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 0 0 10px 10px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  /* ── Dashboard header ── */
+  .dash-header {
+    background: var(--blue);
+    padding: 12px 16px 14px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .back-btn {
+    background: none; border: none;
+    color: #fff; font-size: 22px;
+    cursor: pointer; padding: 4px 8px 4px 0;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .back-btn span { font-size: 14px; font-weight: 600; }
+  .dash-title { flex: 1; text-align: center; color: #fff; font-size: 17px; font-weight: 700; }
+
+  /* child tabs */
+  .child-tabs {
+    display: flex;
+    background: rgba(0,0,0,.15);
+    margin: 0 16px 14px;
+    border-radius: 8px;
+    padding: 3px;
+  }
+  .child-tab {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 6px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    color: rgba(255,255,255,.7);
+    font-size: 13px; font-weight: 600;
+    transition: all .2s;
+  }
+  .child-tab.active { background: #fff; color: var(--blue-dk); }
+  .child-avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #fff;
+  }
+  .child-tab.active .child-avatar { color: #fff; }
+
+  /* earnings card */
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    margin: 0 12px 12px;
+    padding: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--text-dark); }
+  .edit-link { font-size: 12px; color: var(--orange); font-weight: 600; cursor: pointer; }
+  .edit-link:hover { color: var(--orange-dk); }
+
+  /* earnings tabs */
+  .earn-tabs {
+    display: flex;
+    background: var(--bg-section);
+    border-radius: 6px;
+    padding: 2px;
+    margin-bottom: 14px;
+  }
+  .earn-tab {
+    flex: 1; text-align: center;
+    padding: 6px;
+    border-radius: 5px;
+    font-size: 12px; font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .earn-tab.active { background: #fff; color: var(--blue); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+  /* progress */
+  .earn-amount { font-size: 26px; font-weight: 700; color: var(--text-dark); }
+  .earn-total { font-size: 14px; color: var(--text-muted); }
+  .progress-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+  .progress-bar { flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--blue); border-radius: 4px; transition: width .4s; }
+  .chores-left { font-size: 12px; color: var(--text-muted); }
+  .chores-left strong { color: var(--orange); }
+
+  /* activity */
+  .activity-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .activity-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .activity-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--bg-section);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .activity-info { flex: 1; }
+  .activity-name { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+  .activity-date { font-size: 11px; color: var(--text-muted); }
+  .activity-amount { font-size: 13px; font-weight: 700; }
+  .activity-amount.credit { color: var(--dark-sage); }
+  .activity-amount.debit { color: var(--orange); }
+
+  /* ── Allowance screen ── */
+  .allowance-header {
+    background: var(--bg-section);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .back-btn-lt {
+    background: none; border: none;
+    color: var(--blue); font-size: 22px;
+    cursor: pointer; padding: 4px 8px 4px 0;
+  }
+  .allowance-title { flex: 1; text-align: center; font-size: 17px; font-weight: 700; color: var(--text-dark); }
+  .history-btn {
+    background: none; border: none;
+    color: var(--blue); font-size: 13px; font-weight: 600;
+    cursor: pointer; padding: 4px;
+  }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    padding: 14px 16px 6px;
+  }
+
+  /* amount row */
+  .amount-row {
+    background: #fff;
+    display: flex; align-items: center;
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .amount-value { font-size: 28px; font-weight: 700; color: var(--text-dark); flex: 1; }
+  .amount-unit { font-size: 14px; color: var(--text-muted); align-self: flex-end; margin-bottom: 4px; }
+  .edit-pencil {
+    background: none; border: none; color: var(--blue);
+    font-size: 18px; cursor: pointer; padding: 6px;
+  }
+
+  .amount-meta {
+    background: #fff;
+    padding: 8px 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .amount-meta p { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+  /* partial payment circle */
+  .partial-card { background: #fff; border-radius: 12px; margin: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .partial-header { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 14px; }
+  .partial-body { display: flex; align-items: center; gap: 16px; }
+  .partial-circle-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+  .partial-circle { width: 80px; height: 80px; border-radius: 50%; }
+  .partial-inner {
+    position: absolute; inset: 9px;
+    border-radius: 50%; background: #fff;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .partial-pct { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+  .partial-info { flex: 1; }
+  .partial-earned { font-size: 20px; font-weight: 700; color: var(--text-dark); }
+  .partial-label { font-size: 12px; color: var(--text-muted); }
+  .partial-chores { font-size: 13px; color: var(--orange); font-weight: 600; margin-top: 6px; }
+
+  /* toggle */
+  .toggle-row {
+    background: #fff;
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-top: 12px;
+    cursor: pointer;
+  }
+  .toggle-label { flex: 1; font-size: 14px; font-weight: 600; color: var(--text-dark); }
+  .toggle-switch {
+    width: 48px; height: 28px; border-radius: 14px;
+    background: #ccc;
+    position: relative; transition: background .2s;
+    flex-shrink: 0;
+  }
+  .toggle-switch.on { background: var(--blue); }
+  .toggle-switch::after {
+    content: '';
+    position: absolute; top: 3px; left: 3px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,.25);
+    transition: transform .2s;
+  }
+  .toggle-switch.on::after { transform: translateX(20px); }
+  .toggle-note { font-size: 12px; color: var(--text-muted); padding: 8px 16px 14px; background: #fff; border-bottom: 1px solid var(--border); }
+
+  /* CTA card */
+  .cta-card {
+    margin: 12px;
+    background: var(--blue-lt);
+    border: 1px solid rgba(59,187,233,.3);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer;
+  }
+  .cta-card:hover { background: var(--blue); }
+  .cta-card:hover .cta-text, .cta-card:hover .cta-sub { color: #fff; }
+  .cta-icon { font-size: 28px; flex-shrink: 0; }
+  .cta-text { font-size: 14px; font-weight: 700; color: var(--blue-dk); }
+  .cta-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* inline edit input */
+  .amount-input {
+    font-size: 28px; font-weight: 700; color: var(--text-dark);
+    border: none; border-bottom: 2px solid var(--blue);
+    outline: none; width: 120px; background: transparent;
+    font-family: var(--font);
+  }
+
+  /* ── Child data visibility ── */
+  .child-data { display: none; }
+  .child-data.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>●●● ▲ 🔋</span>
+  </div>
+
+  <div class="screen-wrap">
+
+    <!-- ══════════════════════════════════════
+         SCREEN 1 — CHORES
+    ══════════════════════════════════════ -->
+    <div class="screen" id="screen-chores">
+      <div class="app-header">
+        <h1>Lists</h1>
+        <div class="header-actions">
+          <button class="header-btn">🔔</button>
+          <button class="header-btn">👤</button>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab">Shopping</div>
+        <div class="tab">To Do</div>
+        <div class="tab active">Chores</div>
+      </div>
+
+      <div class="week-nav">
+        <button class="week-arrow">‹</button>
+        <div class="week-days">
+          <div class="day-circle"><span>Su</span><span>16</span></div>
+          <div class="day-circle today"><span>Mo</span><span>17</span></div>
+          <div class="day-circle"><span>Tu</span><span>18</span></div>
+          <div class="day-circle"><span>We</span><span>19</span></div>
+          <div class="day-circle"><span>Th</span><span>20</span></div>
+          <div class="day-circle"><span>Fr</span><span>21</span></div>
+          <div class="day-circle"><span>Sa</span><span>22</span></div>
+        </div>
+        <button class="week-arrow">›</button>
+      </div>
+
+      <div class="screen-body">
+        <!-- Andrew -->
+        <div class="person-section">
+          <div class="person-header">
+            <div class="person-dot" style="background:var(--blue)">A</div>
+            <span class="person-name">Andrew</span>
+          </div>
+          <div class="chore-item">
+            <div class="chore-check" onclick="toggleChore(this)"></div>
+            <span class="chore-label">Take out recycling</span>
+          </div>
+          <div class="chore-item">
+            <div class="chore-check" onclick="toggleChore(this)"></div>
+            <span class="chore-label">Mow the lawn</span>
+          </div>
+          <div class="add-chore">＋ Add chore</div>
+        </div>
+
+        <!-- Karla -->
+        <div class="person-section">
+          <div class="person-header">
+            <div class="person-dot" style="background:var(--orange)">K</div>
+            <span class="person-name">Karla</span>
+            <div class="allowance-chip" onclick="goTo('screen-dashboard','karla')">💳 Allowance</div>
+          </div>
+          <div class="chore-item">
+            <div class="chore-check checked" onclick="toggleChore(this)"></div>
+            <span class="chore-label done">Unload dishwasher</span>
+          </div>
+          <div class="chore-item">
+            <div class="chore-check checked" onclick="toggleChore(this)"></div>
+            <span class="chore-label done">Feed the dog</span>
+          </div>
+          <div class="chore-item">
+            <div class="chore-check" onclick="toggleChore(this)"></div>
+            <span class="chore-label">Clean room</span>
+          </div>
+          <div class="chore-item">
+            <div class="chore-check" onclick="toggleChore(this)"></div>
+            <span class="chore-label">Help with laundry</span>
+          </div>
+          <div class="add-chore">＋ Add chore</div>
+        </div>
+
+        <!-- Sarah -->
+        <div class="person-section" style="margin-bottom:12px">
+          <div class="person-header">
+            <div class="person-dot" style="background:var(--purple)">S</div>
+            <span class="person-name">Sarah</span>
+            <div class="allowance-chip" onclick="goTo('screen-dashboard','sarah')">💳 Allowance</div>
+          </div>
+          <div class="chore-item">
+            <div class="chore-check" onclick="toggleChore(this)"></div>
+            <span class="chore-label">Set the table</span>
+          </div>
+          <div class="chore-item">
+            <div class="chore-check" onclick="toggleChore(this)"></div>
+            <span class="chore-label">Put away toys</span>
+          </div>
+          <div class="chore-item">
+            <div class="chore-check" onclick="toggleChore(this)"></div>
+            <span class="chore-label">Read for 20 min</span>
+          </div>
+          <div class="chore-item">
+            <div class="chore-check" onclick="toggleChore(this)"></div>
+            <span class="chore-label">Wipe bathroom sink</span>
+          </div>
+          <div class="add-chore">＋ Add chore</div>
+        </div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
+        <div class="nav-item"><div class="nav-icon">📅</div><div class="nav-label">Calendar</div></div>
+        <div class="nav-item active"><div class="nav-icon">📋</div><div class="nav-label">Lists</div></div>
+        <div class="nav-item"><div class="nav-icon">🍽</div><div class="nav-label">Recipes</div></div>
+        <div class="nav-item"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Family</div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         SCREEN 2 — DEBIT CARD DASHBOARD
+    ══════════════════════════════════════ -->
+    <div class="screen offscreen-right" id="screen-dashboard">
+      <div class="dash-header" style="flex-direction:column;align-items:stretch;padding-bottom:0;">
+        <div style="display:flex;align-items:center;margin-bottom:8px;">
+          <button class="back-btn" onclick="goBack('screen-chores')">‹ <span>Chores</span></button>
+          <span class="dash-title">Debit Card</span>
+          <div style="width:80px;"></div>
+        </div>
+        <!-- child tabs inside blue header -->
+        <div class="child-tabs">
+          <div class="child-tab active" id="tab-karla" onclick="switchChild('karla')">
+            <div class="child-avatar" style="background:var(--orange)">K</div>
+            Karla
+          </div>
+          <div class="child-tab" id="tab-sarah" onclick="switchChild('sarah')">
+            <div class="child-avatar" style="background:var(--purple)">S</div>
+            Sarah
+          </div>
+        </div>
+      </div>
+
+      <div class="screen-body">
+        <!-- Karla data -->
+        <div class="child-data visible" id="dash-karla">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Earnings</span>
+              <span class="edit-link" onclick="goTo('screen-allowance','karla')">Edit allowance →</span>
+            </div>
+            <div class="earn-tabs">
+              <div class="earn-tab active">Allowance</div>
+              <div class="earn-tab">Pay per chore</div>
+            </div>
+            <div class="earn-amount">$6.00 <span class="earn-total" style="font-size:16px">/ $12.00</span></div>
+            <div class="progress-row">
+              <div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div>
+              <span class="chores-left"><strong>2 chores</strong> left</span>
+            </div>
+            <p style="font-size:12px;color:var(--text-muted)">Next payment: Monday, Aug 24</p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Recent Activity</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon">💰</div>
+              <div class="activity-info"><div class="activity-name">Allowance</div><div class="activity-date">Aug 10</div></div>
+              <span class="activity-amount credit">+$12.00</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon">🛍</div>
+              <div class="activity-info"><div class="activity-name">Amazon</div><div class="activity-date">Aug 8</div></div>
+              <span class="activity-amount debit">−$24.99</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon">💰</div>
+              <div class="activity-info"><div class="activity-name">Allowance</div><div class="activity-date">Aug 3</div></div>
+              <span class="activity-amount credit">+$12.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sarah data -->
+        <div class="child-data" id="dash-sarah">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Earnings</span>
+              <span class="edit-link" onclick="goTo('screen-allowance','sarah')">Edit allowance →</span>
+            </div>
+            <div class="earn-tabs">
+              <div class="earn-tab active">Allowance</div>
+              <div class="earn-tab">Pay per chore</div>
+            </div>
+            <div class="earn-amount">$2.67 <span class="earn-total" style="font-size:16px">/ $8.00</span></div>
+            <div class="progress-row">
+              <div class="progress-bar"><div class="progress-fill" style="width:33%"></div></div>
+              <span class="chores-left"><strong>4 chores</strong> left</span>
+            </div>
+            <p style="font-size:12px;color:var(--text-muted)">Next payment: Monday, Aug 24</p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Recent Activity</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon">💰</div>
+              <div class="activity-info"><div class="activity-name">Allowance</div><div class="activity-date">Aug 10</div></div>
+              <span class="activity-amount credit">+$8.00</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon">🎯</div>
+              <div class="activity-info"><div class="activity-name">Target</div><div class="activity-date">Aug 9</div></div>
+              <span class="activity-amount debit">−$12.50</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon">💰</div>
+              <div class="activity-info"><div class="activity-name">Allowance</div><div class="activity-date">Aug 3</div></div>
+              <span class="activity-amount credit">+$8.00</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon">🎁</div>
+              <div class="activity-info"><div class="activity-name">Bonus from Mom</div><div class="activity-date">Jul 28</div></div>
+              <span class="activity-amount credit">+$5.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
+        <div class="nav-item"><div class="nav-icon">📅</div><div class="nav-label">Calendar</div></div>
+        <div class="nav-item"><div class="nav-icon">📋</div><div class="nav-label">Lists</div></div>
+        <div class="nav-item"><div class="nav-icon">🍽</div><div class="nav-label">Recipes</div></div>
+        <div class="nav-item active"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Family</div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         SCREEN 3 — EDIT ALLOWANCE
+    ══════════════════════════════════════ -->
+    <div class="screen offscreen-right" id="screen-allowance">
+      <div class="allowance-header">
+        <button class="back-btn-lt" onclick="goBack('screen-dashboard')">‹</button>
+        <span class="allowance-title" id="allowance-child-name">Karla</span>
+        <button class="history-btn">History</button>
+      </div>
+
+      <div class="screen-body">
+        <div class="section-label">Allowance</div>
+
+        <div class="amount-row">
+          <span class="amount-value" id="allow-amount-display">$12.00</span>
+          <span class="amount-unit" style="margin-left:6px;">weekly</span>
+          <button class="edit-pencil" onclick="startEditAmount()">✏️</button>
+        </div>
+
+        <div class="amount-meta">
+          <p>0% Spend Anywhere · 100% Savings</p>
+          <p id="allow-next-payment">Next Payment: Monday, Aug 24</p>
+        </div>
+
+        <!-- partial payment circle card -->
+        <div class="partial-card">
+          <div class="partial-header">Partial Payment</div>
+          <div class="partial-body">
+            <div class="partial-circle-wrap">
+              <div class="partial-circle" id="allow-circle"></div>
+              <div class="partial-inner">
+                <span class="partial-pct" id="allow-pct-text">50%</span>
+              </div>
+            </div>
+            <div class="partial-info">
+              <div class="partial-earned" id="allow-earned">$6.00 Earned</div>
+              <div class="partial-label">of weekly allowance</div>
+              <div class="partial-chores" id="allow-chores-left">2 chores remaining</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- toggle -->
+        <div class="toggle-row" onclick="toggleSwitch('allowance-toggle')">
+          <span class="toggle-label">Allowance is on</span>
+          <div class="toggle-switch on" id="allowance-toggle"></div>
+        </div>
+        <div class="toggle-note">
+          Turn off to pause allowance payments. Karla won't receive her weekly payment until you turn it back on.
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-card" onclick="goBack('screen-chores')">
+          <div class="cta-icon">📋</div>
+          <div>
+            <div class="cta-text">Keep them on track</div>
+            <div class="cta-sub">View and manage chores</div>
+          </div>
+          <div style="margin-left:auto;color:var(--blue-dk);font-size:18px;">›</div>
+        </div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
+        <div class="nav-item"><div class="nav-icon">📅</div><div class="nav-label">Calendar</div></div>
+        <div class="nav-item"><div class="nav-icon">📋</div><div class="nav-label">Lists</div></div>
+        <div class="nav-item"><div class="nav-icon">🍽</div><div class="nav-label">Recipes</div></div>
+        <div class="nav-item active"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Family</div></div>
+      </div>
+    </div>
+
+  </div><!-- /screen-wrap -->
+</div><!-- /phone -->
+
+<script>
+  const childData = {
+    karla: { name: 'Karla', amount: '$12.00', choresLeft: 2, earned: 6.00, pct: 50, nextPayment: 'Monday, Aug 24', toggleNote: "Turn off to pause allowance payments. Karla won't receive her weekly payment until you turn it back on." },
+    sarah: { name: 'Sarah', amount: '$8.00',  choresLeft: 4, earned: 2.67, pct: 33, nextPayment: 'Monday, Aug 24', toggleNote: "Turn off to pause allowance payments. Sarah won't receive her weekly payment until you turn it back on." }
+  };
+
+  let currentScreen = 'screen-chores';
+  let activeChild = 'karla';
+
+  function getEl(id) { return document.getElementById(id); }
+
+  function goTo(screenId, child) {
+    const current = getEl(currentScreen);
+    const next = getEl(screenId);
+    current.classList.add('offscreen-left');
+    next.classList.remove('offscreen-right');
+    next.classList.remove('offscreen-left');
+    if (screenId === 'screen-dashboard' && child) switchChild(child);
+    if (screenId === 'screen-allowance') updateAllowanceScreen(child || activeChild);
+    currentScreen = screenId;
+  }
+
+  function goBack(screenId) {
+    const current = getEl(currentScreen);
+    const prev = getEl(screenId);
+    current.classList.add('offscreen-right');
+    prev.classList.remove('offscreen-left');
+    prev.classList.remove('offscreen-right');
+    currentScreen = screenId;
+  }
+
+  function switchChild(child) {
+    activeChild = child;
+    // update tabs
+    ['karla','sarah'].forEach(c => {
+      getEl('tab-'+c).classList.toggle('active', c === child);
+    });
+    // show/hide data
+    getEl('dash-karla').classList.toggle('visible', child === 'karla');
+    getEl('dash-sarah').classList.toggle('visible', child === 'sarah');
+  }
+
+  function updateAllowanceScreen(child) {
+    activeChild = child;
+    const d = childData[child];
+    getEl('allowance-child-name').textContent = d.name;
+    getEl('allow-amount-display').textContent = d.amount;
+    getEl('allow-next-payment').textContent = 'Next Payment: ' + d.nextPayment;
+    getEl('allow-pct-text').textContent = d.pct + '%';
+    getEl('allow-earned').textContent = '$' + d.earned.toFixed(2) + ' Earned';
+    getEl('allow-chores-left').textContent = d.choresLeft + ' chore' + (d.choresLeft !== 1 ? 's' : '') + ' remaining';
+    // conic-gradient circle
+    const circle = getEl('allow-circle');
+    circle.style.background = `conic-gradient(var(--blue) ${d.pct}%, #e5e7eb ${d.pct}%)`;
+    // toggle note
+    document.querySelector('.toggle-note').textContent = d.toggleNote;
+  }
+
+  function toggleSwitch(id) {
+    getEl(id).classList.toggle('on');
+  }
+
+  function toggleChore(checkEl) {
+    checkEl.classList.toggle('checked');
+    const label = checkEl.nextElementSibling;
+    if (label) label.classList.toggle('done');
+  }
+
+  function startEditAmount() {
+    const display = getEl('allow-amount-display');
+    const current = display.textContent;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'amount-input';
+    input.value = current;
+    display.replaceWith(input);
+    input.focus();
+    input.select();
+
+    function commit() {
+      let val = input.value.trim().replace(/[^0-9.]/g,'');
+      if (!val || isNaN(parseFloat(val))) val = current.replace('$','');
+      const formatted = '$' + parseFloat(val).toFixed(2);
+      const span = document.createElement('span');
+      span.className = 'amount-value';
+      span.id = 'allow-amount-display';
+      span.textContent = formatted;
+      input.replaceWith(span);
+      // update child data
+      childData[activeChild].amount = formatted;
+    }
+
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
+  }
+
+  // init circle for default child
+  updateAllowanceScreen('karla');
+</script>
+</body>
+</html>
