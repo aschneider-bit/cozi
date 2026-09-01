@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cozi — Finance</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --blue:      #159AD2;
+  --blue-dk:   #10739E;
+  --blue-lt:   #D9F3FF;
+  --orange:    #E75526;
+  --orange-lt: #FFE2D2;
+  --sage:      #90CEA0;
+  --sage-dk:   #467151;
+  --sage-lt:   #E3F5E7;
+  --tan:       #F7932A;
+  --tan-lt:    #FFE5CB;
+  --gold:      #F5A623;
+  --charcoal:  #414349;
+  --grey:      #727272;
+  --grey-lt:   #EEEEEE;
+  --bg:        #F2F2F7;
+  --white:     #FFFFFF;
+  --border:    #E5E5EA;
+  --grey-sys:  #8E8E93;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  background: #C8C8CC;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 100vh;
+  min-width: max-content;
+  padding: 48px 40px;
+  gap: 28px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+/* ── Phone shell ── */
+.phone-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.phone-label {
+  font-family: -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(0,0,0,0.45);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.phone {
+  width: 390px;
+  height: 844px;
+  background: var(--bg);
+  border-radius: 52px;
+  overflow: hidden;
+  box-shadow: 0 0 0 10px #111, 0 0 0 12px #3A3A3A, 0 40px 80px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ── Status bar ── */
+.status-bar {
+  height: 50px;
+  background: var(--blue);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 24px 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.status-icons { display: flex; gap: 5px; align-items: center; font-size: 13px; }
+
+/* ── Header bar ── */
+.header {
+  height: 52px;
+  background: var(--blue);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.header-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: white;
+  flex: 1;
+}
+.header-back {
+  background: none; border: none;
+  color: white; font-size: 22px;
+  cursor: pointer; padding: 4px 8px 4px 0;
+  display: flex; align-items: center;
+  line-height: 1;
+}
+.header-right {
+  background: none; border: none;
+  color: white; font-size: 15px; font-weight: 500;
+  cursor: pointer;
+}
+.header-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--orange);
+  border: 2px solid rgba(255,255,255,0.6);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 13px; font-weight: 700;
+}
+
+/* ── Section tabs (underline style) ── */
+.section-tabs {
+  display: flex;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.section-tab {
+  flex: 1;
+  padding: 12px 4px 11px;
+  text-align: center;
+  font-size: 13px; font-weight: 600;
+  color: var(--grey-sys);
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+}
+.section-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+/* ── Content area ── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  background: var(--bg);
+}
+.content::-webkit-scrollbar { display: none; }
+
+/* ── Bottom nav ── */
+.bottom-nav {
+  height: 82px;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  padding-top: 10px;
+  flex-shrink: 0;
+}
+.nav-item {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 3px;
+  cursor: pointer;
+  color: var(--grey-sys); font-size: 10px; font-weight: 500;
+}
+.nav-item.active { color: var(--blue); }
+.nav-icon { font-size: 23px; line-height: 1; }
+
+/* ═══════════════════════
+   FAMILY HUB SCREEN
+═══════════════════════ */
+.members-strip {
+  background: var(--white);
+  padding: 14px 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.member { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.member-wrap { position: relative; }
+.member-avatar {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 16px; font-weight: 700;
+}
+.member-dot {
+  width: 11px; height: 11px;
+  border-radius: 50%; background: #34C759;
+  border: 2px solid white;
+  position: absolute; bottom: 1px; right: 1px;
+}
+.member-name { font-size: 11px; color: var(--charcoal); font-weight: 500; }
+.member-add .member-avatar { background: var(--grey-lt); color: var(--grey-sys); font-size: 22px; font-weight: 300; }
+
+.features-grid {
+  padding: 16px 16px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.tile {
+  background: var(--white);
+  border-radius: 18px;
+  padding: 16px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 8px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 118px;
+  position: relative;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.tile:active { transform: scale(0.96); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.tile-name { font-size: 14px; font-weight: 600; color: var(--charcoal); line-height: 1.25; }
+.tile-desc { font-size: 11.5px; color: var(--grey-sys); margin-top: 3px; line-height: 1.3; }
+.tile-icon {
+  align-self: flex-end;
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+}
+.tile-badge {
+  position: absolute; top: 14px; right: 14px;
+  background: var(--gold);
+  color: white; font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.4px;
+  padding: 2px 7px; border-radius: 8px;
+}
+
+/* ═══════════════════════
+   FINANCE LAUNCHER SCREEN
+═══════════════════════ */
+.finances-list {
+  padding: 20px 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.finance-tile {
+  background: var(--white);
+  border-radius: 18px;
+  padding: 18px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 8px rgba(0,0,0,0.04);
+  display: flex; align-items: center; gap: 16px;
+  color: inherit; text-decoration: none;
+  transition: transform 0.12s;
+  position: relative;
+}
+.finance-tile:active { transform: scale(0.97); }
+.finance-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; flex-shrink: 0;
+}
+.finance-name { font-size: 16px; font-weight: 600; color: var(--charcoal); }
+.finance-desc { font-size: 13px; color: var(--grey-sys); margin-top: 3px; }
+.finance-chevron { margin-left: auto; color: #C7C7CC; font-size: 20px; flex-shrink: 0; }
+.finance-new {
+  position: absolute; top: 14px; right: 36px;
+  background: var(--gold); color: white;
+  font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.4px;
+  padding: 2px 7px; border-radius: 8px;
+}
+
+/* ═══════════════════════
+   BUDGET SCREEN
+═══════════════════════ */
+.budget-hero {
+  background: var(--blue);
+  padding: 16px 20px 20px;
+  color: white;
+  flex-shrink: 0;
+}
+.month-nav {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.month-btn {
+  background: rgba(255,255,255,0.2); border: none;
+  color: white; width: 28px; height: 28px;
+  border-radius: 50%; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.month-name { font-size: 16px; font-weight: 600; flex: 1; text-align: center; }
+.budget-summary {
+  background: rgba(255,255,255,0.15);
+  border-radius: 14px; padding: 16px;
+  display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr; gap: 0;
+}
+.sum-divider { background: rgba(255,255,255,0.2); width: 1px; align-self: stretch; margin: 4px 0; }
+.sum-col { text-align: center; padding: 0 8px; }
+.sum-label { font-size: 10px; font-weight: 600; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; }
+.sum-amount { font-size: 20px; font-weight: 800; }
+.sum-col.remaining .sum-amount { color: #A8F0C6; }
+
+.budget-bar-wrap { background: var(--blue); padding: 4px 20px 14px; }
+.budget-bar-track { height: 5px; background: rgba(255,255,255,0.25); border-radius: 3px; overflow: hidden; }
+.budget-bar-fill { height: 100%; border-radius: 3px; background: white; }
+.budget-bar-fill.over { background: #FFB3A7; }
+.budget-bar-meta {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 5px; font-weight: 500;
+}
+
+.connected-row {
+  background: var(--white);
+  padding: 10px 18px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.conn-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sage); flex-shrink: 0; }
+.conn-text { font-size: 12px; color: var(--grey-sys); flex: 1; }
+.conn-text strong { color: var(--charcoal); font-weight: 600; }
+.conn-refresh { font-size: 12px; font-weight: 600; color: var(--blue); background: none; border: none; cursor: pointer; }
+
+.insight {
+  margin: 12px 16px 0;
+  background: var(--orange-lt);
+  border-radius: 14px; padding: 12px 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.insight-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.insight-body .headline { font-size: 13px; font-weight: 700; color: var(--charcoal); margin-bottom: 2px; }
+.insight-body .copy { font-size: 12px; color: var(--grey); line-height: 1.4; }
+.insight-body .cta { font-size: 12px; font-weight: 700; color: var(--orange); margin-top: 4px; cursor: pointer; }
+
+.col-headers {
+  display: flex; padding: 12px 18px 4px;
+}
+.col-headers .flex1 { flex: 1; }
+.col-headers span {
+  font-size: 10px; font-weight: 700; color: var(--grey-sys);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  width: 52px; text-align: right;
+}
+
+/* Category rows */
+.cat-card {
+  background: var(--white);
+  margin: 0 16px 8px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.cat-row {
+  display: flex; align-items: center;
+  padding: 14px 16px; gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.cat-row:last-child { border-bottom: none; }
+.cat-icon-wrap {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.cat-info { flex: 1; min-width: 0; }
+.cat-name { font-size: 14px; font-weight: 600; color: var(--charcoal); margin-bottom: 4px; }
+.cat-bar-row { display: flex; align-items: center; gap: 7px; }
+.cat-bar-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.cat-bar-fill { height: 100%; border-radius: 2px; }
+.cat-bar-pct { font-size: 10px; font-weight: 600; width: 26px; text-align: right; flex-shrink: 0; }
+
+.cat-nums { text-align: right; flex-shrink: 0; }
+.cat-amounts-row { display: flex; gap: 6px; align-items: baseline; margin-bottom: 4px; justify-content: flex-end; }
+.cat-budget { font-size: 11px; color: var(--grey-sys); }
+.cat-actual { font-size: 14px; font-weight: 700; color: var(--charcoal); }
+.variance-chip {
+  font-size: 11px; font-weight: 700;
+  padding: 2px 7px; border-radius: 7px; display: inline-block;
+}
+.variance-chip.under { background: var(--sage-lt); color: var(--sage-dk); }
+.variance-chip.over  { background: var(--orange-lt); color: var(--orange); }
+.variance-chip.at    { background: var(--grey-lt); color: var(--grey); }
+
+.add-row {
+  margin: 4px 16px 20px;
+  padding: 14px 16px;
+  background: var(--white);
+  border: 1.5px dashed #C7C7CC;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-size: 14px; font-weight: 600; color: var(--blue); cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* ═══════════════════════
+   SUBSCRIPTIONS SCREEN
+═══════════════════════ */
+.subs-hero {
+  background: var(--white);
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.subs-amount-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 3px; }
+.subs-big { font-size: 34px; font-weight: 800; color: var(--charcoal); }
+.subs-per { font-size: 14px; color: var(--grey-sys); font-weight: 500; }
+.subs-annual { font-size: 12px; color: var(--grey-sys); }
+.subs-annual strong { color: var(--charcoal); font-weight: 700; }
+
+.filter-scroll {
+  display: flex; gap: 8px;
+  padding: 10px 16px;
+  overflow-x: auto; scrollbar-width: none;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+}
+.filter-scroll::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex-shrink: 0; padding: 6px 14px;
+  border-radius: 18px; border: 1px solid var(--border);
+  font-size: 13px; font-weight: 500;
+  background: var(--bg); color: var(--charcoal);
+  cursor: pointer;
+}
+.filter-chip.active {
+  background: var(--blue); color: white; border-color: var(--blue);
+}
+
+.subs-section-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--grey-sys); letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 14px 20px 6px;
+}
+.subs-card {
+  background: var(--white);
+  margin: 0 16px 8px;
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.sub-row {
+  display: flex; align-items: center; padding: 14px 16px; gap: 12px;
+  border-bottom: 1px solid var(--border); position: relative;
+}
+.sub-row:last-child { border-bottom: none; }
+.sub-logo {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 800; flex-shrink: 0;
+  overflow: hidden; color: white;
+  font-family: -apple-system, sans-serif;
+}
+.sub-info { flex: 1; min-width: 0; }
+.sub-name { font-size: 14px; font-weight: 700; color: var(--charcoal); margin-bottom: 3px; }
+.sub-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.sub-cat {
+  font-size: 10px; font-weight: 700; padding: 2px 7px;
+  border-radius: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.sub-date { font-size: 11px; color: var(--grey-sys); }
+.sub-date.urgent { color: var(--orange); font-weight: 600; }
+.sub-right { text-align: right; flex-shrink: 0; }
+.sub-amount { font-size: 15px; font-weight: 800; color: var(--charcoal); }
+.sub-freq { font-size: 11px; color: var(--grey-sys); }
+.shared-badge {
+  position: absolute; top: 10px; right: 52px;
+  background: var(--blue-lt); color: var(--blue-dk);
+  font-size: 9px; font-weight: 700;
+  padding: 2px 6px; border-radius: 6px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+  1 — FAMILY HUB
+══════════════════════════════════ -->
+<div class="phone-wrap">
+  <div class="phone-label">Family hub</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="status-icons">●●● ▲ 🔋</span>
+    </div>
+    <div class="header">
+      <div class="header-title">Family</div>
+      <div class="header-avatar">A</div>
+    </div>
+
+    <div class="content">
+      <!-- Members strip -->
+      <div class="members-strip">
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:#E75526">A</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">You</span>
+        </div>
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:#3C71E1">C</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">Chad</span>
+        </div>
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:#9C5483">N</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">Nick</span>
+        </div>
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:#F7932A">R</div>
+          </div>
+          <span class="member-name">Riley</span>
+        </div>
+        <div class="member member-add">
+          <div class="member-avatar">+</div>
+          <span class="member-name" style="color:var(--grey-sys)">Add</span>
+        </div>
+      </div>
+
+      <!-- Feature grid -->
+      <div class="features-grid">
+        <div class="tile">
+          <div class="tile-text">
+            <div class="tile-name">Map & Safety</div>
+            <div class="tile-desc">See where everyone is</div>
+          </div>
+          <div class="tile-icon" style="background:#E3F4FF">📍</div>
+        </div>
+
+        <div class="tile">
+          <div class="tile-badge">New</div>
+          <div class="tile-text">
+            <div class="tile-name">Finance</div>
+            <div class="tile-desc">Budgets & subscriptions</div>
+          </div>
+          <div class="tile-icon" style="background:#E6F9EE">💳</div>
+        </div>
+
+        <div class="tile">
+          <div class="tile-text">
+            <div class="tile-name">Birthdays</div>
+            <div class="tile-desc">Never miss a date</div>
+          </div>
+          <div class="tile-icon" style="background:#FFE4EC">🎂</div>
+        </div>
+
+        <div class="tile">
+          <div class="tile-text">
+            <div class="tile-name">Family AI</div>
+            <div class="tile-desc">Ask anything for your family</div>
+          </div>
+          <div class="tile-icon" style="background:#F3E5F5">🤖</div>
+        </div>
+
+        <div class="tile">
+          <div class="tile-text">
+            <div class="tile-name">Vault</div>
+            <div class="tile-desc">Important family documents</div>
+          </div>
+          <div class="tile-icon" style="background:#EDE7F6">🔒</div>
+        </div>
+
+        <div class="tile">
+          <div class="tile-text">
+            <div class="tile-name">Focus</div>
+            <div class="tile-desc">Screen time & goals</div>
+          </div>
+          <div class="tile-icon" style="background:#FFF3E0">🎯</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">🏠</span><span>Home</span></div>
+      <div class="nav-item"><span class="nav-icon">📅</span><span>Calendar</span></div>
+      <div class="nav-item"><span class="nav-icon">📋</span><span>Lists</span></div>
+      <div class="nav-item"><span class="nav-icon">🍽</span><span>Meals</span></div>
+      <div class="nav-item active"><span class="nav-icon">👨‍👩‍👧</span><span>Family</span></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+  2 — FINANCE HUB (launcher)
+══════════════════════════════════ -->
+<div class="phone-wrap">
+  <div class="phone-label">Finance hub</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="status-icons">●●● ▲ 🔋</span>
+    </div>
+    <div class="header">
+      <button class="header-back">‹</button>
+      <div class="header-title" style="text-align:center">Finance</div>
+      <div style="width:32px"></div>
+    </div>
+
+    <div class="content">
+      <div class="finances-list">
+        <div class="finance-tile">
+          <div class="finance-icon" style="background:#E6F9EE">🤝</div>
+          <div>
+            <div class="finance-name">Settle Up</div>
+            <div class="finance-desc">Split expenses with the family</div>
+          </div>
+          <div class="finance-chevron">›</div>
+        </div>
+
+        <div class="finance-tile">
+          <div class="finance-icon" style="background:#E3F4FF">💳</div>
+          <div>
+            <div class="finance-name">Debit Card</div>
+            <div class="finance-desc">Family spending made easy</div>
+          </div>
+          <div class="finance-chevron">›</div>
+        </div>
+
+        <div class="finance-tile">
+          <div class="finance-new">New</div>
+          <div class="finance-icon" style="background:#FFF3E0">📊</div>
+          <div>
+            <div class="finance-name">Budget</div>
+            <div class="finance-desc">Budget vs actual, by category</div>
+          </div>
+          <div class="finance-chevron">›</div>
+        </div>
+
+        <div class="finance-tile">
+          <div class="finance-new">New</div>
+          <div class="finance-icon" style="background:#F3E5F5">🔄</div>
+          <div>
+            <div class="finance-name">Subscriptions</div>
+            <div class="finance-desc">All your recurring charges</div>
+          </div>
+          <div class="finance-chevron">›</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">🏠</span><span>Home</span></div>
+      <div class="nav-item"><span class="nav-icon">📅</span><span>Calendar</span></div>
+      <div class="nav-item"><span class="nav-icon">📋</span><span>Lists</span></div>
+      <div class="nav-item"><span class="nav-icon">🍽</span><span>Meals</span></div>
+      <div class="nav-item active"><span class="nav-icon">👨‍👩‍👧</span><span>Family</span></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+  3 — BUDGET
+══════════════════════════════════ -->
+<div class="phone-wrap">
+  <div class="phone-label">Budget</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="status-icons">●●● ▲ 🔋</span>
+    </div>
+    <div class="header">
+      <button class="header-back">‹</button>
+      <div class="header-title" style="text-align:center">Budget</div>
+      <button class="header-right">Edit</button>
+    </div>
+    <div class="section-tabs" style="background:var(--white)">
+      <div class="section-tab active">Budget</div>
+      <div class="section-tab">Subscriptions</div>
+      <div class="section-tab">Transactions</div>
+    </div>
+
+    <div class="content">
+      <!-- Blue hero -->
+      <div class="budget-hero">
+        <div class="month-nav">
+          <button class="month-btn">‹</button>
+          <span class="month-name">August 2026</span>
+          <button class="month-btn">›</button>
+        </div>
+        <div class="budget-summary">
+          <div class="sum-col">
+            <div class="sum-label">Budgeted</div>
+            <div class="sum-amount">$5,200</div>
+          </div>
+          <div class="sum-divider"></div>
+          <div class="sum-col">
+            <div class="sum-label">Spent</div>
+            <div class="sum-amount">$3,847</div>
+          </div>
+          <div class="sum-divider"></div>
+          <div class="sum-col remaining">
+            <div class="sum-label">Left</div>
+            <div class="sum-amount">$1,353</div>
+          </div>
+        </div>
+      </div>
+      <div class="budget-bar-wrap">
+        <div class="budget-bar-track">
+          <div class="budget-bar-fill" style="width:74%"></div>
+        </div>
+        <div class="budget-bar-meta">
+          <span>74% used</span>
+          <span>12 days left</span>
+        </div>
+      </div>
+
+      <!-- Connected account -->
+      <div class="connected-row">
+        <div class="conn-dot"></div>
+        <div class="conn-text">Chase Checking <strong>••4521</strong> via Array</div>
+        <button class="conn-refresh">Refresh</button>
+      </div>
+
+      <!-- Insight -->
+      <div class="insight">
+        <div class="insight-icon">⚠️</div>
+        <div class="insight-body">
+          <div class="headline">Dining is over budget</div>
+          <div class="copy">You've spent $68 more than planned on restaurants this month.</div>
+          <div class="cta">Adjust budget →</div>
+        </div>
+      </div>
+
+      <!-- Column headers -->
+      <div class="col-headers">
+        <div class="flex1"></div>
+        <span>Budget</span>
+        <span>Actual</span>
+        <span>Left</span>
+      </div>
+
+      <!-- Categories -->
+      <div class="cat-card">
+        <div class="cat-row">
+          <div class="cat-icon-wrap" style="background:#E3F5E7">🛒</div>
+          <div class="cat-info">
+            <div class="cat-name">Groceries</div>
+            <div class="cat-bar-row">
+              <div class="cat-bar-track"><div class="cat-bar-fill" style="width:68%;background:var(--sage)"></div></div>
+              <div class="cat-bar-pct" style="color:var(--sage-dk)">68%</div>
+            </div>
+          </div>
+          <div class="cat-nums">
+            <div class="cat-amounts-row">
+              <span class="cat-budget">$800</span>
+              <span class="cat-actual">$544</span>
+            </div>
+            <span class="variance-chip under">+$256</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-row">
+          <div class="cat-icon-wrap" style="background:var(--blue-lt)">🏠</div>
+          <div class="cat-info">
+            <div class="cat-name">Housing</div>
+            <div class="cat-bar-row">
+              <div class="cat-bar-track"><div class="cat-bar-fill" style="width:100%;background:var(--blue)"></div></div>
+              <div class="cat-bar-pct" style="color:var(--blue-dk)">100%</div>
+            </div>
+          </div>
+          <div class="cat-nums">
+            <div class="cat-amounts-row">
+              <span class="cat-budget">$2,100</span>
+              <span class="cat-actual">$2,100</span>
+            </div>
+            <span class="variance-chip at">$0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-row">
+          <div class="cat-icon-wrap" style="background:var(--orange-lt)">🍕</div>
+          <div class="cat-info">
+            <div class="cat-name">Dining Out</div>
+            <div class="cat-bar-row">
+              <div class="cat-bar-track"><div class="cat-bar-fill" style="width:100%;background:var(--orange)"></div></div>
+              <div class="cat-bar-pct" style="color:var(--orange)">113%</div>
+            </div>
+          </div>
+          <div class="cat-nums">
+            <div class="cat-amounts-row">
+              <span class="cat-budget">$600</span>
+              <span class="cat-actual" style="color:var(--orange)">$668</span>
+            </div>
+            <span class="variance-chip over">−$68</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-row">
+          <div class="cat-icon-wrap" style="background:var(--tan-lt)">🚗</div>
+          <div class="cat-info">
+            <div class="cat-name">Transport</div>
+            <div class="cat-bar-row">
+              <div class="cat-bar-track"><div class="cat-bar-fill" style="width:55%;background:var(--tan)"></div></div>
+              <div class="cat-bar-pct" style="color:#C96F19">55%</div>
+            </div>
+          </div>
+          <div class="cat-nums">
+            <div class="cat-amounts-row">
+              <span class="cat-budget">$400</span>
+              <span class="cat-actual">$221</span>
+            </div>
+            <span class="variance-chip under">+$179</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-row">
+          <div class="cat-icon-wrap" style="background:#F3E5F5">🎬</div>
+          <div class="cat-info">
+            <div class="cat-name">Entertainment</div>
+            <div class="cat-bar-row">
+              <div class="cat-bar-track"><div class="cat-bar-fill" style="width:80%;background:#9C5483"></div></div>
+              <div class="cat-bar-pct" style="color:#9C5483">80%</div>
+            </div>
+          </div>
+          <div class="cat-nums">
+            <div class="cat-amounts-row">
+              <span class="cat-budget">$150</span>
+              <span class="cat-actual">$120</span>
+            </div>
+            <span class="variance-chip under">+$30</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-row">
+          <div class="cat-icon-wrap" style="background:var(--sage-lt)">💊</div>
+          <div class="cat-info">
+            <div class="cat-name">Health</div>
+            <div class="cat-bar-row">
+              <div class="cat-bar-track"><div class="cat-bar-fill" style="width:40%;background:var(--sage)"></div></div>
+              <div class="cat-bar-pct" style="color:var(--sage-dk)">40%</div>
+            </div>
+          </div>
+          <div class="cat-nums">
+            <div class="cat-amounts-row">
+              <span class="cat-budget">$150</span>
+              <span class="cat-actual">$194</span>
+            </div>
+            <span class="variance-chip under">+$56</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="add-row">+ Add budget category</div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">🏠</span><span>Home</span></div>
+      <div class="nav-item"><span class="nav-icon">📅</span><span>Calendar</span></div>
+      <div class="nav-item"><span class="nav-icon">📋</span><span>Lists</span></div>
+      <div class="nav-item"><span class="nav-icon">🍽</span><span>Meals</span></div>
+      <div class="nav-item active"><span class="nav-icon">👨‍👩‍👧</span><span>Family</span></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+  4 — SUBSCRIPTIONS
+══════════════════════════════════ -->
+<div class="phone-wrap">
+  <div class="phone-label">Subscriptions</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="status-icons">●●● ▲ 🔋</span>
+    </div>
+    <div class="header">
+      <button class="header-back">‹</button>
+      <div class="header-title" style="text-align:center">Budget</div>
+      <button class="header-right">Edit</button>
+    </div>
+    <div class="section-tabs">
+      <div class="section-tab">Budget</div>
+      <div class="section-tab active">Subscriptions</div>
+      <div class="section-tab">Transactions</div>
+    </div>
+
+    <div class="content">
+      <!-- Hero -->
+      <div class="subs-hero">
+        <div class="subs-amount-row">
+          <span class="subs-big">$147.86</span>
+          <span class="subs-per">/month</span>
+        </div>
+        <div class="subs-annual">Annual total: <strong>$1,774</strong> across 9 subscriptions</div>
+      </div>
+
+      <!-- Connected row -->
+      <div class="connected-row">
+        <div class="conn-dot"></div>
+        <div class="conn-text">Detected by <strong>Array</strong> from Chase ••4521</div>
+        <button class="conn-refresh">Updated now</button>
+      </div>
+
+      <!-- Overlap insight -->
+      <div class="insight" style="margin-top:12px;">
+        <div class="insight-icon">💡</div>
+        <div class="insight-body">
+          <div class="headline">You might be doubling up</div>
+          <div class="copy">Netflix + Hulu together cost $41/month. Consider whether you need both.</div>
+          <div class="cta">Review overlap →</div>
+        </div>
+      </div>
+
+      <!-- Filter chips -->
+      <div class="filter-scroll">
+        <div class="filter-chip active">All</div>
+        <div class="filter-chip">Streaming</div>
+        <div class="filter-chip">Music</div>
+        <div class="filter-chip">Fitness</div>
+        <div class="filter-chip">Kids</div>
+        <div class="filter-chip">Shared</div>
+        <div class="filter-chip">Renewing soon</div>
+      </div>
+
+      <!-- Streaming -->
+      <div class="subs-section-label">Streaming & Entertainment</div>
+      <div class="subs-card">
+        <div class="sub-row">
+          <div class="sub-logo" style="background:#E50914;font-size:14px;font-weight:800">N</div>
+          <div class="sub-info">
+            <div class="sub-name">Netflix</div>
+            <div class="sub-meta">
+              <span class="sub-cat" style="background:var(--orange-lt);color:#BF5624">Streaming</span>
+              <span class="sub-date">Renews Sep 12</span>
+            </div>
+          </div>
+          <div class="sub-right">
+            <div class="sub-amount">$22.99</div>
+            <div class="sub-freq">/month</div>
+          </div>
+        </div>
+
+        <div class="sub-row">
+          <div class="sub-logo" style="background:#1DB954;font-size:16px">♫</div>
+          <div class="sub-info">
+            <div class="sub-name">Spotify Family</div>
+            <div class="sub-meta">
+              <span class="sub-cat" style="background:var(--sage-lt);color:var(--sage-dk)">Music</span>
+              <span class="sub-date">Renews Sep 3</span>
+            </div>
+          </div>
+          <div class="shared-badge">Shared</div>
+          <div class="sub-right">
+            <div class="sub-amount">$16.99</div>
+            <div class="sub-freq">/month</div>
+          </div>
+        </div>
+
+        <div class="sub-row">
+          <div class="sub-logo" style="background:#FF0000;font-size:15px">▶</div>
+          <div class="sub-info">
+            <div class="sub-name">YouTube Premium</div>
+            <div class="sub-meta">
+              <span class="sub-cat" style="background:var(--orange-lt);color:#BF5624">Streaming</span>
+              <span class="sub-date">Renews Sep 18</span>
+            </div>
+          </div>
+          <div class="shared-badge">Shared</div>
+          <div class="sub-right">
+            <div class="sub-amount">$13.99</div>
+            <div class="sub-freq">/month</div>
+          </div>
+        </div>
+
+        <div class="sub-row">
+          <div class="sub-logo" style="background:#113CCF;font-size:12px;font-weight:800">D+</div>
+          <div class="sub-info">
+            <div class="sub-name">Disney+</div>
+            <div class="sub-meta">
+              <span class="sub-cat" style="background:var(--orange-lt);color:#BF5624">Streaming</span>
+              <span class="sub-date">Renews Sep 7</span>
+            </div>
+          </div>
+          <div class="sub-right">
+            <div class="sub-amount">$13.99</div>
+            <div class="sub-freq">/month</div>
+          </div>
+        </div>
+
+        <div class="sub-row">
+          <div class="sub-logo" style="background:#1CE783;color:#000;font-size:13px;font-weight:800">H</div>
+          <div class="sub-info">
+            <div class="sub-name">Hulu</div>
+            <div class="sub-meta">
+              <span class="sub-cat" style="background:var(--orange-lt);color:#BF5624">Streaming</span>
+              <span class="sub-date urgent">Renews Sep 2 · Tomorrow</span>
+            </div>
+          </div>
+          <div class="sub-right">
+            <div class="sub-amount">$17.99</div>
+            <div class="sub-freq">/month</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shopping -->
+      <div class="subs-section-label">Shopping & Services</div>
+      <div class="subs-card">
+        <div class="sub-row">
+          <div class="sub-logo" style="background:#FF9900;font-size:11px;font-weight:800">Prime</div>
+          <div class="sub-info">
+            <div class="sub-name">Amazon Prime</div>
+            <div class="sub-meta">
+              <span class="sub-cat" style="background:var(--blue-lt);color:var(--blue-dk)">Shopping</span>
+              <span class="sub-date">Renews Nov 15 · Annual</span>
+            </div>
+          </div>
+          <div class="sub-right">
+            <div class="sub-amount">$14.99</div>
+            <div class="sub-freq">/month</div>
+          </div>
+        </div>
+
+        <div class="sub-row">
+          <div class="sub-logo" style="background:#000;font-size:12px;font-weight:700"></div>
+          <div class="sub-info">
+            <div class="sub-name">Apple One Family</div>
+            <div class="sub-meta">
+              <span class="sub-cat" style="background:#F3E5F5;color:#9C5483">Bundle</span>
+              <span class="sub-date">Renews Sep 22</span>
+            </div>
+          </div>
+          <div class="shared-badge">Shared</div>
+          <div class="sub-right">
+            <div class="sub-amount">$22.95</div>
+            <div class="sub-freq">/month</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Health -->
+      <div class="subs-section-label">Health & Fitness</div>
+      <div class="subs-card">
+        <div class="sub-row">
+          <div class="sub-logo" style="background:var(--charcoal);font-size:11px;font-weight:700">Pelo</div>
+          <div class="sub-info">
+            <div class="sub-name">Peloton App</div>
+            <div class="sub-meta">
+              <span class="sub-cat" style="background:var(--sage-lt);color:var(--sage-dk)">Fitness</span>
+              <span class="sub-date">Renews Sep 11</span>
+            </div>
+          </div>
+          <div class="sub-right">
+            <div class="sub-amount">$12.99</div>
+            <div class="sub-freq">/month</div>
+          </div>
+        </div>
+
+        <div class="sub-row">
+          <div class="sub-logo" style="background:#58CC02;font-size:11px;font-weight:700">Duo</div>
+          <div class="sub-info">
+            <div class="sub-name">Duolingo Super</div>
+            <div class="sub-meta">
+              <span class="sub-cat" style="background:var(--sage-lt);color:var(--sage-dk)">Education</span>
+              <span class="sub-date">Renews Oct 1 · Annual</span>
+            </div>
+          </div>
+          <div class="sub-right">
+            <div class="sub-amount">$6.99</div>
+            <div class="sub-freq">/month</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="add-row" style="margin-top:4px;">+ Add subscription manually</div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">🏠</span><span>Home</span></div>
+      <div class="nav-item"><span class="nav-icon">📅</span><span>Calendar</span></div>
+      <div class="nav-item"><span class="nav-icon">📋</span><span>Lists</span></div>
+      <div class="nav-item"><span class="nav-icon">🍽</span><span>Meals</span></div>
+      <div class="nav-item active"><span class="nav-icon">👨‍👩‍👧</span><span>Family</span></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
