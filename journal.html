@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cozi – Family Journal</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --blue:        #159AD2;
+      --blue-dk:     #10739E;
+      --blue-lt:     #D9F3FF;
+      --orange:      #E75526;
+      --orange-lt:   #FFE2D2;
+      --sage:        #90CEA0;
+      --sage-dk:     #467151;
+      --sage-lt:     #E3F5E7;
+      --tangerine:   #F7932A;
+      --tang-lt:     #FFE5CB;
+      --charcoal:    #414349;
+      --grey:        #727272;
+      --grey-lt:     #EEEEEE;
+      --bg:          #F2F2F7;
+      --white:       #FFFFFF;
+      --gold:        #F5A623;
+      --m-you:       #E75526;
+      --m-chad:      #3C71E1;
+      --m-nick:      #9C5483;
+      --m-riley:     #F7932A;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      background: #C8C8CC;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 32px 20px;
+    }
+
+    /* ── PHONE SHELL ── */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: var(--bg);
+      border-radius: 52px;
+      overflow: hidden;
+      box-shadow: 0 0 0 10px #111, 0 0 0 12px #3A3A3A, 0 40px 80px rgba(0,0,0,.5);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      height: 50px;
+      background: var(--blue);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      height: 52px;
+      background: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .header-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+    }
+    .header-back {
+      position: absolute;
+      left: 10px;
+      color: white;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      padding: 8px;
+      min-width: 44px;
+      min-height: 44px;
+      justify-content: center;
+    }
+    .header-back.visible { opacity: 1; pointer-events: auto; }
+    .header-action {
+      position: absolute;
+      right: 10px;
+      color: white;
+      font-size: 28px;
+      font-weight: 300;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      padding: 8px;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .header-action.visible { opacity: 1; pointer-events: auto; }
+    .header-save {
+      position: absolute;
+      right: 16px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      padding: 8px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+    .header-save.visible { opacity: 1; pointer-events: auto; }
+    .header-avatar {
+      position: absolute;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--m-you);
+      border: 2px solid rgba(255,255,255,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* ── CONTENT AREA ── */
+    .content-area {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .screen.active { display: flex; }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      height: 82px;
+      background: var(--white);
+      border-top: 1px solid var(--grey-lt);
+      display: flex;
+      align-items: flex-start;
+      padding-top: 10px;
+      flex-shrink: 0;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      color: #8E8E93;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-item.active { color: var(--blue); }
+    .nav-icon { font-size: 23px; line-height: 1; }
+    .nav-label { font-size: 10px; font-weight: 500; }
+
+    /* ═══════════════════════════════════
+       SCREEN 1 — FAMILY HUB
+    ═══════════════════════════════════ */
+    .members-strip {
+      background: var(--white);
+      padding: 14px 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border-bottom: 1px solid var(--grey-lt);
+      flex-shrink: 0;
+    }
+    .member {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .member-wrap { position: relative; }
+    .member-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .member-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #34C759;
+      border: 2px solid white;
+      position: absolute;
+      bottom: 1px;
+      right: 1px;
+    }
+    .member-name { font-size: 11px; color: var(--charcoal); font-weight: 500; }
+    .add-member .member-avatar {
+      background: var(--grey-lt);
+      color: #8E8E93;
+      font-size: 22px;
+      font-weight: 300;
+    }
+
+    .features-grid {
+      padding: 16px 16px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .tile {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 16px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 8px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 118px;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+    .tile:active {
+      transform: scale(0.96);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .tile-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--charcoal);
+      line-height: 1.25;
+    }
+    .tile-desc {
+      font-size: 11.5px;
+      color: #8E8E93;
+      margin-top: 3px;
+      line-height: 1.3;
+    }
+    .tile-icon {
+      align-self: flex-end;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .tile-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: var(--gold);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 2px 7px;
+      border-radius: 8px;
+    }
+    .tile-birthdays  .tile-icon { background: #FFE4EC; }
+    .tile-map        .tile-icon { background: #E3F4FF; }
+    .tile-finances   .tile-icon { background: #E6F9EE; }
+    .tile-assistant  .tile-icon { background: #F3E5F5; }
+    .tile-vault      .tile-icon { background: #EDE7F6; }
+    .tile-focus      .tile-icon { background: #FFF3E0; }
+    .tile-journal    .tile-icon { background: var(--sage-lt); }
+
+    /* ═══════════════════════════════════
+       SCREEN 2 — JOURNAL LIST
+    ═══════════════════════════════════ */
+    #screen-journal { background: var(--bg); }
+
+    /* Hero strip — sage, full-bleed, bold */
+    .journal-hero {
+      background: var(--sage);
+      padding: 20px 20px 24px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .journal-hero-left {}
+    .journal-hero-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.75);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+    }
+    .journal-hero-count {
+      font-size: 32px;
+      font-weight: 700;
+      color: white;
+      line-height: 1;
+    }
+    .journal-hero-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      margin-top: 4px;
+    }
+    .journal-hero-emoji {
+      font-size: 52px;
+      line-height: 1;
+      opacity: 0.9;
+    }
+
+    .journal-list {
+      padding: 14px 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Memory cards */
+    .journal-card {
+      background: var(--white);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 2px 12px rgba(0,0,0,0.04);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+    .journal-card:active {
+      transform: scale(0.98);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    /* Colored header zone — all cards get one */
+    .card-header {
+      width: 100%;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      line-height: 1;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .card-body {
+      padding: 14px 16px 18px;
+    }
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .card-date {
+      font-size: 12px;
+      color: var(--grey);
+      font-weight: 500;
+    }
+    .card-author {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-author-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .card-author-name {
+      font-size: 12px;
+      color: var(--grey);
+    }
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--charcoal);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .card-snippet {
+      font-size: 13px;
+      color: var(--grey);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Journal empty state */
+    .journal-empty {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 48px 32px;
+      flex: 1;
+    }
+    .journal-empty.visible { display: flex; }
+    .journal-empty-emoji {
+      font-size: 72px;
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+    .journal-empty-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--charcoal);
+      margin-bottom: 8px;
+    }
+    .journal-empty-body {
+      font-size: 14px;
+      color: var(--grey);
+      line-height: 1.55;
+      margin-bottom: 28px;
+      max-width: 260px;
+    }
+    .journal-empty-btn {
+      background: var(--sage);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 13px 28px;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      font-family: inherit;
+    }
+    .journal-empty-btn:active { opacity: 0.85; }
+
+    /* ═══════════════════════════════════
+       SCREEN 3 — ENTRY DETAIL
+    ═══════════════════════════════════ */
+    #screen-entry { background: var(--bg); }
+
+    .entry-header {
+      width: 100%;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 88px;
+      line-height: 1;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    /* White card that overlaps the colored header — depth effect */
+    .entry-card {
+      background: var(--white);
+      border-radius: 24px 24px 0 0;
+      margin-top: -20px;
+      flex: 1;
+      padding: 24px 20px 32px;
+      position: relative;
+      z-index: 1;
+    }
+    .entry-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .entry-date {
+      font-size: 13px;
+      color: var(--grey);
+      font-weight: 500;
+    }
+    .entry-author {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .entry-author-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .entry-author-name {
+      font-size: 13px;
+      color: var(--grey);
+    }
+    .entry-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--charcoal);
+      margin-bottom: 14px;
+      line-height: 1.2;
+    }
+    .entry-text {
+      font-size: 15px;
+      color: var(--charcoal);
+      line-height: 1.65;
+      white-space: pre-line;
+    }
+
+    /* ═══════════════════════════════════
+       SCREEN 4 — COMPOSE
+    ═══════════════════════════════════ */
+    #screen-compose { background: var(--white); }
+
+    /* Photo well — solid sage, confident */
+    .compose-photo-well {
+      margin: 16px 16px 0;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+      transition: opacity 0.15s;
+    }
+    .compose-photo-well:active { opacity: 0.85; }
+
+    .compose-photo-empty {
+      background: var(--sage-lt);
+      height: 148px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .compose-photo-empty-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: var(--sage);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    .compose-photo-empty-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--sage-dk);
+    }
+    .compose-photo-empty-sub {
+      font-size: 12px;
+      color: var(--sage-dk);
+      opacity: 0.65;
+    }
+
+    .compose-photo-selected {
+      display: none;
+      height: 190px;
+      background: var(--blue-lt);
+      align-items: center;
+      justify-content: center;
+      font-size: 72px;
+      position: relative;
+    }
+    .compose-photo-remove {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(65,67,73,0.6);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    /* Form fields */
+    .compose-form {
+      padding: 4px 20px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .compose-field {
+      padding: 15px 0;
+      border-bottom: 1px solid var(--grey-lt);
+    }
+    .compose-field:last-child { border-bottom: none; }
+    .compose-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--grey);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 7px;
+    }
+    .compose-input {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--charcoal);
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: inherit;
+    }
+    .compose-input::placeholder { color: #C7C7CC; font-weight: 400; }
+    .compose-textarea {
+      font-size: 15px;
+      color: var(--charcoal);
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: inherit;
+      resize: none;
+      min-height: 90px;
+      line-height: 1.6;
+    }
+    .compose-textarea::placeholder { color: #C7C7CC; }
+
+    /* Author chips */
+    .compose-author-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .author-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px 6px 8px;
+      border-radius: 9999px;
+      border: 2px solid var(--grey-lt);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: border-color 0.15s, background 0.15s;
+      font-size: 13px;
+      color: var(--charcoal);
+      font-weight: 500;
+      background: var(--white);
+    }
+    .author-chip.selected {
+      border-color: var(--sage);
+      background: var(--sage-lt);
+    }
+    .author-chip-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(60,60,67,0.88);
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 18px;
+      border-radius: 999px;
+      opacity: 0;
+      transition: opacity 0.25s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 999;
+      font-family: -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>●●●</span>
+  </div>
+
+  <div class="header">
+    <span class="header-back" id="header-back" onclick="goBack()">‹ Back</span>
+    <span class="header-title" id="header-title">Family</span>
+    <span class="header-action" id="header-action" onclick="showScreen('compose')">+</span>
+    <span class="header-save" id="header-save" onclick="saveEntry()">Save</span>
+    <div class="header-avatar" id="header-avatar">Y</div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- ─── FAMILY HUB ─── -->
+    <div class="screen active" id="screen-hub">
+
+      <div class="members-strip">
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-you)">Y</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">You</span>
+        </div>
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-chad)">C</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">Chad</span>
+        </div>
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-nick)">N</div>
+          </div>
+          <span class="member-name">Nick</span>
+        </div>
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-riley)">R</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">Riley</span>
+        </div>
+        <div class="member add-member">
+          <div class="member-wrap">
+            <div class="member-avatar">+</div>
+          </div>
+          <span class="member-name">Invite</span>
+        </div>
+      </div>
+
+      <div class="features-grid">
+
+        <div class="tile tile-birthdays" onclick="showToast('🎂 Birthdays coming soon')">
+          <div class="tile-text">
+            <div class="tile-name">Birthdays</div>
+            <div class="tile-desc">Never miss a day</div>
+          </div>
+          <div class="tile-icon">🎂</div>
+        </div>
+
+        <div class="tile tile-map" onclick="showToast('📍 Map & Safety coming soon')">
+          <div class="tile-text">
+            <div class="tile-name">Map &amp; Safety</div>
+            <div class="tile-desc">See where everyone is</div>
+          </div>
+          <div class="tile-icon">📍</div>
+        </div>
+
+        <div class="tile tile-journal" onclick="showScreen('journal')">
+          <div class="tile-text">
+            <div class="tile-name">Journal</div>
+            <div class="tile-desc">Last entry 4 days ago</div>
+          </div>
+          <div class="tile-icon">📓</div>
+        </div>
+
+        <div class="tile tile-finances" onclick="showToast('💳 Finances coming soon')">
+          <div class="tile-text">
+            <div class="tile-name">Finances</div>
+            <div class="tile-desc">Split, spend &amp; save</div>
+          </div>
+          <div class="tile-icon">💳</div>
+        </div>
+
+        <div class="tile tile-assistant" onclick="showToast('🤖 Family Assistant coming soon')">
+          <div class="tile-text">
+            <div class="tile-name">Family Assistant</div>
+            <div class="tile-desc">AI for your family</div>
+          </div>
+          <div class="tile-icon">🤖</div>
+          <div class="tile-badge">New</div>
+
+        </div>
+
+        <div class="tile tile-vault" onclick="showToast('🔒 Vault coming soon')">
+          <div class="tile-text">
+            <div class="tile-name">Vault</div>
+            <div class="tile-desc">Secure family docs</div>
+          </div>
+          <div class="tile-icon">🔒</div>
+        </div>
+
+        <div class="tile tile-focus" onclick="showToast('🎯 Focus coming soon')">
+          <div class="tile-text">
+            <div class="tile-name">Focus</div>
+            <div class="tile-desc">Screen time &amp; goals</div>
+          </div>
+          <div class="tile-icon">🎯</div>
+        </div>
+
+      </div>
+    </div><!-- /screen-hub -->
+
+    <!-- ─── JOURNAL LIST ─── -->
+    <div class="screen" id="screen-journal">
+
+      <!-- Sage hero — bold color block with display count -->
+      <div class="journal-hero" id="journal-hero">
+        <div class="journal-hero-left">
+          <div class="journal-hero-eyebrow">Family Journal</div>
+          <div class="journal-hero-count" id="hero-count">3 memories</div>
+          <div class="journal-hero-sub">Stories only your family knows</div>
+        </div>
+        <div class="journal-hero-emoji">📓</div>
+      </div>
+
+      <div class="journal-list" id="journal-list">
+
+        <!-- Entry 1 — beach -->
+        <div class="journal-card" onclick="showEntry(0)">
+          <div class="card-header" style="background:var(--blue-lt)">🏖️</div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-date">Aug 28, 2026</span>
+              <div class="card-author">
+                <div class="card-author-dot" style="background:var(--m-you)">Y</div>
+                <span class="card-author-name">You</span>
+              </div>
+            </div>
+            <div class="card-title">Last beach day of summer</div>
+            <div class="card-snippet">The kids refused to leave, even after sunset. Riley found a sand dollar. Best day in a long time.</div>
+          </div>
+        </div>
+
+        <!-- Entry 2 — text only -->
+        <div class="journal-card" onclick="showEntry(1)">
+          <div class="card-header" style="background:var(--tang-lt)">⚽</div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-date">Aug 15, 2026</span>
+              <div class="card-author">
+                <div class="card-author-dot" style="background:var(--m-chad)">C</div>
+                <span class="card-author-name">Chad</span>
+              </div>
+            </div>
+            <div class="card-title">Nick made the team</div>
+            <div class="card-snippet">He's been practicing every single day since June. When they posted the roster and his name was on it — the look on his face.</div>
+          </div>
+        </div>
+
+        <!-- Entry 3 — park -->
+        <div class="journal-card" onclick="showEntry(2)">
+          <div class="card-header" style="background:var(--sage-lt)">🎡</div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-date">Jul 4, 2026</span>
+              <div class="card-author">
+                <div class="card-author-dot" style="background:var(--m-riley)">R</div>
+                <span class="card-author-name">Riley</span>
+              </div>
+            </div>
+            <div class="card-title">Fourth of July at the park</div>
+            <div class="card-snippet">We got there early and claimed a perfect spot under the oak tree. Watched fireworks until everyone fell asleep.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Empty state — shown when entries.length === 0 -->
+      <div class="journal-empty" id="journal-empty">
+        <div class="journal-empty-emoji">📓</div>
+        <div class="journal-empty-title">Your family's story starts here</div>
+        <div class="journal-empty-body">Capture a moment — a big win, a quiet Sunday, anything worth remembering.</div>
+        <button class="journal-empty-btn" onclick="showScreen('compose')">Write the first entry</button>
+      </div>
+
+    </div><!-- /screen-journal -->
+
+    <!-- ─── ENTRY DETAIL ─── -->
+    <div class="screen" id="screen-entry">
+      <div class="entry-header" id="entry-header" style="background:var(--blue-lt)">
+        <span id="entry-emoji">🏖️</span>
+      </div>
+      <div class="entry-card">
+        <div class="entry-meta">
+          <span class="entry-date" id="entry-date">Aug 28, 2026</span>
+          <div class="entry-author">
+            <div class="entry-author-dot" id="entry-author-dot" style="background:var(--m-you)">Y</div>
+            <span class="entry-author-name" id="entry-author-name">You</span>
+          </div>
+        </div>
+        <div class="entry-title" id="entry-title">Last beach day of summer</div>
+        <div class="entry-text" id="entry-text"></div>
+      </div>
+    </div><!-- /screen-entry -->
+
+    <!-- ─── COMPOSE ─── -->
+    <div class="screen" id="screen-compose">
+
+      <div class="compose-photo-well" onclick="togglePhoto()" id="photo-well">
+        <div class="compose-photo-empty" id="compose-photo-empty">
+          <div class="compose-photo-empty-icon">📷</div>
+          <span class="compose-photo-empty-label">Add a photo</span>
+          <span class="compose-photo-empty-sub">Tap to choose from library</span>
+        </div>
+        <div class="compose-photo-selected" id="compose-photo-selected" style="display:none">
+          <span>🏖️</span>
+          <div class="compose-photo-remove" onclick="removePhoto(event)">✕</div>
+        </div>
+      </div>
+
+      <div class="compose-form">
+
+        <div class="compose-field">
+          <div class="compose-label">Title</div>
+          <input class="compose-input" id="compose-title" type="text" placeholder="What's this memory about?" maxlength="80">
+        </div>
+
+        <div class="compose-field">
+          <div class="compose-label">Your story</div>
+          <textarea class="compose-textarea" id="compose-body" placeholder="Write about this moment…" rows="4"></textarea>
+        </div>
+
+        <div class="compose-field">
+          <div class="compose-label">Written by</div>
+          <div class="compose-author-row">
+            <div class="author-chip selected" id="chip-you" onclick="selectAuthor('you')">
+              <div class="author-chip-dot" style="background:var(--m-you)">Y</div>
+              You
+            </div>
+            <div class="author-chip" id="chip-chad" onclick="selectAuthor('chad')">
+              <div class="author-chip-dot" style="background:var(--m-chad)">C</div>
+              Chad
+            </div>
+            <div class="author-chip" id="chip-nick" onclick="selectAuthor('nick')">
+              <div class="author-chip-dot" style="background:var(--m-nick)">N</div>
+              Nick
+            </div>
+            <div class="author-chip" id="chip-riley" onclick="selectAuthor('riley')">
+              <div class="author-chip-dot" style="background:var(--m-riley)">R</div>
+              Riley
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /screen-compose -->
+
+  </div><!-- /content-area -->
+
+  <div class="bottom-nav" id="bottom-nav">
+    <div class="nav-item" onclick="showToast('Home')">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </div>
+    <div class="nav-item" onclick="showToast('Calendar')">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">Calendar</span>
+    </div>
+    <div class="nav-item" onclick="showToast('Lists')">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">Lists</span>
+    </div>
+    <div class="nav-item" onclick="showToast('Recipes')">
+      <span class="nav-icon">🍽</span>
+      <span class="nav-label">Recipes</span>
+    </div>
+    <div class="nav-item active">
+      <span class="nav-icon">👨‍👩‍👧</span>
+      <span class="nav-label">Family</span>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<div id="toast"></div>
+
+<script>
+  /* Card colors cycle for newly created entries */
+  const cardColors = ['var(--blue-lt)', 'var(--tang-lt)', 'var(--sage-lt)', 'var(--orange-lt)'];
+  const cardEmojis = ['✨', '🌟', '💛', '🎉'];
+
+  const entries = [
+    {
+      date: 'Aug 28, 2026',
+      title: 'Last beach day of summer',
+      text: 'The kids refused to leave, even after sunset. Riley found a sand dollar. We stayed until the parking lot was nearly empty and the sky went purple.\n\nBest day in a long time. I want to remember this one.',
+      authorInitial: 'Y', authorName: 'You', authorColor: 'var(--m-you)',
+      emoji: '🏖️', headerBg: 'var(--blue-lt)'
+    },
+    {
+      date: 'Aug 15, 2026',
+      title: 'Nick made the team',
+      text: 'He\'s been practicing every single day since June. Rain, heat, whatever — he was out there.\n\nWhen they posted the roster and his name was on it, the look on his face. I\'m not going to forget that. So proud of this kid.',
+      authorInitial: 'C', authorName: 'Chad', authorColor: 'var(--m-chad)',
+      emoji: '⚽', headerBg: 'var(--tang-lt)'
+    },
+    {
+      date: 'Jul 4, 2026',
+      title: 'Fourth of July at the park',
+      text: 'We got there early and claimed a perfect spot under the oak tree near the fountain. Blankets, snacks, the whole thing.\n\nWatched fireworks from the blanket until everyone fell asleep one by one. Drove home in the quiet with the kids piled up in the back.',
+      authorInitial: 'R', authorName: 'Riley', authorColor: 'var(--m-riley)',
+      emoji: '🎡', headerBg: 'var(--sage-lt)'
+    }
+  ];
+
+  let currentScreen = 'hub';
+  let photoSelected = false;
+  let selectedAuthor = 'you';
+
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    currentScreen = name;
+
+    const titles = { hub: 'Family', journal: 'Family', entry: 'Journal', compose: 'New entry' };
+    document.getElementById('header-title').textContent = titles[name] || 'Family';
+
+    document.getElementById('header-back').classList.toggle('visible', name !== 'hub');
+    document.getElementById('header-action').classList.toggle('visible', name === 'journal');
+    document.getElementById('header-save').classList.toggle('visible', name === 'compose');
+    document.getElementById('header-avatar').style.display = name === 'compose' ? 'none' : 'flex';
+    document.getElementById('bottom-nav').style.display = name === 'compose' ? 'none' : 'flex';
+  }
+
+  function goBack() {
+    const prev = { journal: 'hub', entry: 'journal', compose: 'journal' };
+    showScreen(prev[currentScreen] || 'hub');
+  }
+
+  function showEntry(idx) {
+    const e = entries[idx];
+    document.getElementById('entry-header').style.background = e.headerBg;
+    document.getElementById('entry-emoji').textContent = e.emoji;
+    document.getElementById('entry-date').textContent = e.date;
+    document.getElementById('entry-title').textContent = e.title;
+    document.getElementById('entry-text').textContent = e.text;
+    document.getElementById('entry-author-dot').textContent = e.authorInitial;
+    document.getElementById('entry-author-dot').style.background = e.authorColor;
+    document.getElementById('entry-author-name').textContent = e.authorName;
+    showScreen('entry');
+  }
+
+  function togglePhoto() {
+    if (photoSelected) return;
+    photoSelected = true;
+    document.getElementById('compose-photo-empty').style.display = 'none';
+    const sel = document.getElementById('compose-photo-selected');
+    sel.style.display = 'flex';
+  }
+
+  function removePhoto(ev) {
+    ev.stopPropagation();
+    photoSelected = false;
+    document.getElementById('compose-photo-empty').style.display = 'flex';
+    document.getElementById('compose-photo-selected').style.display = 'none';
+  }
+
+  function selectAuthor(who) {
+    selectedAuthor = who;
+    ['you','chad','nick','riley'].forEach(a =>
+      document.getElementById('chip-' + a).classList.toggle('selected', a === who));
+  }
+
+  function saveEntry() {
+    const title = document.getElementById('compose-title').value.trim();
+    const body  = document.getElementById('compose-body').value.trim();
+    if (!title && !body) { showToast('Add a title or some text first'); return; }
+
+    const authorMap = {
+      you:   { initial: 'Y', name: 'You',   color: 'var(--m-you)'   },
+      chad:  { initial: 'C', name: 'Chad',  color: 'var(--m-chad)'  },
+      nick:  { initial: 'N', name: 'Nick',  color: 'var(--m-nick)'  },
+      riley: { initial: 'R', name: 'Riley', color: 'var(--m-riley)' },
+    };
+    const author = authorMap[selectedAuthor];
+    const idx = entries.length % cardColors.length;
+
+    entries.unshift({
+      date: 'Sep 1, 2026',
+      title: title || 'Untitled memory',
+      text: body || '',
+      authorInitial: author.initial,
+      authorName: author.name,
+      authorColor: author.color,
+      emoji: photoSelected ? '🏖️' : cardEmojis[idx],
+      headerBg: photoSelected ? 'var(--blue-lt)' : cardColors[idx]
+    });
+
+    rebuildList();
+    document.getElementById('compose-title').value = '';
+    document.getElementById('compose-body').value = '';
+    photoSelected = false;
+    document.getElementById('compose-photo-empty').style.display = 'flex';
+    document.getElementById('compose-photo-selected').style.display = 'none';
+    selectAuthor('you');
+    showScreen('journal');
+    showToast('✓ Entry saved');
+  }
+
+  function rebuildList() {
+    const isEmpty = entries.length === 0;
+    document.getElementById('journal-hero').style.display = isEmpty ? 'none' : '';
+    document.getElementById('journal-list').style.display = isEmpty ? 'none' : '';
+    document.getElementById('journal-empty').classList.toggle('visible', isEmpty);
+
+    if (!isEmpty) {
+      document.getElementById('hero-count').textContent =
+        entries.length + (entries.length === 1 ? ' memory' : ' memories');
+    }
+
+    document.getElementById('journal-list').innerHTML = entries.map((e, i) => `
+      <div class="journal-card" onclick="showEntry(${i})">
+        <div class="card-header" style="background:${e.headerBg}">${e.emoji}</div>
+        <div class="card-body">
+          <div class="card-meta">
+            <span class="card-date">${e.date}</span>
+            <div class="card-author">
+              <div class="card-author-dot" style="background:${e.authorColor}">${e.authorInitial}</div>
+              <span class="card-author-name">${e.authorName}</span>
+            </div>
+          </div>
+          <div class="card-title">${e.title}</div>
+          <div class="card-snippet">${e.text.replace(/\n/g, ' ')}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  let toastTimer = null;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.opacity = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.style.opacity = '0', 2200);
+  }
+</script>
+</body>
+</html>
