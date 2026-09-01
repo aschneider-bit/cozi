@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cozi – RSVP</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --blue:      #159AD2;
+      --blue-dk:   #10739E;
+      --blue-lt:   #D9F3FF;
+      --orange:    #E75526;
+      --tangerine: #F7932A;
+      --tan-lt:    #FFE5CB;
+      --sage:      #90CEA0;
+      --sage-dk:   #467151;
+      --sage-lt:   #E3F5E7;
+      --charcoal:  #414349;
+      --grey:      #727272;
+      --grey-lt:   #EEEEEE;
+      --bg:        #F2F2F7;
+      --white:     #FFFFFF;
+      --gold:      #F5A623;
+      --m-you:     #E75526;
+      --m-chad:    #3C71E1;
+      --m-nick:    #9C5483;
+      --m-riley:   #F7932A;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      background: #C8C8CC;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 32px 20px;
+    }
+
+    /* ── PHONE SHELL ── */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: var(--bg);
+      border-radius: 52px;
+      overflow: hidden;
+      box-shadow: 0 0 0 10px #111, 0 0 0 12px #3A3A3A, 0 40px 80px rgba(0,0,0,.5);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      height: 50px;
+      background: var(--blue);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      height: 52px;
+      background: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .header-title { font-size: 18px; font-weight: 600; color: white; }
+    .header-back {
+      position: absolute;
+      left: 16px;
+      color: white;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .header-back.visible { opacity: 1; pointer-events: auto; }
+    .header-avatar {
+      position: absolute;
+      right: 16px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--m-you);
+      border: 2px solid rgba(255,255,255,0.6);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 13px; font-weight: 700;
+    }
+
+    /* ── CONTENT AREA ── */
+    .content-area {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .screen.active { display: flex; }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      height: 82px;
+      background: var(--white);
+      border-top: 1px solid var(--grey-lt);
+      display: flex;
+      align-items: flex-start;
+      padding-top: 10px;
+      flex-shrink: 0;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      color: #8E8E93;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-item.active { color: var(--blue); }
+    .nav-icon { font-size: 23px; line-height: 1; }
+    .nav-label { font-size: 10px; font-weight: 500; }
+
+    /* ═══════════════════════════════════
+       SCREEN 1 — FAMILY HUB
+    ═══════════════════════════════════ */
+    .members-strip {
+      background: var(--white);
+      padding: 14px 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border-bottom: 1px solid var(--grey-lt);
+      flex-shrink: 0;
+    }
+    .member {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 5px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .member-wrap { position: relative; }
+    .member-avatar {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 16px; font-weight: 700;
+    }
+    .member-dot {
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      background: #34C759;
+      border: 2px solid white;
+      position: absolute; bottom: 1px; right: 1px;
+    }
+    .member-name { font-size: 11px; color: var(--charcoal); font-weight: 500; }
+    .add-member .member-avatar { background: var(--grey-lt); color: #8E8E93; font-size: 22px; font-weight: 300; }
+
+    .features-grid {
+      padding: 16px 16px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .tile {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 16px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 8px rgba(0,0,0,0.04);
+      display: flex; flex-direction: column; justify-content: space-between;
+      min-height: 118px;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+    .tile:active { transform: scale(0.96); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .tile-name { font-size: 14px; font-weight: 600; color: var(--charcoal); line-height: 1.25; }
+    .tile-desc { font-size: 11.5px; color: #8E8E93; margin-top: 3px; line-height: 1.3; }
+    .tile-icon {
+      align-self: flex-end;
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    .tile-badge {
+      position: absolute;
+      top: 14px; right: 14px;
+      background: var(--gold);
+      color: white;
+      font-size: 9px; font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 2px 7px;
+      border-radius: 8px;
+    }
+    .tile-badge.badge-new { background: var(--orange); }
+
+    .tile-rsvp      .tile-icon { background: var(--tan-lt); }
+    .tile-birthdays .tile-icon { background: #FFE4EC; }
+    .tile-map       .tile-icon { background: #E3F4FF; }
+    .tile-finances  .tile-icon { background: #E6F9EE; }
+    .tile-assistant .tile-icon { background: #F3E5F5; }
+    .tile-vault     .tile-icon { background: #EDE7F6; }
+    .tile-focus     .tile-icon { background: #FFF3E0; }
+
+    /* ═══════════════════════════════════
+       SCREEN 2 — RSVP HUB
+    ═══════════════════════════════════ */
+    .section-label {
+      padding: 16px 16px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--grey);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .event-card {
+      background: var(--white);
+      margin: 0 16px 10px;
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.12s;
+    }
+    .event-card:active { transform: scale(0.98); }
+
+    .event-date-badge {
+      width: 46px;
+      flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center;
+      background: var(--blue-lt);
+      border-radius: 10px;
+      padding: 6px 4px;
+    }
+    .event-date-badge.past { background: var(--grey-lt); }
+    .event-date-month {
+      font-size: 10px; font-weight: 700;
+      color: var(--blue-dk);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .event-date-badge.past .event-date-month { color: var(--grey); }
+    .event-date-day { font-size: 22px; font-weight: 700; color: var(--blue); line-height: 1.1; }
+    .event-date-badge.past .event-date-day { color: var(--grey); }
+
+    .event-info { flex: 1; min-width: 0; }
+    .event-title { font-size: 15px; font-weight: 600; color: var(--charcoal); }
+    .event-title.past { color: var(--grey); }
+    .event-meta { font-size: 12.5px; color: var(--grey); margin-top: 2px; }
+    .event-chips { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+    .chip {
+      font-size: 11px; font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+    .chip-going    { background: var(--sage-lt); color: var(--sage-dk); }
+    .chip-maybe    { background: #FFF3E0; color: #C96F19; }
+    .chip-awaiting { background: var(--grey-lt); color: var(--grey); }
+    .chip-declined { background: #FFE4EC; color: #820853; }
+
+    .primary-btn {
+      margin: 8px 16px 24px;
+      background: var(--blue);
+      color: white;
+      font-size: 16px; font-weight: 600;
+      padding: 15px;
+      border-radius: 9999px;
+      text-align: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+    .primary-btn:active { background: var(--blue-dk); }
+
+    /* ═══════════════════════════════════
+       SCREEN 3 — CREATE EVENT
+    ═══════════════════════════════════ */
+    .step-indicator {
+      padding: 16px 16px 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .step-dot {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--grey-lt);
+      transition: all 0.2s;
+    }
+    .step-dot.active { background: var(--blue); width: 20px; }
+    .step-dot:not(.active) { width: 6px; }
+    .step-label {
+      font-size: 12px; font-weight: 500; color: var(--grey);
+      margin-left: 6px;
+    }
+    .form-card {
+      background: var(--white);
+      margin: 8px 16px;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .form-group {
+      padding: 12px 16px 14px;
+      border-bottom: 1px solid var(--grey-lt);
+    }
+    .form-group:last-child { border-bottom: none; }
+    .form-label {
+      display: block;
+      font-size: 11px; font-weight: 700;
+      color: var(--grey);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 5px;
+    }
+    .form-input {
+      width: 100%;
+      font-size: 16px; color: var(--charcoal);
+      border: none; outline: none;
+      background: transparent;
+      font-family: inherit;
+    }
+    .form-input::placeholder { color: #C7C7CC; }
+    textarea.form-input {
+      resize: none;
+      height: 60px;
+      line-height: 1.4;
+      display: block;
+    }
+
+    /* ═══════════════════════════════════
+       SCREEN 4 — INVITE GUESTS
+    ═══════════════════════════════════ */
+    .contacts-card {
+      background: var(--white);
+      margin: 0 16px;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .contact-row {
+      display: flex; align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--grey-lt);
+      gap: 12px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .contact-row:last-child { border-bottom: none; }
+    .contact-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 14px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .contact-name { font-size: 15px; font-weight: 500; color: var(--charcoal); }
+    .contact-sub { font-size: 12.5px; color: var(--grey); }
+    .check-circle {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 2px solid var(--grey-lt);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: white;
+      background: transparent;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .check-circle.on { background: var(--blue); border-color: var(--blue); }
+
+    .external-row {
+      background: var(--white);
+      margin: 10px 16px 0;
+      border-radius: 14px;
+      padding: 13px 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .external-input {
+      flex: 1;
+      font-size: 15px; color: var(--charcoal);
+      border: none; outline: none;
+      background: transparent;
+      font-family: inherit;
+    }
+    .external-input::placeholder { color: #C7C7CC; }
+    .add-btn {
+      background: var(--blue-lt);
+      color: var(--blue);
+      font-size: 13px; font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 9999px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      white-space: nowrap;
+    }
+
+    .invited-list { margin: 8px 16px 0; display: flex; flex-direction: column; gap: 8px; }
+    .invited-item {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .invited-tag {
+      font-size: 11px; font-weight: 600;
+      color: var(--sage-dk);
+      background: var(--sage-lt);
+      padding: 3px 10px; border-radius: 20px;
+      margin-left: auto;
+    }
+
+    .hint-text {
+      padding: 12px 16px 4px;
+      font-size: 12.5px; color: var(--grey); line-height: 1.5;
+    }
+
+    /* ═══════════════════════════════════
+       SCREEN 5 — EVENT DETAIL (HOST)
+    ═══════════════════════════════════ */
+    .event-hero {
+      background: var(--blue);
+      padding: 22px 20px 26px;
+      flex-shrink: 0;
+    }
+    .event-hero-emoji { font-size: 48px; margin-bottom: 12px; }
+    .event-hero-title { font-size: 24px; font-weight: 700; color: white; }
+    .event-hero-when { font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 5px; }
+    .event-hero-where { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 3px; }
+
+    .summary-card {
+      background: var(--white);
+      margin: 12px 16px;
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .summary-label {
+      font-size: 12px; font-weight: 700;
+      color: var(--grey);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 14px;
+    }
+    .rsvp-counts { display: flex; gap: 0; }
+    .count-item {
+      flex: 1; text-align: center;
+      display: flex; flex-direction: column; gap: 4px;
+      padding: 4px 0;
+    }
+    .count-item:not(:last-child) { border-right: 1px solid var(--grey-lt); }
+    .count-num { font-size: 30px; font-weight: 700; color: var(--charcoal); line-height: 1; }
+    .count-lbl { font-size: 11px; color: var(--grey); }
+    .count-item.going   .count-num { color: var(--sage-dk); }
+    .count-item.maybe   .count-num { color: #C96F19; }
+    .count-item.declined .count-num { color: #820853; }
+
+    .guest-section {
+      margin: 0 16px 16px;
+    }
+    .guest-section-label {
+      font-size: 12px; font-weight: 700;
+      color: var(--grey);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 8px 0;
+    }
+    .guests-card {
+      background: var(--white);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .guest-row {
+      display: flex; align-items: center;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--grey-lt);
+      gap: 12px;
+    }
+    .guest-row:last-child { border-bottom: none; }
+    .guest-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 13px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .guest-name { font-size: 14px; font-weight: 500; color: var(--charcoal); flex: 1; }
+    .guest-sub { font-size: 11.5px; color: var(--grey); }
+    .guest-status {
+      font-size: 11px; font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .outline-btn {
+      margin: 4px 16px 24px;
+      background: var(--white);
+      color: var(--blue);
+      font-size: 15px; font-weight: 600;
+      padding: 14px;
+      border-radius: 9999px;
+      text-align: center;
+      cursor: pointer;
+      border: 2px solid var(--blue);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ═══════════════════════════════════
+       SCREEN 6 — GUEST VIEW
+    ═══════════════════════════════════ */
+    .invite-hero {
+      background: var(--blue);
+      padding: 32px 24px 30px;
+      text-align: center;
+    }
+    .invite-hero-emoji { font-size: 60px; }
+    .invite-hero-title { font-size: 28px; font-weight: 700; color: white; margin-top: 14px; line-height: 1.15; }
+    .invite-hero-host { font-size: 14px; color: rgba(255,255,255,0.8); margin-top: 6px; }
+
+    .invite-details {
+      background: var(--white);
+      margin: 16px;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .invite-row {
+      display: flex; align-items: flex-start;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--grey-lt);
+      gap: 14px;
+    }
+    .invite-row:last-child { border-bottom: none; }
+    .invite-row-icon { font-size: 22px; flex-shrink: 0; padding-top: 1px; }
+    .invite-row-label { font-size: 12.5px; color: var(--grey); }
+    .invite-row-value { font-size: 15px; font-weight: 500; color: var(--charcoal); margin-top: 1px; }
+
+    .rsvp-confirm-box {
+      background: var(--sage-lt);
+      margin: 0 16px;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      display: none;
+    }
+    .rsvp-confirm-box.show { display: block; }
+    .rsvp-confirm-icon { font-size: 40px; }
+    .rsvp-confirm-msg { font-size: 17px; font-weight: 600; color: var(--sage-dk); margin-top: 8px; }
+    .rsvp-confirm-sub { font-size: 13px; color: var(--grey); margin-top: 4px; }
+
+    .rsvp-action-btns {
+      padding: 4px 16px 16px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .btn-going {
+      background: var(--blue); color: white;
+      font-size: 16px; font-weight: 600;
+      padding: 15px; border-radius: 9999px;
+      text-align: center; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-going:active { background: var(--blue-dk); }
+    .btn-maybe {
+      background: var(--white); color: var(--charcoal);
+      font-size: 16px; font-weight: 600;
+      padding: 15px; border-radius: 9999px;
+      text-align: center; cursor: pointer;
+      border: 2px solid var(--grey-lt);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-no {
+      background: transparent; color: var(--grey);
+      font-size: 15px; font-weight: 500;
+      padding: 12px; border-radius: 9999px;
+      text-align: center; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      font-size: 13px;
+      padding: 10px 18px;
+      border-radius: 20px;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>●●●</span>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-back" id="header-back" onclick="goBack()">‹ Back</div>
+    <div class="header-title" id="header-title">Family</div>
+    <div class="header-avatar" id="header-avatar">Y</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-area">
+
+    <!-- ══════════════════════════════
+         SCREEN 1 — FAMILY HUB
+    ══════════════════════════════ -->
+    <div class="screen active" id="screen-family-hub">
+      <div class="members-strip">
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-you)">Y</div>
+            <div class="member-dot"></div>
+          </div>
+          <div class="member-name">You</div>
+        </div>
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-chad)">C</div>
+            <div class="member-dot"></div>
+          </div>
+          <div class="member-name">Chad</div>
+        </div>
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-nick)">N</div>
+          </div>
+          <div class="member-name">Nick</div>
+        </div>
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-riley)">R</div>
+            <div class="member-dot"></div>
+          </div>
+          <div class="member-name">Riley</div>
+        </div>
+        <div class="member add-member">
+          <div class="member-wrap">
+            <div class="member-avatar">+</div>
+          </div>
+          <div class="member-name">Invite</div>
+        </div>
+      </div>
+
+      <div class="features-grid">
+        <div class="tile tile-rsvp" onclick="showScreen('rsvp-hub')">
+          <div>
+            <div class="tile-name">RSVP</div>
+            <div class="tile-desc">Invite & track who's coming</div>
+          </div>
+          <div class="tile-icon">🎉</div>
+          <div class="tile-badge badge-new">New</div>
+        </div>
+
+        <div class="tile tile-birthdays" onclick="showToast('Birthdays — Gold feature')">
+          <div>
+            <div class="tile-name">Birthdays</div>
+            <div class="tile-desc">Track & celebrate every one</div>
+          </div>
+          <div class="tile-icon">🎂</div>
+          <div class="tile-badge">Gold</div>
+        </div>
+
+        <div class="tile tile-map" onclick="showToast('Map & Safety')">
+          <div>
+            <div class="tile-name">Map & Safety</div>
+            <div class="tile-desc">See where everyone is</div>
+          </div>
+          <div class="tile-icon">📍</div>
+        </div>
+
+        <div class="tile tile-finances" onclick="showToast('Finances')">
+          <div>
+            <div class="tile-name">Finances</div>
+            <div class="tile-desc">Split, spend & save</div>
+          </div>
+          <div class="tile-icon">💳</div>
+        </div>
+
+        <div class="tile tile-assistant" onclick="showToast('Family Assistant — coming soon')">
+          <div>
+            <div class="tile-name">Family Assistant</div>
+            <div class="tile-desc">AI for your family</div>
+          </div>
+          <div class="tile-icon">🤖</div>
+        </div>
+
+        <div class="tile tile-vault" onclick="showToast('Vault — coming soon')">
+          <div>
+            <div class="tile-name">Vault</div>
+            <div class="tile-desc">Secure family docs & info</div>
+          </div>
+          <div class="tile-icon">🔒</div>
+        </div>
+
+        <div class="tile tile-focus" onclick="showToast('Focus — coming soon')">
+          <div>
+            <div class="tile-name">Focus</div>
+            <div class="tile-desc">Screen time & family goals</div>
+          </div>
+          <div class="tile-icon">🎯</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         SCREEN 2 — RSVP HUB
+    ══════════════════════════════ -->
+    <div class="screen" id="screen-rsvp-hub">
+      <div class="section-label">Upcoming</div>
+
+      <div class="event-card" onclick="showScreen('event-detail')">
+        <div class="event-date-badge">
+          <div class="event-date-month">Sep</div>
+          <div class="event-date-day">14</div>
+        </div>
+        <div class="event-info">
+          <div class="event-title">Backyard BBQ</div>
+          <div class="event-meta">Sat, Sep 14 · 4:00 PM · Our house</div>
+          <div class="event-chips">
+            <div class="chip chip-going">8 going</div>
+            <div class="chip chip-maybe">3 maybe</div>
+            <div class="chip chip-awaiting">4 awaiting</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" onclick="showToast('Halloween Party')">
+        <div class="event-date-badge">
+          <div class="event-date-month">Oct</div>
+          <div class="event-date-day">31</div>
+        </div>
+        <div class="event-info">
+          <div class="event-title">Halloween Party</div>
+          <div class="event-meta">Thu, Oct 31 · 6:00 PM · Community Center</div>
+          <div class="event-chips">
+            <div class="chip chip-going">5 going</div>
+            <div class="chip chip-awaiting">9 awaiting</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:6px">Past</div>
+
+      <div class="event-card" onclick="showToast('Fourth of July BBQ')">
+        <div class="event-date-badge past">
+          <div class="event-date-month">Jul</div>
+          <div class="event-date-day">4</div>
+        </div>
+        <div class="event-info">
+          <div class="event-title past">Fourth of July BBQ</div>
+          <div class="event-meta">Thu, Jul 4 · 5:00 PM · Riverside Park</div>
+          <div class="event-chips">
+            <div class="chip chip-going">12 went</div>
+            <div class="chip chip-declined">2 declined</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="primary-btn" onclick="showScreen('create-event')">+ Create new event</div>
+    </div>
+
+    <!-- ══════════════════════════════
+         SCREEN 3 — CREATE EVENT
+    ══════════════════════════════ -->
+    <div class="screen" id="screen-create-event">
+      <div class="step-indicator">
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <span class="step-label">Event details</span>
+      </div>
+
+      <div class="form-card">
+        <div class="form-group">
+          <label class="form-label">Event name</label>
+          <input class="form-input" placeholder="e.g. Backyard BBQ" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input class="form-input" type="date" value="2026-09-20" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time</label>
+          <input class="form-input" type="time" value="16:00" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input class="form-input" placeholder="Optional" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Note to guests</label>
+          <textarea class="form-input" placeholder="Optional"></textarea>
+        </div>
+      </div>
+
+      <div class="primary-btn" onclick="showScreen('invite-guests')">Next — Invite guests →</div>
+    </div>
+
+    <!-- ══════════════════════════════
+         SCREEN 4 — INVITE GUESTS
+    ══════════════════════════════ -->
+    <div class="screen" id="screen-invite-guests">
+      <div class="step-indicator">
+        <div class="step-dot"></div>
+        <div class="step-dot active"></div>
+        <span class="step-label">Invite guests</span>
+      </div>
+
+      <div class="section-label">Family members</div>
+      <div class="contacts-card">
+        <div class="contact-row" onclick="toggleCheck(this)">
+          <div class="contact-avatar" style="background:var(--m-chad)">C</div>
+          <div style="flex:1">
+            <div class="contact-name">Chad</div>
+            <div class="contact-sub">Family member</div>
+          </div>
+          <div class="check-circle on">✓</div>
+        </div>
+        <div class="contact-row" onclick="toggleCheck(this)">
+          <div class="contact-avatar" style="background:var(--m-nick)">N</div>
+          <div style="flex:1">
+            <div class="contact-name">Nick</div>
+            <div class="contact-sub">Family member</div>
+          </div>
+          <div class="check-circle on">✓</div>
+        </div>
+        <div class="contact-row" onclick="toggleCheck(this)">
+          <div class="contact-avatar" style="background:var(--m-riley)">R</div>
+          <div style="flex:1">
+            <div class="contact-name">Riley</div>
+            <div class="contact-sub">Family member</div>
+          </div>
+          <div class="check-circle">✓</div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:6px">Invite by email or phone</div>
+      <div class="external-row">
+        <span style="font-size:18px">📧</span>
+        <input class="external-input" placeholder="Email or phone number" id="ext-input" />
+        <div class="add-btn" onclick="addExternal()">Add</div>
+      </div>
+
+      <div class="invited-list" id="invited-list"></div>
+
+      <div class="hint-text">
+        Guests outside Cozi get a link to view the invite and RSVP — no account needed.
+      </div>
+
+      <div class="primary-btn" onclick="showScreen('event-detail')" style="margin-top:4px;">
+        Send invites &amp; create event ✓
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         SCREEN 5 — EVENT DETAIL (HOST)
+    ══════════════════════════════ -->
+    <div class="screen" id="screen-event-detail">
+      <div class="event-hero">
+        <div class="event-hero-emoji">🎉</div>
+        <div class="event-hero-title">Backyard BBQ</div>
+        <div class="event-hero-when">Sat, Sep 14 · 4:00 PM</div>
+        <div class="event-hero-where">📍 Our house · 123 Maple St</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-label">Responses</div>
+        <div class="rsvp-counts">
+          <div class="count-item going">
+            <div class="count-num">8</div>
+            <div class="count-lbl">Going</div>
+          </div>
+          <div class="count-item maybe">
+            <div class="count-num">3</div>
+            <div class="count-lbl">Maybe</div>
+          </div>
+          <div class="count-item declined">
+            <div class="count-num">1</div>
+            <div class="count-lbl">Declined</div>
+          </div>
+          <div class="count-item">
+            <div class="count-num">4</div>
+            <div class="count-lbl">Awaiting</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guest-section">
+        <div class="guest-section-label">Guests (16)</div>
+        <div class="guests-card">
+          <div class="guest-row">
+            <div class="guest-avatar" style="background:var(--m-chad)">C</div>
+            <div style="flex:1"><div class="guest-name">Chad</div></div>
+            <div class="guest-status chip-going">Going</div>
+          </div>
+          <div class="guest-row">
+            <div class="guest-avatar" style="background:var(--m-nick)">N</div>
+            <div style="flex:1"><div class="guest-name">Nick</div></div>
+            <div class="guest-status chip-maybe">Maybe</div>
+          </div>
+          <div class="guest-row">
+            <div class="guest-avatar" style="background:var(--m-riley)">R</div>
+            <div style="flex:1"><div class="guest-name">Riley</div></div>
+            <div class="guest-status chip-going">Going</div>
+          </div>
+          <div class="guest-row">
+            <div class="guest-avatar" style="background:#3C71E1">S</div>
+            <div style="flex:1">
+              <div class="guest-name">Sara K.</div>
+              <div class="guest-sub">sara@email.com</div>
+            </div>
+            <div class="guest-status chip-going">Going</div>
+          </div>
+          <div class="guest-row">
+            <div class="guest-avatar" style="background:#90CEA0">M</div>
+            <div style="flex:1">
+              <div class="guest-name">Mike T.</div>
+              <div class="guest-sub">mike@email.com</div>
+            </div>
+            <div class="guest-status chip-awaiting">Awaiting</div>
+          </div>
+          <div class="guest-row">
+            <div class="guest-avatar" style="background:#DBA34A">J</div>
+            <div style="flex:1">
+              <div class="guest-name">Jen &amp; Dave W.</div>
+              <div class="guest-sub">+1 555-0123</div>
+            </div>
+            <div class="guest-status chip-going">Going · 2</div>
+          </div>
+          <div class="guest-row">
+            <div class="guest-avatar" style="background:#9C5483">L</div>
+            <div style="flex:1">
+              <div class="guest-name">Laura H.</div>
+              <div class="guest-sub">laura@email.com</div>
+            </div>
+            <div class="guest-status chip-declined">Declined</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="outline-btn" onclick="showScreen('guest-view')">
+        Preview invite · Share link
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         SCREEN 6 — GUEST RSVP VIEW
+    ══════════════════════════════ -->
+    <div class="screen" id="screen-guest-view">
+      <div class="invite-hero">
+        <div class="invite-hero-emoji">🎉</div>
+        <div class="invite-hero-title">Backyard BBQ</div>
+        <div class="invite-hero-host">Hosted by the Schneider family</div>
+      </div>
+
+      <div class="invite-details">
+        <div class="invite-row">
+          <div class="invite-row-icon">📅</div>
+          <div>
+            <div class="invite-row-label">When</div>
+            <div class="invite-row-value">Saturday, September 14 · 4:00 PM</div>
+          </div>
+        </div>
+        <div class="invite-row">
+          <div class="invite-row-icon">📍</div>
+          <div>
+            <div class="invite-row-label">Where</div>
+            <div class="invite-row-value">123 Maple St</div>
+          </div>
+        </div>
+        <div class="invite-row">
+          <div class="invite-row-icon">💬</div>
+          <div>
+            <div class="invite-row-label">Note from host</div>
+            <div class="invite-row-value">Bring a dish to share! Kids welcome.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rsvp-confirm-box" id="rsvp-confirm-box">
+        <div class="rsvp-confirm-icon" id="rsvp-confirm-icon">🎉</div>
+        <div class="rsvp-confirm-msg" id="rsvp-confirm-msg">You're going!</div>
+        <div class="rsvp-confirm-sub">The host will be notified.</div>
+      </div>
+
+      <div class="rsvp-action-btns" id="rsvp-action-btns">
+        <div class="btn-going" onclick="confirmRsvp('going')">I'm going 🎉</div>
+        <div class="btn-maybe" onclick="confirmRsvp('maybe')">Maybe</div>
+        <div class="btn-no" onclick="confirmRsvp('no')">Can't make it</div>
+      </div>
+    </div>
+
+  </div><!-- /content-area -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="showToast('Home')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item" onclick="showToast('Calendar')">
+      <div class="nav-icon">📅</div>
+      <div class="nav-label">Calendar</div>
+    </div>
+    <div class="nav-item" onclick="showToast('Lists')">
+      <div class="nav-icon">📋</div>
+      <div class="nav-label">Lists</div>
+    </div>
+    <div class="nav-item" onclick="showToast('Meals')">
+      <div class="nav-icon">🍽</div>
+      <div class="nav-label">Meals</div>
+    </div>
+    <div class="nav-item active" id="nav-family">
+      <div class="nav-icon">👨‍👩‍👧</div>
+      <div class="nav-label">Family</div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const history = [];
+  let current = 'family-hub';
+
+  const titles = {
+    'family-hub':    'Family',
+    'rsvp-hub':      'RSVP',
+    'create-event':  'New event',
+    'invite-guests': 'Invite guests',
+    'event-detail':  'Backyard BBQ',
+    'guest-view':    "You're invited",
+  };
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById('screen-' + id);
+    el.classList.add('active');
+    el.scrollTop = 0;
+    if (current !== id) history.push(current);
+    current = id;
+    updateHeader(id);
+  }
+
+  function goBack() {
+    if (!history.length) return;
+    const prev = history.pop();
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById('screen-' + prev);
+    el.classList.add('active');
+    el.scrollTop = 0;
+    current = prev;
+    updateHeader(prev);
+  }
+
+  function updateHeader(id) {
+    document.getElementById('header-title').textContent = titles[id] || '';
+    const back = document.getElementById('header-back');
+    const avatar = document.getElementById('header-avatar');
+    back.classList.toggle('visible', history.length > 0 && id !== 'family-hub');
+    avatar.style.display = id === 'guest-view' ? 'none' : 'flex';
+  }
+
+  function toggleCheck(row) {
+    row.querySelector('.check-circle').classList.toggle('on');
+  }
+
+  function addExternal() {
+    const input = document.getElementById('ext-input');
+    const val = input.value.trim();
+    if (!val) return;
+    input.value = '';
+    const list = document.getElementById('invited-list');
+    const item = document.createElement('div');
+    item.className = 'invited-item';
+    item.innerHTML = `<span style="font-size:18px">✉️</span><span style="font-size:14px;color:var(--charcoal);flex:1;">${val}</span><span class="invited-tag">Invited</span>`;
+    list.appendChild(item);
+    showToast('Invite added for ' + val);
+  }
+
+  function confirmRsvp(type) {
+    const configs = {
+      going:  { icon: '🎉', msg: "You're going!",    bg: 'var(--sage-lt)',  color: 'var(--sage-dk)' },
+      maybe:  { icon: '🤔', msg: 'Marked as maybe',  bg: '#FFF3E0',         color: '#C96F19'         },
+      no:     { icon: '😔', msg: "Can't make it",     bg: '#FFE4EC',         color: '#820853'         },
+    };
+    const cfg = configs[type];
+    const box = document.getElementById('rsvp-confirm-box');
+    box.style.background = cfg.bg;
+    document.getElementById('rsvp-confirm-icon').textContent = cfg.icon;
+    const msgEl = document.getElementById('rsvp-confirm-msg');
+    msgEl.textContent = cfg.msg;
+    msgEl.style.color = cfg.color;
+    box.classList.add('show');
+    document.getElementById('rsvp-action-btns').style.display = 'none';
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+</script>
+
+</body>
+</html>
