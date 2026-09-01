@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cozi – Family Tab + Messages</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --blue:      #159AD2;
+      --blue-dk:   #10739E;
+      --blue-lt:   #D9F3FF;
+      --orange:    #E75526;
+      --sage:      #90CEA0;
+      --sage-lt:   #E3F5E7;
+      --charcoal:  #414349;
+      --grey:      #727272;
+      --grey-lt:   #EEEEEE;
+      --bg:        #F2F2F7;
+      --white:     #FFFFFF;
+      --gold:      #F5A623;
+      --plum:      #9C5483;
+      --plum-lt:   #F3E5F5;
+      --m-you:     #E75526;
+      --m-chad:    #3C71E1;
+      --m-nick:    #9C5483;
+      --m-riley:   #F7932A;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      background: #C8C8CC;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 32px 20px;
+    }
+
+    /* ── PHONE SHELL ── */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: var(--bg);
+      border-radius: 52px;
+      overflow: hidden;
+      box-shadow: 0 0 0 10px #111, 0 0 0 12px #3A3A3A, 0 40px 80px rgba(0,0,0,.5);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      height: 50px;
+      background: var(--blue);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      height: 52px;
+      background: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .header-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+    }
+    .header-back {
+      position: absolute;
+      left: 16px;
+      color: white;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .header-back.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .header-avatar {
+      position: absolute;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--m-you);
+      border: 2px solid rgba(255,255,255,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .header-right-btn {
+      position: absolute;
+      right: 16px;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .header-right-btn.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ── CONTENT AREA ── */
+    .content-area {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+    }
+
+    /* ── SCREENS ── */
+    @keyframes screenSlideIn {
+      from { opacity: 0; transform: translateX(14px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .screen.active {
+      display: flex;
+      animation: screenSlideIn 0.22s ease forwards;
+    }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      height: 82px;
+      background: var(--white);
+      border-top: 1px solid var(--grey-lt);
+      display: flex;
+      align-items: flex-start;
+      padding-top: 10px;
+      flex-shrink: 0;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      color: #8E8E93;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-item.active { color: var(--blue); }
+    .nav-icon { font-size: 23px; line-height: 1; }
+    .nav-label { font-size: 10px; font-weight: 500; }
+
+    /* ═══════════════════════════════════
+       SCREEN 1 — FAMILY HUB
+    ═══════════════════════════════════ */
+
+    .members-strip {
+      background: var(--white);
+      padding: 14px 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border-bottom: 1px solid var(--grey-lt);
+      flex-shrink: 0;
+    }
+    .member {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .member-wrap { position: relative; }
+    .member-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .member-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #34C759;
+      border: 2px solid white;
+      position: absolute;
+      bottom: 1px;
+      right: 1px;
+    }
+    .member-name { font-size: 11px; color: var(--charcoal); font-weight: 500; }
+    .add-member .member-avatar {
+      background: var(--grey-lt);
+      color: #8E8E93;
+      font-size: 22px;
+      font-weight: 300;
+    }
+
+    .features-grid {
+      padding: 16px 16px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .tile {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 16px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 8px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 118px;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+    .tile:active {
+      transform: scale(0.96);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .tile-text { }
+    .tile-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--charcoal);
+      line-height: 1.25;
+    }
+    .tile-desc {
+      font-size: 11.5px;
+      color: #8E8E93;
+      margin-top: 3px;
+      line-height: 1.3;
+    }
+    .tile-icon {
+      align-self: flex-end;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .tile-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: var(--gold);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 2px 7px;
+      border-radius: 8px;
+    }
+
+    .tile-birthdays  .tile-icon { background: #FFE4EC; }
+    .tile-map        .tile-icon { background: #E3F4FF; }
+    .tile-finances   .tile-icon { background: #E6F9EE; }
+    .tile-assistant  .tile-icon { background: var(--plum-lt); }
+    .tile-vault      .tile-icon { background: #EDE7F6; }
+    .tile-focus      .tile-icon { background: #FFF3E0; }
+    .tile-gold       .tile-icon { background: #FFF8E1; }
+    .tile-help       .tile-icon { background: #F5F5F5; }
+
+    /* Messages tile — full-width hero */
+    .tile-messages-full {
+      grid-column: 1 / -1;
+      min-height: 76px;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 14px;
+      background: var(--blue);
+      border-radius: 18px;
+      padding: 14px 16px;
+    }
+    .tile-messages-full:active {
+      transform: scale(0.98);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+    .tile-messages-full .msg-tile-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .tile-messages-full .msg-tile-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .tile-messages-full .msg-tile-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+    }
+    .tile-messages-full .msg-tile-preview {
+      font-size: 12px;
+      color: rgba(255,255,255,0.75);
+      margin-top: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tile-messages-full .msg-tile-preview strong {
+      color: white;
+      font-weight: 600;
+    }
+    .unread-bubble {
+      background: white;
+      color: var(--blue);
+      border-radius: 50%;
+      min-width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      padding: 0 4px;
+    }
+
+    /* ═══════════════════════════════════
+       SCREEN 2 — MAP & SAFETY
+    ═══════════════════════════════════ */
+    #screen-map {
+      overflow: hidden;
+    }
+    .map-member-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      display: flex;
+      gap: 8px;
+      padding: 12px 14px;
+      pointer-events: none;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 100%);
+    }
+    .map-member-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      border: 3px solid rgba(255,255,255,0.9);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+      pointer-events: auto;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .map-member-add {
+      width: 34px;
+      height: 34px;
+      margin-top: 4px;
+      background: rgba(100,100,100,0.7) !important;
+      font-size: 18px !important;
+      font-weight: 300 !important;
+    }
+    #map { flex: 1; min-height: 0; }
+    .places-panel {
+      background: #1C1C2E;
+      color: white;
+      padding: 14px 20px 8px;
+      flex-shrink: 0;
+    }
+    .places-header {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .place-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      cursor: pointer;
+    }
+    .place-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .place-name { font-size: 14px; font-weight: 500; }
+    .place-sub  { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 1px; }
+    .map-toolbar {
+      background: #1C1C2E;
+      display: flex;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding-bottom: 8px;
+      flex-shrink: 0;
+    }
+    .map-btn {
+      flex: 1;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      color: rgba(255,255,255,0.45);
+      font-size: 11px;
+      font-weight: 500;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .map-btn.active { color: var(--blue); }
+    .map-btn-icon { font-size: 20px; line-height: 1; }
+    .map-btn-premium { color: #C084FC; }
+    .map-btn-premium .map-btn-icon { font-size: 18px; }
+
+    /* ═══════════════════════════════════
+       SCREEN 3 — FINANCES
+    ═══════════════════════════════════ */
+    .finances-list {
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .finance-tile {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 18px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 8px rgba(0,0,0,0.04);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .finance-tile:active { transform: scale(0.97); }
+    .finance-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    .finance-name { font-size: 16px; font-weight: 600; color: var(--charcoal); }
+    .finance-desc { font-size: 13px; color: #8E8E93; margin-top: 3px; }
+    .finance-chevron { margin-left: auto; color: #C7C7CC; font-size: 20px; }
+
+    /* ═══════════════════════════════════
+       SCREEN 4 — MESSAGES LIST
+    ═══════════════════════════════════ */
+    #screen-messages {
+      background: var(--bg);
+    }
+
+    .search-bar-wrap {
+      background: var(--bg);
+      padding: 10px 16px 8px;
+      flex-shrink: 0;
+    }
+    .search-bar {
+      background: white;
+      border-radius: 12px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      color: #8E8E93;
+      font-size: 15px;
+    }
+    .search-bar span { font-size: 14px; }
+
+    .convo-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--grey);
+      padding: 10px 20px 6px;
+    }
+
+    .convo-list {
+      background: var(--white);
+      margin: 0;
+    }
+
+    .convo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.1s;
+      position: relative;
+    }
+    .convo-row:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 72px;
+      right: 0;
+      height: 1px;
+      background: var(--grey-lt);
+    }
+    .convo-row:active { background: #F2F2F7; }
+
+    .convo-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .convo-avatar.is-group {
+      background: var(--blue);
+      font-size: 22px;
+    }
+    .convo-avatar.is-assistant {
+      background: var(--plum);
+      font-size: 22px;
+    }
+    .convo-avatar-online {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #34C759;
+      border: 2px solid white;
+      position: absolute;
+      bottom: 1px;
+      right: 1px;
+    }
+
+    .convo-body {
+      flex: 1;
+      min-width: 0;
+    }
+    .convo-name-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 3px;
+    }
+    .convo-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+    .convo-time {
+      font-size: 12px;
+      color: #8E8E93;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+    .convo-preview-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .convo-preview {
+      font-size: 14px;
+      color: #8E8E93;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
+    }
+    .convo-preview strong {
+      color: var(--charcoal);
+      font-weight: 500;
+    }
+    .convo-preview.unread {
+      color: var(--charcoal);
+      font-weight: 500;
+    }
+    .convo-unread {
+      background: var(--blue);
+      color: white;
+      border-radius: 50%;
+      min-width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-left: 8px;
+      padding: 0 4px;
+    }
+
+    /* ═══════════════════════════════════
+       SCREEN 5 — CONVERSATION VIEW
+    ═══════════════════════════════════ */
+    #screen-conversation {
+      background: var(--bg);
+      display: none;
+      flex-direction: column;
+    }
+    #screen-conversation.active {
+      display: flex;
+    }
+
+    .convo-header-info {
+      background: var(--white);
+      padding: 10px 16px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      border-bottom: 1px solid var(--grey-lt);
+      flex-shrink: 0;
+    }
+    .convo-header-info.is-assistant {
+      background: #FAF0FD;
+    }
+    .convo-header-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .convo-header-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+    .convo-header-sub {
+      font-size: 11px;
+      color: #8E8E93;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .msg-date-divider {
+      text-align: center;
+      font-size: 11px;
+      color: #8E8E93;
+      font-weight: 500;
+      padding: 8px 0 4px;
+    }
+
+    .msg-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .msg-row.from-me {
+      flex-direction: row-reverse;
+    }
+
+    .msg-sender-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .msg-row.from-me .msg-sender-avatar {
+      display: none;
+    }
+
+    .bubble {
+      max-width: 70%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 15px;
+      line-height: 1.4;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .bubble.from-them {
+      background: var(--white);
+      color: var(--charcoal);
+      border-bottom-left-radius: 4px;
+    }
+    .bubble.from-me {
+      background: var(--blue);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .bubble.from-assistant {
+      background: var(--plum-lt);
+      color: var(--charcoal);
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg-time {
+      font-size: 10px;
+      color: #8E8E93;
+      text-align: center;
+      margin: 2px 0 6px;
+    }
+    .msg-time.right { text-align: right; }
+
+    /* Typing indicator */
+    .typing-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .typing-bubble {
+      background: var(--white);
+      padding: 12px 16px;
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #8E8E93;
+      animation: typingPulse 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingPulse {
+      0%, 100% { transform: translateY(0); opacity: 0.4; }
+      50% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    /* Chat input bar */
+    .chat-input-bar {
+      background: var(--white);
+      border-top: 1px solid var(--grey-lt);
+      padding: 10px 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .chat-input-field {
+      flex: 1;
+      background: #F2F2F7;
+      border: none;
+      border-radius: 22px;
+      padding: 10px 16px;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      resize: none;
+      color: var(--charcoal);
+      min-height: 40px;
+      max-height: 100px;
+    }
+    .chat-input-field::placeholder { color: #8E8E93; }
+    .chat-send-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--blue);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .chat-send-btn:active { transform: scale(0.9); }
+    .chat-send-btn:disabled { background: #C7C7CC; }
+    .chat-send-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: white;
+      transform: translateX(1px);
+    }
+
+    /* Assistant quick-action chips */
+    .quick-actions {
+      padding: 6px 16px 10px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+    .quick-actions::-webkit-scrollbar { display: none; }
+    .quick-chip {
+      background: var(--blue-lt);
+      border: none;
+      border-radius: 20px;
+      padding: 7px 14px;
+      font-size: 13px;
+      color: var(--blue-dk);
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.1s;
+    }
+    .quick-chip:active { background: #C5E8F7; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 130px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(30,30,30,0.88);
+      color: white;
+      padding: 10px 22px;
+      border-radius: 22px;
+      font-size: 14px;
+      font-family: -apple-system, sans-serif;
+      opacity: 0;
+      transition: opacity 0.25s;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span style="letter-spacing:1px">▶&nbsp;●●●</span>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-back" id="header-back" onclick="goBack()">‹ Back</div>
+    <span class="header-title" id="header-title">Family</span>
+    <div class="header-avatar" id="header-avatar">Y</div>
+    <div class="header-right-btn" id="header-compose" onclick="showToast('New message')">✏️</div>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div class="content-area">
+
+    <!-- ─── SCREEN: HUB ─── -->
+    <div class="screen active" id="screen-hub">
+
+      <!-- Family members -->
+      <div class="members-strip">
+        <div class="member" onclick="openMap('You')">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-you)">Y</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">You</span>
+        </div>
+        <div class="member" onclick="openMap('Chad')">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-chad)">C</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">Chad</span>
+        </div>
+        <div class="member" onclick="openMap('Nick')">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-nick)">N</div>
+          </div>
+          <span class="member-name">Nick</span>
+        </div>
+        <div class="member" onclick="openMap('Riley')">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-riley)">R</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">Riley</span>
+        </div>
+        <div class="member add-member" onclick="showToast('Invite a family member')">
+          <div class="member-wrap">
+            <div class="member-avatar">+</div>
+          </div>
+          <span class="member-name">Invite</span>
+        </div>
+      </div>
+
+      <!-- 2-column tile grid -->
+      <div class="features-grid">
+
+        <!-- Messages — full-width feature tile -->
+        <div class="tile tile-messages-full" onclick="showScreen('messages')">
+          <div class="msg-tile-icon">💬</div>
+          <div class="msg-tile-text">
+            <div class="msg-tile-title">Messages</div>
+            <div class="msg-tile-preview"><strong>Assistant:</strong> "Added to your shopping list!"</div>
+          </div>
+          <div class="unread-bubble">4</div>
+        </div>
+
+        <div class="tile tile-birthdays" onclick="showToast('Birthdays — Gold feature')">
+          <div class="tile-text">
+            <div class="tile-name">Birthdays</div>
+            <div class="tile-desc">Track & celebrate every one</div>
+          </div>
+          <div class="tile-icon">🎂</div>
+          <div class="tile-badge">Gold</div>
+        </div>
+
+        <div class="tile tile-map" onclick="showScreen('map')">
+          <div class="tile-text">
+            <div class="tile-name">Map & Safety</div>
+            <div class="tile-desc">See where everyone is</div>
+          </div>
+          <div class="tile-icon">📍</div>
+        </div>
+
+        <div class="tile tile-finances" onclick="showScreen('finances')">
+          <div class="tile-text">
+            <div class="tile-name">Finances</div>
+            <div class="tile-desc">Split, spend & save</div>
+          </div>
+          <div class="tile-icon">💳</div>
+        </div>
+
+        <div class="tile tile-assistant" onclick="openConversation('assistant')">
+          <div class="tile-text">
+            <div class="tile-name">Family Assistant</div>
+            <div class="tile-desc">AI for your family</div>
+          </div>
+          <div class="tile-icon">🤖</div>
+        </div>
+
+        <div class="tile tile-vault" onclick="showToast('Vault — coming soon')">
+          <div class="tile-text">
+            <div class="tile-name">Vault</div>
+            <div class="tile-desc">Secure family docs & info</div>
+          </div>
+          <div class="tile-icon">🔒</div>
+        </div>
+
+        <div class="tile tile-focus" onclick="showToast('Focus — coming soon')">
+          <div class="tile-text">
+            <div class="tile-name">Focus</div>
+            <div class="tile-desc">Screen time & family goals</div>
+          </div>
+          <div class="tile-icon">🎯</div>
+        </div>
+
+        <div class="tile tile-gold" onclick="showToast('Upgrade to Cozi Gold')">
+          <div class="tile-text">
+            <div class="tile-name">Cozi Gold</div>
+            <div class="tile-desc">Unlock premium features</div>
+          </div>
+          <div class="tile-icon">⭐</div>
+        </div>
+
+        <div class="tile tile-help" onclick="showToast('Help & Support')">
+          <div class="tile-text">
+            <div class="tile-name">Help</div>
+            <div class="tile-desc">Support & feedback</div>
+          </div>
+          <div class="tile-icon">💁</div>
+        </div>
+
+      </div>
+    </div><!-- /screen-hub -->
+
+    <!-- ─── SCREEN: MAP & SAFETY ─── -->
+    <div class="screen" id="screen-map">
+      <div class="map-member-bar">
+        <div class="map-member-btn" style="background:var(--m-you)">Y</div>
+        <div class="map-member-btn" style="background:var(--m-chad)">C</div>
+        <div class="map-member-btn" style="background:var(--m-riley)">R</div>
+        <div class="map-member-btn map-member-add" style="background:rgba(80,80,80,0.75)">+</div>
+      </div>
+      <div id="map"></div>
+      <div class="places-panel">
+        <div class="places-header">
+          <span>Your Places</span>
+          <span style="font-size:18px;cursor:pointer">▾</span>
+        </div>
+        <div class="place-item">
+          <div class="place-icon">🏠</div>
+          <div>
+            <div class="place-name">Home</div>
+            <div class="place-sub">Tap to set your home</div>
+          </div>
+        </div>
+        <div class="place-item">
+          <div class="place-icon">💼</div>
+          <div>
+            <div class="place-name">Work</div>
+            <div class="place-sub">Tap to set your work</div>
+          </div>
+        </div>
+        <div class="place-item">
+          <div class="place-icon" style="background:rgba(21,154,210,0.2)">➕</div>
+          <div>
+            <div class="place-name">Add a place</div>
+            <div class="place-sub">Save your favorite spots</div>
+          </div>
+        </div>
+      </div>
+      <div class="map-toolbar">
+        <div class="map-btn active">
+          <div class="map-btn-icon">🏠</div>
+          <span>Places</span>
+        </div>
+        <div class="map-btn" onclick="showToast('📍 Sharing your location')">
+          <div class="map-btn-icon">📍</div>
+          <span>I'm Here</span>
+        </div>
+        <div class="map-btn map-btn-premium">
+          <div class="map-btn-icon">👑</div>
+          <span>Try Premium</span>
+        </div>
+      </div>
+    </div><!-- /screen-map -->
+
+    <!-- ─── SCREEN: FINANCES ─── -->
+    <div class="screen" id="screen-finances">
+      <div class="finances-list">
+        <a class="finance-tile" href="settleup.html" target="_blank">
+          <div class="finance-icon" style="background:#E6F9EE">🤝</div>
+          <div>
+            <div class="finance-name">Settle Up</div>
+            <div class="finance-desc">Split expenses with the family</div>
+          </div>
+          <div class="finance-chevron">›</div>
+        </a>
+        <a class="finance-tile" href="cozi-debit-card.html" target="_blank">
+          <div class="finance-icon" style="background:#E3F4FF">💳</div>
+          <div>
+            <div class="finance-name">Debit Card</div>
+            <div class="finance-desc">Family spending made easy</div>
+          </div>
+          <div class="finance-chevron">›</div>
+        </a>
+        <a class="finance-tile" href="https://try.array.com/tandem-LVPmaiPO6WuZ/82Ipe0Hs6iu2" target="_blank">
+          <div class="finance-icon" style="background:#FFF3E0">📦</div>
+          <div>
+            <div class="finance-name">Subscriptions</div>
+            <div class="finance-desc">See & manage all subscriptions</div>
+          </div>
+          <div class="finance-chevron">›</div>
+        </a>
+      </div>
+    </div><!-- /screen-finances -->
+
+    <!-- ─── SCREEN: MESSAGES LIST ─── -->
+    <div class="screen" id="screen-messages">
+
+      <div class="search-bar-wrap">
+        <div class="search-bar">
+          <span>🔍</span>
+          <span style="font-size:15px;color:#8E8E93">Search</span>
+        </div>
+      </div>
+
+      <!-- Pinned -->
+      <div class="convo-section-label">Pinned</div>
+      <div class="convo-list">
+
+        <!-- Family Assistant -->
+        <div class="convo-row" onclick="openConversation('assistant')">
+          <div class="convo-avatar is-assistant">🤖</div>
+          <div class="convo-body">
+            <div class="convo-name-row">
+              <span class="convo-name">Family Assistant</span>
+              <span class="convo-time">9:16 AM</span>
+            </div>
+            <div class="convo-preview-row">
+              <span class="convo-preview unread">Added to your shopping list! 🛒</span>
+              <span class="convo-unread">3</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Schneider Family group -->
+        <div class="convo-row" onclick="openConversation('family')">
+          <div class="convo-avatar is-group">👨‍👩‍👧</div>
+          <div class="convo-body">
+            <div class="convo-name-row">
+              <span class="convo-name">Schneider Family</span>
+              <span class="convo-time">9:03 AM</span>
+            </div>
+            <div class="convo-preview-row">
+              <span class="convo-preview">You: Dinner's at 7:30</span>
+              <span class="convo-unread">1</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Direct Messages -->
+      <div class="convo-section-label">Direct Messages</div>
+      <div class="convo-list">
+
+        <div class="convo-row" onclick="openConversation('chad')">
+          <div class="convo-avatar" style="background:var(--m-chad)">C
+            <div class="convo-avatar-online"></div>
+          </div>
+          <div class="convo-body">
+            <div class="convo-name-row">
+              <span class="convo-name">Chad</span>
+              <span class="convo-time">Yesterday</span>
+            </div>
+            <div class="convo-preview-row">
+              <span class="convo-preview">You: On it 👍</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="convo-row" onclick="openConversation('nick')">
+          <div class="convo-avatar" style="background:var(--m-nick)">N</div>
+          <div class="convo-body">
+            <div class="convo-name-row">
+              <span class="convo-name">Nick</span>
+              <span class="convo-time">8:52 AM</span>
+            </div>
+            <div class="convo-preview-row">
+              <span class="convo-preview">Perfect, see you then 🍝</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="convo-row" onclick="openConversation('riley')">
+          <div class="convo-avatar" style="background:var(--m-riley)">R
+            <div class="convo-avatar-online"></div>
+          </div>
+          <div class="convo-body">
+            <div class="convo-name-row">
+              <span class="convo-name">Riley</span>
+              <span class="convo-time">8:02 AM</span>
+            </div>
+            <div class="convo-preview-row">
+              <span class="convo-preview">K thanks! 😊</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="height:24px;flex-shrink:0;"></div>
+
+    </div><!-- /screen-messages -->
+
+    <!-- ─── SCREEN: CONVERSATION ─── -->
+    <div class="screen" id="screen-conversation">
+
+      <!-- Contact info bar (populated by JS) -->
+      <div class="convo-header-info" id="convo-header-info">
+        <div class="convo-header-avatar" id="convo-header-avatar"></div>
+        <div class="convo-header-name" id="convo-header-name"></div>
+        <div class="convo-header-sub" id="convo-header-sub"></div>
+      </div>
+
+      <!-- Message bubbles (populated by JS) -->
+      <div class="chat-messages" id="chat-messages"></div>
+
+      <!-- Quick-action chips (shown only for assistant) -->
+      <div class="quick-actions" id="quick-actions" style="display:none">
+        <div class="quick-chip" onclick="sendQuickChip('What's on the calendar today?')">📅 Today's schedule</div>
+        <div class="quick-chip" onclick="sendQuickChip('Add milk to the shopping list')">🛒 Add to list</div>
+        <div class="quick-chip" onclick="sendQuickChip('Where is everyone?')">📍 Family locations</div>
+        <div class="quick-chip" onclick="sendQuickChip('What can you help with?')">💡 What can you do?</div>
+      </div>
+
+      <!-- Input bar -->
+      <div class="chat-input-bar" id="chat-input-bar">
+        <textarea
+          class="chat-input-field"
+          id="chat-input"
+          placeholder="Message"
+          rows="1"
+          oninput="autoGrow(this)"
+          onkeydown="handleInputKey(event)"
+        ></textarea>
+        <button class="chat-send-btn" id="send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </div>
+
+    </div><!-- /screen-conversation -->
+
+  </div><!-- /content-area -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav" id="bottom-nav">
+    <div class="nav-item" onclick="showToast('Home')">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </div>
+    <div class="nav-item" onclick="showToast('Calendar')">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">Calendar</span>
+    </div>
+    <div class="nav-item" onclick="showToast('Lists')">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">Lists</span>
+    </div>
+    <div class="nav-item" onclick="showToast('Meals')">
+      <span class="nav-icon">🍽</span>
+      <span class="nav-label">Meals</span>
+    </div>
+    <div class="nav-item active">
+      <span class="nav-icon">👨‍👩‍👧</span>
+      <span class="nav-label">Family</span>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<div id="toast"></div>
+
+<script>
+  /* ── Navigation ── */
+  let map = null;
+  let navStack = ['hub'];
+
+  const SCREEN_CONFIG = {
+    hub:          { title: 'Family',         showBack: false, showAvatar: true,  showCompose: false, showNav: true  },
+    map:          { title: 'Map & Safety',   showBack: true,  showAvatar: false, showCompose: false, showNav: false },
+    finances:     { title: 'Finances',       showBack: true,  showAvatar: false, showCompose: false, showNav: true  },
+    messages:     { title: 'Messages',       showBack: true,  showAvatar: false, showCompose: true,  showNav: true  },
+    conversation: { title: '',               showBack: true,  showAvatar: false, showCompose: false, showNav: true  },
+  };
+
+  function applyScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+
+    const cfg = SCREEN_CONFIG[name] || SCREEN_CONFIG.hub;
+
+    document.getElementById('header-title').textContent = cfg.title;
+    document.getElementById('header-back').classList.toggle('visible', cfg.showBack);
+    document.getElementById('header-avatar').style.display = cfg.showAvatar ? 'flex' : 'none';
+    document.getElementById('header-compose').classList.toggle('visible', cfg.showCompose);
+    document.getElementById('bottom-nav').style.display = cfg.showNav ? 'flex' : 'none';
+
+    if (name === 'map' && !map) initMap();
+    if (name === 'map' && map)  setTimeout(() => map.invalidateSize(), 50);
+  }
+
+  function showScreen(name) {
+    navStack.push(name);
+    applyScreen(name);
+  }
+
+  function goBack() {
+    navStack.pop();
+    const prev = navStack[navStack.length - 1] || 'hub';
+    applyScreen(prev);
+  }
+
+  function openMap(member) {
+    showScreen('map');
+    showToast('Showing ' + member + "'s location");
+  }
+
+  /* ── Conversation data ── */
+  const CONVOS = {
+    assistant: {
+      name: 'Family Assistant',
+      sub: 'Always available',
+      avatarText: '🤖',
+      avatarStyle: 'background:#9C5483;font-size:20px',
+      isAssistant: true,
+      messages: [
+        { from: 'assistant', text: "Good morning! A few things on my radar today:\n\n📅 Riley has soccer practice at 4pm — Elmwood Park\n🛒 You're low on milk and eggs\n\nWant me to set a pickup reminder?", time: '8:58 AM' },
+        { from: 'me',        text: "Yes please, and add those to the shopping list", time: '9:01 AM' },
+        { from: 'assistant', text: "Done! ✓\n\n• Reminder set for 3:30 PM\n• Milk and eggs added to your shopping list 🛒", time: '9:01 AM' },
+        { from: 'me',        text: "Also add bread", time: '9:14 AM' },
+        { from: 'assistant', text: "Added to your shopping list!", time: '9:16 AM' },
+      ]
+    },
+    family: {
+      name: 'Schneider Family',
+      sub: 'You, Chad, Nick, Riley',
+      avatarText: '👨‍👩‍👧',
+      avatarStyle: 'background:#159AD2;font-size:20px',
+      isGroup: true,
+      messages: [
+        { from: 'riley', senderName: 'Riley', senderColor: '#F7932A', text: "Dad can you pick me up at 4? Coach moved practice to Elmwood", time: 'Yesterday', dateDivider: 'Yesterday' },
+        { from: 'chad',  senderName: 'Chad',  senderColor: '#3C71E1', text: "I can do it 👍", time: 'Yesterday' },
+        { from: 'me',    text: "Thanks Chad. Nick heads up — dinner is at 7:30 tonight", time: 'Yesterday' },
+        { from: 'nick',  senderName: 'Nick',  senderColor: '#9C5483', text: "Heads up everyone — I'll be home late tonight, work thing 🙏", time: '8:41 AM', dateDivider: 'Today' },
+        { from: 'me',    text: "Dinner's at 7:30", time: '9:03 AM' },
+      ]
+    },
+    chad: {
+      name: 'Chad',
+      sub: 'Active now',
+      avatarText: 'C',
+      avatarStyle: 'background:#3C71E1',
+      messages: [
+        { from: 'them', text: "Can you grab milk on the way home?", time: 'Yesterday', dateDivider: 'Yesterday' },
+        { from: 'me',   text: "Sure, anything else?", time: 'Yesterday' },
+        { from: 'them', text: "Maybe some snacks for Friday — we're having people over for the game", time: 'Yesterday' },
+        { from: 'me',   text: "On it 👍", time: 'Yesterday' },
+      ]
+    },
+    nick: {
+      name: 'Nick',
+      sub: 'Active 2h ago',
+      avatarText: 'N',
+      avatarStyle: 'background:#9C5483',
+      messages: [
+        { from: 'them', text: "What time is dinner tonight?", time: '8:41 AM', dateDivider: 'Today' },
+        { from: 'me',   text: "7pm, we're doing pasta", time: '8:50 AM' },
+        { from: 'them', text: "Perfect, see you then 🍝", time: '8:52 AM' },
+      ]
+    },
+    riley: {
+      name: 'Riley',
+      sub: 'Active now',
+      avatarText: 'R',
+      avatarStyle: 'background:#F7932A',
+      messages: [
+        { from: 'them', text: "Mom can I go to Emma's after school?", time: '7:45 AM', dateDivider: 'Today' },
+        { from: 'me',   text: "Yes but be home by 6:30 for dinner", time: '8:01 AM' },
+        { from: 'them', text: "K thanks! 😊", time: '8:02 AM' },
+      ]
+    },
+  };
+
+  let currentConvoKey = null;
+
+  function openConversation(key) {
+    currentConvoKey = key;
+    const convo = CONVOS[key];
+
+    // Update header
+    const headerAvatar = document.getElementById('convo-header-avatar');
+    headerAvatar.textContent = convo.avatarText;
+    headerAvatar.setAttribute('style', convo.avatarStyle);
+
+    document.getElementById('convo-header-name').textContent = convo.name;
+    document.getElementById('convo-header-sub').textContent = convo.sub;
+    document.getElementById('convo-header-info').className =
+      'convo-header-info' + (convo.isAssistant ? ' is-assistant' : '');
+
+    // Build messages
+    renderMessages(key);
+
+    // Show / hide quick-action chips
+    document.getElementById('quick-actions').style.display = convo.isAssistant ? 'flex' : 'none';
+
+    // Update placeholder for assistant
+    const inputField = document.getElementById('chat-input');
+    inputField.placeholder = convo.isAssistant ? 'Ask anything…' : 'Message';
+
+    // Navigate
+    if (navStack[navStack.length - 1] !== 'conversation') {
+      navStack.push('conversation');
+    }
+    applyScreen('conversation');
+    // Set title after applyScreen so it isn't overwritten by cfg.title = ''
+    document.getElementById('header-title').textContent = convo.name;
+    scrollChatToBottom(false);
+  }
+
+  function renderMessages(key) {
+    const convo = CONVOS[key];
+    const container = document.getElementById('chat-messages');
+    container.innerHTML = '';
+
+    convo.messages.forEach(msg => {
+      if (msg.dateDivider) {
+        const divider = document.createElement('div');
+        divider.className = 'msg-date-divider';
+        divider.textContent = msg.dateDivider;
+        container.appendChild(divider);
+      }
+
+      const isMe = msg.from === 'me';
+      const isAssistant = msg.from === 'assistant';
+      const senderColor = msg.senderColor || '#9C5483';
+
+      const row = document.createElement('div');
+      row.className = 'msg-row ' + (isMe ? 'from-me' : 'from-them');
+
+      // Group/named sender avatar
+      if (!isMe && (convo.isGroup || isAssistant)) {
+        const av = document.createElement('div');
+        av.className = 'msg-sender-avatar';
+        if (isAssistant) {
+          av.style.cssText = 'background:#9C5483;font-size:12px;';
+          av.textContent = '🤖';
+        } else if (msg.senderName) {
+          av.style.background = senderColor;
+          av.textContent = msg.senderName[0];
+        } else {
+          av.style.background = '#159AD2';
+          av.textContent = '?';
+        }
+        row.appendChild(av);
+      }
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble ' + (isMe ? 'from-me' : isAssistant ? 'from-assistant' : 'from-them');
+      bubble.textContent = msg.text;
+      row.appendChild(bubble);
+
+      container.appendChild(row);
+    });
+  }
+
+  function scrollChatToBottom(smooth) {
+    const container = document.getElementById('chat-messages');
+    requestAnimationFrame(() => {
+      container.scrollTop = container.scrollHeight;
+    });
+  }
+
+  /* ── Sending messages ── */
+  const AI_RESPONSES = [
+    { re: /calendar|schedule|today|what.*on/i,
+      text: "Here's what's on the calendar today:\n\n• 4:00 PM — Riley's soccer practice (Elmwood Park)\n• 7:30 PM — Family dinner 🍝\n\nAnything else you need?" },
+    { re: /remind|reminder/i,
+      text: "Reminder set! ⏰ I'll send a notification to everyone at the right time." },
+    { re: /shopping|grocery|groceries|milk|eggs|bread|snack|food/i,
+      text: "Added to your shopping list! 🛒 You now have 8 items. Want me to organize them by store section?" },
+    { re: /where.*is|location|everyone|map/i,
+      text: "Right now:\n\n📍 Chad — downtown (near work)\n📍 Riley — at school\n📍 Nick — at home\n\nYou: here" },
+    { re: /dinner|meal|recipe/i,
+      text: "Tonight's plan is pasta at 7:30pm. I've added the ingredients to your shopping list. Want a prep reminder at 6pm?" },
+    { re: /weather/i,
+      text: "It's 72°F and sunny right now ☀️ — great afternoon for Riley's practice. Light jacket for the evening." },
+    { re: /add.*calendar|calendar.*add|add.*event/i,
+      text: "Added to the family calendar! 📅 Everyone will get a notification." },
+    { re: /help|what can you|what do you/i,
+      text: "I can help your family with:\n\n📅 Calendar & reminders\n🛒 Shopping lists\n📍 Where everyone is\n🍽️ Meal planning\n📋 Family to-dos\n\nJust ask — I'm always on." },
+  ];
+
+  function getAIResponse(input) {
+    for (const r of AI_RESPONSES) {
+      if (r.re.test(input)) return r.text;
+    }
+    return "Got it! I'll take care of that. Is there anything else I can help the family with?";
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const convo = CONVOS[currentConvoKey];
+
+    // Add user message to data and DOM
+    const newMsg = { from: 'me', text, time: 'Now' };
+    convo.messages.push(newMsg);
+
+    const container = document.getElementById('chat-messages');
+    const row = document.createElement('div');
+    row.className = 'msg-row from-me';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble from-me';
+    bubble.textContent = text;
+    row.appendChild(bubble);
+    container.appendChild(row);
+
+    input.value = '';
+    input.style.height = '';
+    scrollChatToBottom(true);
+
+    // AI auto-response
+    if (convo.isAssistant) {
+      setTimeout(() => showTypingIndicator(), 400);
+      setTimeout(() => {
+        removeTypingIndicator();
+        const responseText = getAIResponse(text);
+        const aiMsg = { from: 'assistant', text: responseText, time: 'Now' };
+        convo.messages.push(aiMsg);
+
+        const aiRow = document.createElement('div');
+        aiRow.className = 'msg-row from-them';
+        const aiAv = document.createElement('div');
+        aiAv.className = 'msg-sender-avatar';
+        aiAv.style.cssText = 'background:#9C5483;font-size:12px;';
+        aiAv.textContent = '🤖';
+        const aiBubble = document.createElement('div');
+        aiBubble.className = 'bubble from-assistant';
+        aiBubble.textContent = responseText;
+        aiRow.appendChild(aiAv);
+        aiRow.appendChild(aiBubble);
+        container.appendChild(aiRow);
+        scrollChatToBottom(true);
+      }, 1600);
+    }
+  }
+
+  function sendQuickChip(text) {
+    document.getElementById('chat-input').value = text;
+    sendMessage();
+  }
+
+  function showTypingIndicator() {
+    const container = document.getElementById('chat-messages');
+    const row = document.createElement('div');
+    row.className = 'typing-row';
+    row.id = 'typing-indicator';
+    const av = document.createElement('div');
+    av.className = 'msg-sender-avatar';
+    av.style.cssText = 'background:#9C5483;font-size:12px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
+    av.textContent = '🤖';
+    const typingBubble = document.createElement('div');
+    typingBubble.className = 'typing-bubble';
+    typingBubble.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    row.appendChild(av);
+    row.appendChild(typingBubble);
+    container.appendChild(row);
+    scrollChatToBottom(true);
+  }
+
+  function removeTypingIndicator() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  function handleInputKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function autoGrow(el) {
+    el.style.height = '';
+    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+  }
+
+  /* ── Map ── */
+  function initMap() {
+    map = L.map('map', {
+      center: [41.862, -87.648],
+      zoom: 12,
+      zoomControl: false,
+      attributionControl: false
+    });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+    const members = [
+      { label: 'Y', color: '#E75526', lat: 41.885, lng: -87.632 },
+      { label: 'C', color: '#3C71E1', lat: 41.843, lng: -87.671 },
+      { label: 'R', color: '#F7932A', lat: 41.872, lng: -87.702 },
+    ];
+    members.forEach(m => {
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="width:38px;height:38px;border-radius:50%;background:${m.color};border:3px solid white;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;box-shadow:0 2px 10px rgba(0,0,0,.5);font-family:-apple-system,sans-serif;">${m.label}</div>`,
+        iconSize: [38, 38],
+        iconAnchor: [19, 19]
+      });
+      L.marker([m.lat, m.lng], { icon }).addTo(map);
+    });
+    setTimeout(() => map.invalidateSize(), 100);
+  }
+
+  /* ── Toast ── */
+  let toastTimer = null;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.opacity = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.style.opacity = '0', 2000);
+  }
+</script>
+</body>
+</html>
