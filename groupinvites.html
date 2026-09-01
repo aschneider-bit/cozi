@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cozi – Group Invites</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --blue:      #159AD2;
+      --blue-dk:   #10739E;
+      --blue-lt:   #D9F3FF;
+      --orange:    #E75526;
+      --sage:      #90CEA0;
+      --sage-lt:   #E3F5E7;
+      --tangerine: #F7932A;
+      --charcoal:  #414349;
+      --grey:      #727272;
+      --grey-lt:   #EEEEEE;
+      --bg:        #F2F2F7;
+      --white:     #FFFFFF;
+      --gold:      #F5A623;
+      --m-you:     #E75526;
+      --m-chad:    #3C71E1;
+      --m-nick:    #9C5483;
+      --m-riley:   #F7932A;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      background: #C8C8CC;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 32px 20px;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    /* ── PHONE SHELL ── */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: var(--bg);
+      border-radius: 52px;
+      overflow: hidden;
+      box-shadow: 0 0 0 10px #111, 0 0 0 12px #3A3A3A, 0 40px 80px rgba(0,0,0,.5);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      height: 50px;
+      background: var(--blue);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      height: 52px;
+      background: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .header-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+    }
+    .header-back {
+      position: absolute;
+      left: 16px;
+      color: white;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .header-back.visible { opacity: 1; pointer-events: auto; }
+    .header-action {
+      position: absolute;
+      right: 16px;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .header-avatar {
+      position: absolute;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--m-you);
+      border: 2px solid rgba(255,255,255,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* ── CONTENT AREA ── */
+    .content-area {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .screen.active { display: flex; }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      height: 82px;
+      background: var(--white);
+      border-top: 1px solid var(--grey-lt);
+      display: flex;
+      align-items: flex-start;
+      padding-top: 10px;
+      flex-shrink: 0;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      color: #8E8E93;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-item.active { color: var(--blue); }
+    .nav-icon { font-size: 23px; line-height: 1; }
+    .nav-label { font-size: 10px; font-weight: 500; }
+
+    /* ── SECTION LABELS (universal) ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--grey);
+      margin-bottom: 10px;
+    }
+
+    /* ═══════════════════════════════════
+       SCREEN: FAMILY HUB
+    ═══════════════════════════════════ */
+    .members-strip {
+      background: var(--white);
+      padding: 14px 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border-bottom: 1px solid var(--grey-lt);
+      flex-shrink: 0;
+    }
+    .member {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .member-wrap { position: relative; }
+    .member-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .member-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #34C759;
+      border: 2px solid white;
+      position: absolute;
+      bottom: 1px;
+      right: 1px;
+    }
+    .member-name { font-size: 11px; color: var(--charcoal); font-weight: 500; }
+    .add-member .member-avatar {
+      background: var(--grey-lt);
+      color: #8E8E93;
+      font-size: 22px;
+      font-weight: 300;
+    }
+
+    .features-grid {
+      padding: 16px 16px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .tile {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 16px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 8px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 118px;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+    .tile:active { transform: scale(0.96); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .tile-name { font-size: 14px; font-weight: 600; color: var(--charcoal); line-height: 1.25; }
+    .tile-desc { font-size: 11.5px; color: #8E8E93; margin-top: 3px; line-height: 1.3; }
+    .tile-icon {
+      align-self: flex-end;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .tile-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: var(--gold);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 2px 7px;
+      border-radius: 8px;
+    }
+    .tile-new {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: var(--orange);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 2px 7px;
+      border-radius: 8px;
+    }
+    .tile-birthdays  .tile-icon { background: #FFE4EC; }
+    .tile-map        .tile-icon { background: #E3F4FF; }
+    .tile-finances   .tile-icon { background: #E6F9EE; }
+    .tile-assistant  .tile-icon { background: #F3E5F5; }
+    .tile-vault      .tile-icon { background: #EDE7F6; }
+    .tile-focus      .tile-icon { background: #FFF3E0; }
+    .tile-invites    .tile-icon { background: var(--blue-lt); }
+    .tile-gold       .tile-icon { background: #FFF8E1; }
+    .tile-help       .tile-icon { background: #F5F5F5; }
+
+    /* ═══════════════════════════════════
+       SCREEN: GROUP INVITES LIST
+    ═══════════════════════════════════ */
+    .invites-list-screen {
+      background: var(--bg);
+    }
+
+    .section-header {
+      padding: 18px 20px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--grey);
+    }
+
+    .invite-card {
+      background: var(--white);
+      margin: 0 16px 12px;
+      border-radius: 16px;
+      padding: 16px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      transition: transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .invite-card:active { transform: scale(0.98); }
+
+    .invite-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .invite-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+    .invite-status {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .status-open { background: var(--blue-lt); color: var(--blue-dk); }
+    .status-pending { background: #FFF3E0; color: #C96F19; }
+    .status-confirmed { background: var(--sage-lt); color: #467151; }
+
+    .invite-meta {
+      font-size: 13px;
+      color: var(--grey);
+      margin-bottom: 10px;
+    }
+
+    .invite-avatars {
+      display: flex;
+      align-items: center;
+      gap: -4px;
+    }
+    .invite-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      margin-right: -6px;
+    }
+    .invite-vote-summary {
+      font-size: 12px;
+      color: var(--grey);
+      margin-left: 14px;
+    }
+
+    .invite-progress-row {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .invite-progress-bar {
+      flex: 1;
+      height: 4px;
+      background: var(--grey-lt);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .invite-progress-fill {
+      height: 100%;
+      background: var(--blue);
+      border-radius: 2px;
+      transition: width 0.4s;
+    }
+    .invite-progress-label {
+      font-size: 11px;
+      color: var(--grey);
+      flex-shrink: 0;
+    }
+
+    /* Create button */
+    .create-btn-wrap {
+      padding: 16px 16px 8px;
+    }
+    .create-btn {
+      width: 100%;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 9999px;
+      height: 52px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s;
+    }
+    .create-btn:active { opacity: 0.85; }
+
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 32px;
+      text-align: center;
+      gap: 12px;
+    }
+    .empty-icon { font-size: 52px; }
+    .empty-title { font-size: 20px; font-weight: 700; color: var(--charcoal); }
+    .empty-body { font-size: 14px; color: var(--grey); line-height: 1.5; }
+
+    /* ═══════════════════════════════════
+       SCREEN: CREATE INVITE
+    ═══════════════════════════════════ */
+    .form-section {
+      background: var(--white);
+      margin: 12px 16px 0;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .form-row {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--grey-lt);
+      gap: 12px;
+      min-height: 52px;
+    }
+    .form-row:last-child { border-bottom: none; }
+    .form-label {
+      font-size: 15px;
+      color: var(--charcoal);
+      font-weight: 500;
+      width: 90px;
+      flex-shrink: 0;
+    }
+    .form-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      color: var(--charcoal);
+      background: transparent;
+      font-family: inherit;
+    }
+    .form-input::placeholder { color: #C7C7CC; }
+    .form-value {
+      flex: 1;
+      font-size: 15px;
+      color: var(--charcoal);
+    }
+    .form-placeholder { color: #C7C7CC; }
+    .form-chevron { color: #C7C7CC; font-size: 18px; margin-left: auto; }
+
+    .time-options-section {
+      margin: 16px 16px 0;
+    }
+    .time-option-row {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .time-option-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--blue-lt);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .time-option-text { flex: 1; }
+    .time-option-date { font-size: 14px; font-weight: 600; color: var(--charcoal); }
+    .time-option-time { font-size: 12px; color: var(--grey); margin-top: 2px; }
+    .time-option-remove {
+      color: #FF3B30;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .add-time-btn {
+      background: var(--white);
+      border: 2px dashed var(--grey-lt);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 600;
+      width: 100%;
+    }
+
+    .invitees-section {
+      margin: 16px 16px 0;
+    }
+    .invitee-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .invitee-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--blue-lt);
+      border-radius: 20px;
+      padding: 6px 12px 6px 6px;
+    }
+    .invitee-chip-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .invitee-chip-name { font-size: 13px; color: var(--blue-dk); font-weight: 500; }
+    .invitee-chip-remove { color: var(--blue); font-size: 14px; cursor: pointer; margin-left: 2px; }
+
+    .add-invitee-row {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .add-invitee-row span { font-size: 14px; color: var(--blue); font-weight: 600; }
+
+    /* ═══════════════════════════════════
+       SCREEN: VOTE (invitee view)
+    ═══════════════════════════════════ */
+    .vote-hero {
+      background: var(--blue);
+      padding: 20px 20px 28px;
+      color: white;
+    }
+    .vote-event-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+      line-height: 1.15;
+    }
+    .vote-organizer {
+      font-size: 13px;
+      opacity: 0.75;
+      font-weight: 500;
+    }
+    .vote-desc {
+      font-size: 14px;
+      opacity: 0.88;
+      margin-top: 10px;
+      line-height: 1.45;
+    }
+
+    .vote-instructions {
+      padding: 14px 20px 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--grey);
+    }
+
+    .vote-time-row {
+      background: var(--white);
+      margin: 0 16px 10px;
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      transition: transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .vote-time-row:active { transform: scale(0.98); }
+    .vote-time-row.selected {
+      background: var(--blue-lt);
+      box-shadow: 0 0 0 2px var(--blue), 0 1px 3px rgba(0,0,0,0.07);
+    }
+    .vote-check {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid #C7C7CC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      font-size: 0;
+    }
+    .vote-time-row.selected .vote-check {
+      background: var(--blue);
+      border-color: var(--blue);
+      font-size: 13px;
+      color: white;
+    }
+    /* SVG checkmark for selected state */
+    .vote-time-row.selected .vote-check::after {
+      content: '';
+      display: block;
+      width: 6px;
+      height: 10px;
+      border: 2px solid white;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translate(-1px, -1px);
+    }
+    .vote-time-info { flex: 1; }
+    .vote-time-date { font-size: 15px; font-weight: 600; color: var(--charcoal); }
+    .vote-time-time { font-size: 13px; color: var(--grey); margin-top: 2px; }
+    .vote-count {
+      font-size: 11px;
+      color: var(--grey);
+      text-align: center;
+      flex-shrink: 0;
+      width: 36px;
+    }
+    .vote-count-num {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--charcoal);
+      display: block;
+      line-height: 1.1;
+    }
+
+    .vote-submit-wrap {
+      padding: 16px;
+    }
+    .vote-submit-btn {
+      width: 100%;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 9999px;
+      height: 52px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s;
+    }
+    .vote-submit-btn:active { opacity: 0.85; }
+    .vote-submit-btn:disabled { opacity: 0.4; }
+
+    /* ═══════════════════════════════════
+       SCREEN: RESULTS / PICK
+    ═══════════════════════════════════ */
+    .results-hero {
+      background: var(--white);
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--grey-lt);
+    }
+    .results-event { font-size: 22px; font-weight: 700; color: var(--charcoal); margin-bottom: 4px; letter-spacing: -0.2px; }
+    .results-sub { font-size: 13px; color: var(--grey); }
+
+    .response-strip {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 14px 20px;
+      background: var(--white);
+      border-bottom: 1px solid var(--grey-lt);
+    }
+    .responder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+    }
+    .responder-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .responder-name { font-size: 10px; color: var(--grey); font-weight: 500; }
+    .responder-status { font-size: 16px; }
+    .responder.pending .responder-avatar { opacity: 0.3; }
+
+    .results-section-head {
+      padding: 16px 20px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--grey);
+    }
+
+    .result-row {
+      background: var(--white);
+      margin: 0 16px 10px;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    }
+    .result-row.winner {
+      background: var(--sage-lt);
+      box-shadow: 0 0 0 2px var(--sage), 0 1px 3px rgba(0,0,0,0.07);
+    }
+
+    .result-row-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .result-date { font-size: 15px; font-weight: 600; color: var(--charcoal); }
+    .result-time-label { font-size: 13px; color: var(--grey); margin-top: 2px; }
+    .result-best-badge {
+      background: var(--sage);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .result-votes {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .result-vote-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .result-vote-count { font-size: 13px; color: var(--grey); margin-left: 4px; }
+
+    .result-bar-wrap {
+      height: 6px;
+      background: var(--grey-lt);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .result-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s ease;
+    }
+    .result-bar-fill.best { background: var(--sage); }
+    .result-bar-fill.mid  { background: var(--blue); }
+    .result-bar-fill.low  { background: var(--grey-lt); }
+
+    .pick-btn {
+      width: 100%;
+      border: none;
+      border-radius: 9999px;
+      height: 44px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s;
+    }
+    .pick-btn:active { opacity: 0.8; }
+    .pick-btn-primary {
+      background: var(--sage);
+      color: white;
+    }
+    .pick-btn-secondary {
+      background: var(--blue-lt);
+      color: var(--blue-dk);
+    }
+
+    /* ═══════════════════════════════════
+       SCREEN: CONFIRMED
+    ═══════════════════════════════════ */
+    .confirmed-screen {
+      background: var(--bg);
+    }
+    .confirmed-hero {
+      background: var(--blue);
+      padding: 28px 20px 32px;
+      text-align: center;
+    }
+    .confirmed-icon { font-size: 52px; margin-bottom: 10px; display: block; }
+    .confirmed-title { font-size: 32px; font-weight: 700; color: white; margin-bottom: 4px; letter-spacing: -0.5px; }
+    .confirmed-event-name { font-size: 16px; color: rgba(255,255,255,0.8); font-weight: 500; }
+    .confirmed-card {
+      background: var(--white);
+      margin: 16px;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .confirmed-sub { font-size: 14px; color: var(--grey); line-height: 1.5; }
+    .confirmed-time-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--sage-lt);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .confirmed-time-chip-icon { font-size: 22px; }
+    .confirmed-time-chip-text {}
+    .confirmed-time-chip-date { font-size: 15px; font-weight: 700; color: #467151; }
+    .confirmed-time-chip-range { font-size: 13px; color: #467151; opacity: 0.8; margin-top: 1px; }
+
+    .notified-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--white);
+      margin: 0 16px;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .notified-avatars { display: flex; gap: -4px; }
+    .notified-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      margin-right: -8px;
+    }
+    .notified-text { margin-left: 16px; }
+    .notified-label { font-size: 14px; font-weight: 600; color: var(--charcoal); }
+    .notified-sub { font-size: 12px; color: var(--grey); margin-top: 2px; }
+
+    .add-to-cal-btn {
+      margin: 12px 16px 0;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 9999px;
+      height: 52px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: calc(100% - 32px);
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s;
+    }
+    .add-to-cal-btn:active { opacity: 0.85; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 130px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(30,30,30,0.88);
+      color: white;
+      padding: 10px 22px;
+      border-radius: 22px;
+      font-size: 14px;
+      font-family: -apple-system, sans-serif;
+      opacity: 0;
+      transition: opacity 0.25s;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+
+    /* Label for screens */
+    .screen-label {
+      text-align: center;
+      color: white;
+      font-family: -apple-system, sans-serif;
+      font-size: 12px;
+      margin-top: 10px;
+      opacity: 0.7;
+    }
+    .phone-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     PHONE 1 — Organizer: Family Tab + Create
+═══════════════════════════════════════════ -->
+<div class="phone-wrap">
+<div class="phone" id="phone1">
+
+  <div class="status-bar">
+    <span>9:41</span>
+    <span style="letter-spacing:1px">▶&nbsp;●●●</span>
+  </div>
+
+  <div class="header">
+    <div class="header-back" id="p1-back" onclick="p1GoBack()">‹ Back</div>
+    <span class="header-title" id="p1-title">Family</span>
+    <div id="p1-header-right">
+      <div class="header-avatar">Y</div>
+    </div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- HUB -->
+    <div class="screen active" id="p1-hub">
+      <div class="members-strip">
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-you)">Y</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">You</span>
+        </div>
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-chad)">C</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">Chad</span>
+        </div>
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-nick)">N</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">Nick</span>
+        </div>
+        <div class="member">
+          <div class="member-wrap">
+            <div class="member-avatar" style="background:var(--m-riley)">R</div>
+            <div class="member-dot"></div>
+          </div>
+          <span class="member-name">Riley</span>
+        </div>
+        <div class="member add-member">
+          <div class="member-wrap">
+            <div class="member-avatar">+</div>
+          </div>
+          <span class="member-name">Invite</span>
+        </div>
+      </div>
+
+      <div class="features-grid">
+        <div class="tile tile-birthdays" onclick="showToast1('Birthdays — Gold feature')">
+          <div class="tile-text">
+            <div class="tile-name">Birthdays</div>
+            <div class="tile-desc">Track & celebrate every one</div>
+          </div>
+          <div class="tile-icon">🎂</div>
+          <div class="tile-badge">Gold</div>
+        </div>
+
+        <div class="tile tile-map" onclick="showToast1('Map & Safety')">
+          <div class="tile-text">
+            <div class="tile-name">Map & Safety</div>
+            <div class="tile-desc">See where everyone is</div>
+          </div>
+          <div class="tile-icon">📍</div>
+        </div>
+
+        <div class="tile tile-finances" onclick="showToast1('Finances')">
+          <div class="tile-text">
+            <div class="tile-name">Finances</div>
+            <div class="tile-desc">Split, spend & save</div>
+          </div>
+          <div class="tile-icon">💳</div>
+        </div>
+
+        <div class="tile tile-assistant" onclick="showToast1('Family Assistant — coming soon')">
+          <div class="tile-text">
+            <div class="tile-name">Family Assistant</div>
+            <div class="tile-desc">AI for your family</div>
+          </div>
+          <div class="tile-icon">🤖</div>
+        </div>
+
+        <!-- GROUP INVITES TILE — NEW -->
+        <div class="tile tile-invites" onclick="p1ShowScreen('invites-list')">
+          <div class="tile-text">
+            <div class="tile-name">Group Invites</div>
+            <div class="tile-desc">Find a time that works for everyone</div>
+          </div>
+          <div class="tile-icon">🫂</div>
+          <div class="tile-new">New</div>
+        </div>
+
+        <div class="tile tile-vault" onclick="showToast1('Vault — coming soon')">
+          <div class="tile-text">
+            <div class="tile-name">Vault</div>
+            <div class="tile-desc">Secure family docs & info</div>
+          </div>
+          <div class="tile-icon">🔒</div>
+        </div>
+
+        <div class="tile tile-focus" onclick="showToast1('Focus — coming soon')">
+          <div class="tile-text">
+            <div class="tile-name">Focus</div>
+            <div class="tile-desc">Screen time & family goals</div>
+          </div>
+          <div class="tile-icon">🎯</div>
+        </div>
+
+        <div class="tile tile-gold" onclick="showToast1('Upgrade to Cozi Gold')">
+          <div class="tile-text">
+            <div class="tile-name">Cozi Gold</div>
+            <div class="tile-desc">Unlock premium features</div>
+          </div>
+          <div class="tile-icon">⭐</div>
+        </div>
+      </div>
+    </div><!-- /p1-hub -->
+
+    <!-- GROUP INVITES LIST -->
+    <div class="screen invites-list-screen" id="p1-invites-list">
+      <div class="create-btn-wrap">
+        <button class="create-btn" onclick="p1ShowScreen('create')">
+          <span style="font-size:20px">＋</span> New group invite
+        </button>
+      </div>
+
+      <div class="section-header">Active</div>
+
+      <!-- Active invite -->
+      <div class="invite-card" onclick="p1ShowScreen('results')">
+        <div class="invite-card-top">
+          <div class="invite-title">Thanksgiving Dinner</div>
+          <div class="invite-status status-open">Voting open</div>
+        </div>
+        <div class="invite-meta">📅 3 time options · You created this</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="invite-avatars">
+            <div class="invite-avatar" style="background:var(--m-chad)">C</div>
+            <div class="invite-avatar" style="background:var(--m-nick)">N</div>
+            <div class="invite-avatar" style="background:var(--m-riley)">R</div>
+            <div class="invite-avatar" style="background:#8E8E93">+4</div>
+          </div>
+          <div class="invite-vote-summary">5 of 7 voted</div>
+        </div>
+        <div class="invite-progress-row">
+          <div class="invite-progress-bar">
+            <div class="invite-progress-fill" style="width:71%"></div>
+          </div>
+          <div class="invite-progress-label">71%</div>
+        </div>
+      </div>
+
+      <div class="section-header">Past</div>
+
+      <div class="invite-card" onclick="showToast1('Camping trip — confirmed')">
+        <div class="invite-card-top">
+          <div class="invite-title">Summer Camping Trip</div>
+          <div class="invite-status status-confirmed">Confirmed</div>
+        </div>
+        <div class="invite-meta">✅ Sat, Aug 16 · Labor Day weekend</div>
+        <div class="invite-avatars">
+          <div class="invite-avatar" style="background:var(--m-chad)">C</div>
+          <div class="invite-avatar" style="background:var(--m-nick)">N</div>
+          <div class="invite-avatar" style="background:var(--m-riley)">R</div>
+        </div>
+      </div>
+    </div><!-- /p1-invites-list -->
+
+    <!-- CREATE INVITE -->
+    <div class="screen" id="p1-create">
+      <!-- Event details -->
+      <div class="form-section" style="margin-top:16px">
+        <div class="form-row">
+          <span class="form-label">Event</span>
+          <input class="form-input" type="text" placeholder="Thanksgiving Dinner" value="Thanksgiving Dinner">
+        </div>
+        <div class="form-row">
+          <span class="form-label">Note</span>
+          <input class="form-input" type="text" placeholder="Optional note for guests">
+        </div>
+        <div class="form-row" style="cursor:pointer">
+          <span class="form-label">Duration</span>
+          <span class="form-value">2 hours</span>
+          <span class="form-chevron">›</span>
+        </div>
+      </div>
+
+      <!-- Time options -->
+      <div class="time-options-section">
+        <div class="section-label">Proposed times</div>
+
+        <div class="time-option-row">
+          <div class="time-option-icon">📅</div>
+          <div class="time-option-text">
+            <div class="time-option-date">Thu, Nov 27</div>
+            <div class="time-option-time">2:00 PM – 4:00 PM</div>
+          </div>
+          <div class="time-option-remove">−</div>
+        </div>
+
+        <div class="time-option-row">
+          <div class="time-option-icon">📅</div>
+          <div class="time-option-text">
+            <div class="time-option-date">Fri, Nov 28</div>
+            <div class="time-option-time">12:00 PM – 2:00 PM</div>
+          </div>
+          <div class="time-option-remove">−</div>
+        </div>
+
+        <div class="time-option-row">
+          <div class="time-option-icon">📅</div>
+          <div class="time-option-text">
+            <div class="time-option-date">Sat, Nov 29</div>
+            <div class="time-option-time">1:00 PM – 3:00 PM</div>
+          </div>
+          <div class="time-option-remove">−</div>
+        </div>
+
+        <button class="add-time-btn" onclick="showToast1('Opens date/time picker')">
+          <span style="font-size:18px">＋</span> Add another time
+        </button>
+      </div>
+
+      <!-- Invitees -->
+      <div class="invitees-section">
+        <div class="section-label">Invite</div>
+        <div class="invitee-chips">
+          <div class="invitee-chip">
+            <div class="invitee-chip-avatar" style="background:var(--m-chad)">C</div>
+            <span class="invitee-chip-name">Chad</span>
+            <span class="invitee-chip-remove">×</span>
+          </div>
+          <div class="invitee-chip">
+            <div class="invitee-chip-avatar" style="background:var(--m-nick)">N</div>
+            <span class="invitee-chip-name">Nick</span>
+            <span class="invitee-chip-remove">×</span>
+          </div>
+          <div class="invitee-chip">
+            <div class="invitee-chip-avatar" style="background:var(--m-riley)">R</div>
+            <span class="invitee-chip-name">Riley</span>
+            <span class="invitee-chip-remove">×</span>
+          </div>
+          <div class="invitee-chip">
+            <div class="invitee-chip-avatar" style="background:#8E8E93">G</div>
+            <span class="invitee-chip-name">Grandma Sue</span>
+            <span class="invitee-chip-remove">×</span>
+          </div>
+        </div>
+        <div class="add-invitee-row" onclick="showToast1('Opens contacts picker')">
+          <span style="font-size:20px;color:var(--blue)">＋</span>
+          <span>Add family or friends</span>
+        </div>
+      </div>
+
+      <div style="padding:20px 16px 32px">
+        <button class="create-btn" style="background:var(--blue)" onclick="p1ShowScreen('invites-list');showToast1('Invite sent! 7 people notified')">
+          Send invite
+        </button>
+      </div>
+    </div><!-- /p1-create -->
+
+    <!-- RESULTS / PICK -->
+    <div class="screen" id="p1-results">
+      <div class="results-hero">
+        <div class="results-event">Thanksgiving Dinner</div>
+        <div class="results-sub">You created this · 3 time options</div>
+      </div>
+
+      <!-- Who's responded -->
+      <div class="response-strip">
+        <div class="responder">
+          <div class="responder-avatar" style="background:var(--m-you)">Y</div>
+          <div class="responder-name">You</div>
+          <div class="responder-status">✅</div>
+        </div>
+        <div class="responder">
+          <div class="responder-avatar" style="background:var(--m-chad)">C</div>
+          <div class="responder-name">Chad</div>
+          <div class="responder-status">✅</div>
+        </div>
+        <div class="responder">
+          <div class="responder-avatar" style="background:var(--m-nick)">N</div>
+          <div class="responder-name">Nick</div>
+          <div class="responder-status">✅</div>
+        </div>
+        <div class="responder">
+          <div class="responder-avatar" style="background:var(--m-riley)">R</div>
+          <div class="responder-name">Riley</div>
+          <div class="responder-status">✅</div>
+        </div>
+        <div class="responder">
+          <div class="responder-avatar" style="background:#8E8E93">G</div>
+          <div class="responder-name">Sue</div>
+          <div class="responder-status">✅</div>
+        </div>
+        <div class="responder pending">
+          <div class="responder-avatar" style="background:#8E8E93">M</div>
+          <div class="responder-name">Mike</div>
+          <div class="responder-status">⏳</div>
+        </div>
+        <div class="responder pending">
+          <div class="responder-avatar" style="background:#8E8E93">L</div>
+          <div class="responder-name">Lisa</div>
+          <div class="responder-status">⏳</div>
+        </div>
+      </div>
+
+      <div class="results-section-head">Pick a time</div>
+
+      <!-- Winner -->
+      <div class="result-row winner">
+        <div class="result-row-top">
+          <div>
+            <div class="result-date">Thu, November 27</div>
+            <div class="result-time-label">2:00 PM – 4:00 PM</div>
+          </div>
+          <div class="result-best-badge">★ Best fit</div>
+        </div>
+        <div class="result-votes">
+          <div class="result-vote-avatar" style="background:var(--m-you)">Y</div>
+          <div class="result-vote-avatar" style="background:var(--m-chad)">C</div>
+          <div class="result-vote-avatar" style="background:var(--m-riley)">R</div>
+          <div class="result-vote-avatar" style="background:#8E8E93">G</div>
+          <div class="result-vote-count">4 of 5 voted</div>
+        </div>
+        <div class="result-bar-wrap">
+          <div class="result-bar-fill best" style="width:80%"></div>
+        </div>
+        <button class="pick-btn pick-btn-primary" onclick="p1ShowScreen('confirmed')">Pick this time →</button>
+      </div>
+
+      <!-- Second -->
+      <div class="result-row">
+        <div class="result-row-top">
+          <div>
+            <div class="result-date">Fri, November 28</div>
+            <div class="result-time-label">12:00 PM – 2:00 PM</div>
+          </div>
+        </div>
+        <div class="result-votes">
+          <div class="result-vote-avatar" style="background:var(--m-nick)">N</div>
+          <div class="result-vote-avatar" style="background:#8E8E93">G</div>
+          <div class="result-vote-count">2 of 5 voted</div>
+        </div>
+        <div class="result-bar-wrap">
+          <div class="result-bar-fill mid" style="width:40%"></div>
+        </div>
+        <button class="pick-btn pick-btn-secondary" onclick="p1ShowScreen('confirmed')">Pick this time</button>
+      </div>
+
+      <!-- Third -->
+      <div class="result-row" style="margin-bottom:24px">
+        <div class="result-row-top">
+          <div>
+            <div class="result-date">Sat, November 29</div>
+            <div class="result-time-label">1:00 PM – 3:00 PM</div>
+          </div>
+        </div>
+        <div class="result-votes">
+          <div class="result-vote-avatar" style="background:var(--m-chad)">C</div>
+          <div class="result-vote-count">1 of 5 voted</div>
+        </div>
+        <div class="result-bar-wrap">
+          <div class="result-bar-fill low" style="width:20%"></div>
+        </div>
+        <button class="pick-btn pick-btn-secondary" onclick="p1ShowScreen('confirmed')">Pick this time</button>
+      </div>
+    </div><!-- /p1-results -->
+
+    <!-- CONFIRMED -->
+    <div class="screen confirmed-screen" id="p1-confirmed">
+      <div class="confirmed-hero">
+        <span class="confirmed-icon">🎉</span>
+        <div class="confirmed-title">It's on!</div>
+        <div class="confirmed-event-name">Thanksgiving Dinner</div>
+      </div>
+
+      <div class="confirmed-card">
+        <div class="confirmed-time-chip">
+          <span class="confirmed-time-chip-icon">📅</span>
+          <div class="confirmed-time-chip-text">
+            <div class="confirmed-time-chip-date">Thu, Nov 27</div>
+            <div class="confirmed-time-chip-range">2:00 – 4:00 PM</div>
+          </div>
+        </div>
+        <div class="confirmed-sub">Everyone's been notified. Add it to your Cozi calendar and you're all set.</div>
+      </div>
+
+      <div class="notified-row">
+        <div class="notified-avatars">
+          <div class="notified-avatar" style="background:var(--m-chad)">C</div>
+          <div class="notified-avatar" style="background:var(--m-nick)">N</div>
+          <div class="notified-avatar" style="background:var(--m-riley)">R</div>
+          <div class="notified-avatar" style="background:#8E8E93">G</div>
+          <div class="notified-avatar" style="background:#8E8E93">+2</div>
+        </div>
+        <div class="notified-text">
+          <div class="notified-label">5 people notified</div>
+          <div class="notified-sub">They'll get a calendar invite</div>
+        </div>
+      </div>
+
+      <button class="add-to-cal-btn" onclick="showToast1('Added to Cozi calendar')">
+        📅 Add to Cozi calendar
+      </button>
+
+      <div style="padding:12px 16px">
+        <button class="create-btn" style="background:var(--white);color:var(--blue);border:2px solid var(--blue-lt)" onclick="p1ShowScreen('invites-list')">
+          Done
+        </button>
+      </div>
+    </div><!-- /p1-confirmed -->
+
+  </div><!-- /content-area -->
+
+  <div class="bottom-nav">
+    <div class="nav-item"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></div>
+    <div class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Calendar</span></div>
+    <div class="nav-item"><span class="nav-icon">📋</span><span class="nav-label">Lists</span></div>
+    <div class="nav-item"><span class="nav-icon">🍽</span><span class="nav-label">Meals</span></div>
+    <div class="nav-item active"><span class="nav-icon">👨‍👩‍👧</span><span class="nav-label">Family</span></div>
+  </div>
+
+</div><!-- /phone1 -->
+<div class="screen-label">Organizer — creates &amp; picks</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PHONE 2 — Guest: Voting experience
+═══════════════════════════════════════════ -->
+<div class="phone-wrap">
+<div class="phone" id="phone2">
+
+  <div class="status-bar">
+    <span>9:41</span>
+    <span style="letter-spacing:1px">▶&nbsp;●●●</span>
+  </div>
+
+  <div class="header">
+    <div class="header-back visible" id="p2-back" onclick="p2GoBack()">‹ Back</div>
+    <span class="header-title" id="p2-title">Group Invite</span>
+    <div id="p2-header-right" style="width:32px"></div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- VOTE SCREEN -->
+    <div class="screen active" id="p2-vote">
+      <div class="vote-hero">
+        <div class="vote-event-title">Thanksgiving Dinner</div>
+        <div class="vote-organizer">From You · 6 other guests invited</div>
+        <div class="vote-desc">Pick the times that work for you. You can select more than one.</div>
+      </div>
+
+      <div class="vote-instructions">Tap to mark times that work for you</div>
+
+      <div class="vote-time-row selected" id="vote-row-1" onclick="toggleVote('vote-row-1')">
+        <div class="vote-check"></div>
+        <div class="vote-time-info">
+          <div class="vote-time-date">Thu, November 27</div>
+          <div class="vote-time-time">2:00 PM – 4:00 PM</div>
+        </div>
+        <div class="vote-count">
+          <span class="vote-count-num">4</span>
+          votes
+        </div>
+      </div>
+
+      <div class="vote-time-row" id="vote-row-2" onclick="toggleVote('vote-row-2')">
+        <div class="vote-check"></div>
+        <div class="vote-time-info">
+          <div class="vote-time-date">Fri, November 28</div>
+          <div class="vote-time-time">12:00 PM – 2:00 PM</div>
+        </div>
+        <div class="vote-count">
+          <span class="vote-count-num">2</span>
+          votes
+        </div>
+      </div>
+
+      <div class="vote-time-row" id="vote-row-3" onclick="toggleVote('vote-row-3')">
+        <div class="vote-check"></div>
+        <div class="vote-time-info">
+          <div class="vote-time-date">Sat, November 29</div>
+          <div class="vote-time-time">1:00 PM – 3:00 PM</div>
+        </div>
+        <div class="vote-count">
+          <span class="vote-count-num">1</span>
+          vote
+        </div>
+      </div>
+
+      <div class="vote-submit-wrap">
+        <button class="vote-submit-btn" id="vote-submit-btn" onclick="p2ShowVoted()">Submit my votes</button>
+        <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--grey)">You can change your vote until the organizer picks a time</div>
+      </div>
+    </div><!-- /p2-vote -->
+
+    <!-- VOTED CONFIRMATION -->
+    <div class="screen" id="p2-voted">
+      <div style="padding:20px 20px 0">
+        <div style="background:var(--sage-lt);border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+          <span style="font-size:28px">✅</span>
+          <div>
+            <div style="font-size:15px;font-weight:600;color:#467151">Vote submitted!</div>
+            <div style="font-size:13px;color:var(--grey);margin-top:2px">You'll be notified when the organizer picks a time.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vote-instructions">Current standings</div>
+
+      <div class="vote-time-row selected" style="cursor:default">
+        <div class="vote-check"></div>
+        <div class="vote-time-info">
+          <div class="vote-time-date">Thu, November 27</div>
+          <div class="vote-time-time">2:00 PM – 4:00 PM · You voted</div>
+        </div>
+        <div class="vote-count">
+          <span class="vote-count-num">5</span>
+          votes
+        </div>
+      </div>
+
+      <div class="vote-time-row" style="cursor:default;opacity:0.7">
+        <div class="vote-check"></div>
+        <div class="vote-time-info">
+          <div class="vote-time-date">Fri, November 28</div>
+          <div class="vote-time-time">12:00 PM – 2:00 PM</div>
+        </div>
+        <div class="vote-count">
+          <span class="vote-count-num">2</span>
+          votes
+        </div>
+      </div>
+
+      <div class="vote-time-row" style="cursor:default;opacity:0.7">
+        <div class="vote-check"></div>
+        <div class="vote-time-info">
+          <div class="vote-time-date">Sat, November 29</div>
+          <div class="vote-time-time">1:00 PM – 3:00 PM</div>
+        </div>
+        <div class="vote-count">
+          <span class="vote-count-num">1</span>
+          vote
+        </div>
+      </div>
+
+      <div style="padding:16px">
+        <button class="create-btn" style="background:var(--blue);height:44px;font-size:14px" onclick="showToast2('Change vote — picks re-open')">
+          Change my vote
+        </button>
+      </div>
+
+      <!-- Awaiting notification state -->
+      <div style="background:var(--white);margin:0 16px;border-radius:16px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:24px">🔔</span>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--charcoal)">Waiting on the organizer</div>
+            <div style="font-size:12px;color:var(--grey);margin-top:2px">You'll get a push notification when a time is confirmed.</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /p2-voted -->
+
+  </div><!-- /content-area -->
+
+  <div class="bottom-nav">
+    <div class="nav-item"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></div>
+    <div class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Calendar</span></div>
+    <div class="nav-item"><span class="nav-icon">📋</span><span class="nav-label">Lists</span></div>
+    <div class="nav-item"><span class="nav-icon">🍽</span><span class="nav-label">Meals</span></div>
+    <div class="nav-item active"><span class="nav-icon">👨‍👩‍👧</span><span class="nav-label">Family</span></div>
+  </div>
+
+</div><!-- /phone2 -->
+<div class="screen-label">Guest — votes on times</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+  /* ── PHONE 1 NAVIGATION ── */
+  const p1Titles = {
+    'hub':           'Family',
+    'invites-list':  'Group Invites',
+    'create':        'New Invite',
+    'results':       'Thanksgiving Dinner',
+    'confirmed':     'Confirmed',
+  };
+  const p1ActionLabels = {
+    'create': 'Send',
+  };
+
+  function p1ShowScreen(name) {
+    document.querySelectorAll('#phone1 .screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('p1-' + name).classList.add('active');
+
+    document.getElementById('p1-title').textContent = p1Titles[name] || 'Family';
+    const back = document.getElementById('p1-back');
+    back.classList.toggle('visible', name !== 'hub');
+
+    const rightEl = document.getElementById('p1-header-right');
+    if (name === 'invites-list') {
+      rightEl.innerHTML = '';
+    } else {
+      rightEl.innerHTML = '<div class="header-avatar">Y</div>';
+    }
+  }
+
+  function p1GoBack() {
+    const active = document.querySelector('#phone1 .screen.active');
+    const id = active?.id.replace('p1-', '');
+    const backMap = {
+      'invites-list': 'hub',
+      'create':       'invites-list',
+      'results':      'invites-list',
+      'confirmed':    'invites-list',
+    };
+    if (backMap[id]) p1ShowScreen(backMap[id]);
+  }
+
+  /* ── PHONE 2 NAVIGATION ── */
+  function p2GoBack() { showToast2('Back to inbox'); }
+
+  function p2ShowVoted() {
+    document.querySelectorAll('#phone2 .screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('p2-voted').classList.add('active');
+    document.getElementById('p2-title').textContent = 'Group Invite';
+  }
+
+  /* ── VOTE TOGGLE ── */
+  function toggleVote(rowId) {
+    const row = document.getElementById(rowId);
+    row.classList.toggle('selected');
+  }
+
+  /* ── TOASTS ── */
+  let toastTimer = null;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.opacity = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.style.opacity = '0', 2200);
+  }
+  function showToast1(msg) { showToast(msg); }
+  function showToast2(msg) { showToast(msg); }
+</script>
+</body>
+</html>
