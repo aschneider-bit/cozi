@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cozi Carpool — iOS Prototype</title>
+<style>
+  /* ── Cozi brand tokens ── */
+  :root {
+    --blue:            #159AD2;
+    --dark-blue:       #10739E;
+    --light-blue:      #D9F3FF;
+    --orange:          #E75526;
+    --tangerine:       #F7932A;
+    --light-tangerine: #FFE5CB;
+    --sage:            #90CEA0;
+    --light-sage:      #E3F5E7;
+    --gold:            #DBA34A;
+    --magenta:         #DB3968;
+    --lime:            #AAD762;
+    --cornflower:      #3C71E1;
+    --plum:            #820853;
+    --purple:          #9C5483;
+    /* neutrals */
+    --charcoal:  #414349;
+    --grey:      #8E8E93;  /* iOS-standard secondary text */
+    --separator: #E5E5EA;  /* iOS-standard separator */
+    --sys-bg:    #F2F2F7;  /* iOS system grouped background */
+    --white:     #FFFFFF;
+    /* system blue (nav buttons) → Cozi blue */
+    --link:      #159AD2;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1c1c1e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 56px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
+    min-height: 100vh;
+  }
+
+  body > h1 {
+    color: rgba(255,255,255,0.4);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  /* ── Phone frame ── */
+  .phone {
+    width: 393px;
+    height: 852px;
+    background: var(--sys-bg);
+    border-radius: 54px;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      0 0 0 1.5px #444,
+      0 0 0 3.5px #222,
+      0 40px 100px rgba(0,0,0,0.8);
+    flex-shrink: 0;
+  }
+
+  /* Dynamic Island */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 13px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 35px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 300;
+  }
+
+  /* ── Screen base ── */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    background: var(--sys-bg);
+    overflow: hidden;
+  }
+  .screen.active { display: flex; }
+
+  /* ── Status bar ── */
+  .status {
+    height: 54px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 28px 10px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .status .time { font-size: 15px; font-weight: 600; }
+  .status .icons { display: flex; align-items: center; gap: 5px; font-size: 13px; }
+
+  /* ── Nav bar ── */
+  .nav {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .nav-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 17px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .nav-btn {
+    font-size: 17px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 4px 0;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 1;
+  }
+
+  /* ── Scrollable content ── */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .content::-webkit-scrollbar { display: none; }
+
+  /* ── Tab bar ── */
+  .tab-bar {
+    height: 83px;
+    background: rgba(255,255,255,0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 0.5px solid var(--separator);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 8px;
+    flex-shrink: 0;
+  }
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab .ti { font-size: 23px; line-height: 1; }
+  .tab .tl { font-size: 10px; font-weight: 500; color: var(--grey); }
+  .tab.on .tl { color: var(--blue); }
+
+  /* ── Section headers (iOS grouped style) ── */
+  .sh {
+    padding: 20px 16px 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .sh-sm { padding: 8px 16px 6px; font-size: 13px; color: var(--grey); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+
+  /* ── iOS grouped list section ── */
+  .list-section {
+    background: var(--white);
+    border-top: 0.5px solid var(--separator);
+    border-bottom: 0.5px solid var(--separator);
+    margin-bottom: 0;
+  }
+  .list-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 12px;
+    border-bottom: 0.5px solid var(--separator);
+    background: var(--white);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
+  }
+  .list-row:last-child { border-bottom: none; }
+  .list-row:active { background: #f0f0f0; }
+  .row-icon { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+  .row-body { flex: 1; }
+  .row-title { font-size: 16px; color: var(--charcoal); }
+  .row-sub { font-size: 13px; color: var(--grey); margin-top: 1px; }
+  .row-right { font-size: 14px; color: var(--grey); }
+  .row-chevron { color: #C7C7CC; font-size: 16px; flex-shrink: 0; }
+  .row-badge {
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--gold);
+    color: var(--white);
+    padding: 2px 8px;
+    border-radius: 99px;
+    flex-shrink: 0;
+  }
+  .row-new {
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--blue);
+    color: var(--white);
+    padding: 2px 8px;
+    border-radius: 99px;
+    flex-shrink: 0;
+  }
+
+  /* ── Member avatar row ── */
+  .member-row {
+    background: var(--white);
+    padding: 12px 16px;
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    border-top: 0.5px solid var(--separator);
+    border-bottom: 0.5px solid var(--separator);
+    -webkit-overflow-scrolling: touch;
+  }
+  .member-row::-webkit-scrollbar { display: none; }
+  .member-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
+  .av {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--white);
+  }
+  .av-label { font-size: 11px; color: var(--grey); }
+  .av-add { background: var(--separator); color: var(--grey); font-size: 22px; }
+
+  /* ── Screen 1 blue hero ── */
+  .hero-blue {
+    background: var(--blue);
+  }
+  .hero-blue .status .time { color: var(--white); }
+  .hero-blue .status .icons { color: var(--white); }
+  .hero-blue .nav-title { color: var(--white); }
+  .hero-blue .nav-btn { color: rgba(255,255,255,0.85); }
+  .hero-blue .nav-btn.icon-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .family-greeting {
+    padding: 8px 16px 20px;
+    background: var(--blue);
+  }
+  .family-greeting h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.2;
+  }
+  .avatar-stack {
+    display: flex;
+    margin-top: 10px;
+  }
+  .avatar-stack .av {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+    border: 2px solid var(--blue);
+    margin-left: -6px;
+  }
+  .avatar-stack .av:first-child { margin-left: 0; }
+
+  /* Carpool featured row in list — blue background */
+  .carpool-featured-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 12px;
+    background: var(--blue);
+    border-bottom: 0.5px solid rgba(255,255,255,0.2);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 60px;
+  }
+  .carpool-featured-row:active { background: var(--dark-blue); }
+  .carpool-featured-row .row-title { color: var(--white); font-size: 17px; font-weight: 600; }
+  .carpool-featured-row .row-sub { color: rgba(255,255,255,0.75); font-size: 13px; }
+  .carpool-featured-row .row-chevron { color: rgba(255,255,255,0.4); }
+  .carpool-featured-row .row-new { background: var(--gold); }
+
+  /* ── Carpool chip states ── */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .chip-blue { background: var(--light-blue); color: var(--dark-blue); }
+  .chip-orange { background: var(--light-tangerine); color: #9b5000; }
+  .chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── Next-up inline block ── */
+  .next-up-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--light-blue);
+    border-top: 0.5px solid var(--separator);
+  }
+  .next-up-av {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: var(--white);
+    flex-shrink: 0;
+  }
+  .next-up-text { font-size: 14px; font-weight: 500; color: var(--dark-blue); flex: 1; }
+  .next-up-date { font-size: 13px; color: var(--dark-blue); opacity: 0.7; }
+
+  /* ── Invite card ── */
+  .invite-section {
+    background: var(--white);
+    border-top: 0.5px solid var(--separator);
+    border-bottom: 0.5px solid var(--separator);
+  }
+  .invite-header-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px 8px;
+    gap: 8px;
+  }
+  .invite-from { font-size: 13px; color: var(--grey); flex: 1; }
+  .invite-name { padding: 0 16px 4px; font-size: 17px; font-weight: 600; color: var(--charcoal); }
+  .invite-meta { padding: 0 16px 12px; font-size: 14px; color: var(--grey); }
+  .invite-actions {
+    display: flex;
+    gap: 10px;
+    padding: 0 16px 14px;
+  }
+  .btn-accept {
+    flex: 1; height: 40px;
+    background: var(--blue); color: var(--white);
+    border: none; border-radius: 99px;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  .btn-decline {
+    flex: 1; height: 40px;
+    background: var(--sys-bg); color: var(--charcoal);
+    border: 1px solid var(--separator); border-radius: 99px;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+
+  /* ── Modal (sheet) ── */
+  .modal-header {
+    height: calc(54px + 44px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 16px 10px;
+    background: var(--white);
+    border-bottom: 0.5px solid var(--separator);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .modal-title {
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--charcoal);
+    white-space: nowrap;
+  }
+
+  .form-group { margin-top: 0; }
+  .form-label {
+    padding: 20px 16px 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .form-input {
+    width: calc(100% - 32px);
+    height: 44px;
+    margin: 0 16px;
+    padding: 0 14px;
+    font-size: 16px;
+    color: var(--charcoal);
+    background: var(--white);
+    border: 0.5px solid var(--separator);
+    border-radius: 10px;
+    font-family: inherit;
+    outline: none;
+  }
+  .form-input:focus { border-color: var(--blue); }
+
+  .chip-row { display: flex; gap: 8px; padding: 0 16px 4px; flex-wrap: wrap; }
+  .member-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 99px;
+    border: 1px solid var(--separator);
+    font-size: 14px; font-weight: 500; color: var(--charcoal);
+    background: var(--white); cursor: pointer;
+  }
+  .member-chip.sel { border-color: var(--blue); background: var(--light-blue); color: var(--dark-blue); }
+  .mc-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+  /* rotation preview strip */
+  .rotation-strip {
+    background: var(--white);
+    border-top: 0.5px solid var(--separator);
+    border-bottom: 0.5px solid var(--separator);
+  }
+  .rot-row {
+    display: flex; align-items: center;
+    padding: 11px 16px; gap: 10px;
+    border-bottom: 0.5px solid var(--separator);
+  }
+  .rot-row:last-child { border-bottom: none; }
+  .rot-date { font-size: 14px; color: var(--grey); width: 52px; flex-shrink: 0; }
+  .rot-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .rot-name { font-size: 15px; color: var(--charcoal); flex: 1; }
+  .rot-you { font-size: 13px; color: var(--blue); font-weight: 600; }
+
+  .btn-primary {
+    display: block;
+    width: calc(100% - 32px);
+    height: 50px;
+    margin: 24px 16px;
+    background: var(--blue);
+    color: var(--white);
+    border: none;
+    border-radius: 99px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-primary:active { opacity: 0.85; }
+
+  /* ── Detail hero ── */
+  .detail-hero {
+    background: var(--blue);
+    padding-bottom: 28px;
+    flex-shrink: 0;
+  }
+  .detail-hero .status .time { color: var(--white); }
+  .detail-hero .status .icons { color: var(--white); }
+  .detail-hero .nav-btn { color: var(--white); }
+  .detail-hero .nav-title { color: var(--white); }
+  .hero-body { padding: 4px 20px 0; }
+  .hero-emoji { font-size: 44px; display: block; margin-bottom: 8px; }
+  .hero-title { font-size: 28px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+  .hero-meta { font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.6; }
+
+  /* Floating "next up" card overlapping hero */
+  .next-card {
+    background: var(--white);
+    border-radius: 14px;
+    margin: -20px 16px 0;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.14);
+    position: relative;
+    z-index: 5;
+  }
+  .nc-av {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; color: var(--white);
+    flex-shrink: 0;
+  }
+  .nc-label { font-size: 11px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+  .nc-driver { font-size: 16px; font-weight: 600; color: var(--charcoal); }
+  .nc-date { font-size: 13px; color: var(--grey); }
+
+  /* rotation list rows */
+  .rot-list-row {
+    display: flex; align-items: center;
+    padding: 12px 16px; gap: 12px;
+    background: var(--white);
+    border-bottom: 0.5px solid var(--separator);
+    min-height: 44px;
+  }
+  .rot-list-row:last-child { border-bottom: none; }
+  .rot-list-row.is-next { background: var(--light-blue); }
+  .rld { font-size: 14px; color: var(--grey); width: 52px; flex-shrink: 0; }
+  .rld.next-color { color: var(--dark-blue); }
+  .rl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .rl-name { font-size: 15px; color: var(--charcoal); flex: 1; }
+  .rl-name.next-color { color: var(--dark-blue); font-weight: 600; }
+  .rl-status { font-size: 13px; color: var(--grey); }
+  .rl-status.done { color: var(--sage); }
+  .rl-status.next-badge {
+    background: var(--blue); color: var(--white);
+    font-size: 12px; font-weight: 700;
+    padding: 3px 10px; border-radius: 99px;
+  }
+
+  .people-grid { display: flex; gap: 16px; flex-wrap: wrap; padding: 14px 16px; }
+  .person-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .p-av {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; color: var(--white);
+  }
+  .p-name { font-size: 12px; color: var(--grey); }
+
+  /* ── Calendar event screen ── */
+  .event-color-bar { height: 5px; background: var(--tangerine); flex-shrink: 0; }
+  .event-title-block {
+    background: var(--white);
+    padding: 16px 16px 14px;
+    border-bottom: 0.5px solid var(--separator);
+  }
+  .event-title { font-size: 26px; font-weight: 700; color: var(--charcoal); margin-bottom: 4px; }
+  .event-cal-tag { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--grey); }
+  .cal-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+  .event-row {
+    display: flex; align-items: flex-start;
+    padding: 14px 16px; gap: 12px;
+    background: var(--white);
+    border-bottom: 0.5px solid var(--separator);
+  }
+  .er-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; margin-top: 1px; }
+  .er-main { font-size: 15px; color: var(--charcoal); }
+  .er-sub { font-size: 13px; color: var(--grey); margin-top: 1px; }
+
+  .carpool-block {
+    background: var(--light-blue);
+    border-radius: 14px;
+    margin: 16px 16px 0;
+    padding: 14px 16px;
+    border: 1px solid rgba(21,154,210,0.18);
+  }
+  .cb-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .cb-label { font-size: 12px; font-weight: 700; color: var(--dark-blue); text-transform: uppercase; letter-spacing: 0.07em; }
+  .cb-driver { font-size: 16px; font-weight: 600; color: var(--charcoal); margin-bottom: 3px; }
+  .cb-kids { font-size: 14px; color: var(--grey); margin-bottom: 12px; }
+  .cb-link { font-size: 14px; font-weight: 600; color: var(--blue); cursor: pointer; }
+
+  /* ── Nav dots ── */
+  .dots { display: flex; gap: 10px; margin-top: 22px; align-items: center; }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .dot.on { background: var(--white); width: 20px; border-radius: 4px; }
+  .dot-label { color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 8px; letter-spacing: 0.03em; }
+</style>
+</head>
+<body>
+<h1>Cozi Carpool — iOS Prototype</h1>
+
+<div class="phone">
+
+<!-- ═══════════════════════════════════════════
+     S1 — Family Tab
+     ═══════════════════════════════════════════ -->
+<div class="screen active" id="s1">
+  <div class="hero-blue">
+    <div class="status">
+      <span class="time">9:41</span>
+      <div class="icons">▌▌▌ ⊀ ▬</div>
+    </div>
+    <div class="nav">
+      <span style="width:40px"></span>
+      <span class="nav-title" style="color:white">Schneider Family</span>
+      <button class="nav-btn" style="color:rgba(255,255,255,0.8);font-size:20px">⚙</button>
+    </div>
+    <div class="family-greeting">
+      <h2>Good morning,<br>Schneider family!</h2>
+      <div class="avatar-stack">
+        <div class="av" style="background:var(--blue);border-color:var(--blue)">A</div>
+        <div class="av" style="background:var(--magenta);border-color:var(--blue)">S</div>
+        <div class="av" style="background:var(--cornflower);border-color:var(--blue)">E</div>
+        <div class="av" style="background:var(--lime);color:var(--charcoal);border-color:var(--blue)">N</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Carpool featured entry (new) -->
+    <div style="margin-top:16px">
+      <div class="list-section">
+        <div class="carpool-featured-row" onclick="goto(2)">
+          <span class="row-icon" style="font-size:22px">🚗</span>
+          <div class="row-body">
+            <div class="row-title">Carpool</div>
+            <div class="row-sub">Coordinate rides with other families</div>
+          </div>
+          <span class="row-new">New</span>
+          <span class="row-chevron">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature list -->
+    <div class="sh">Features</div>
+    <div class="list-section">
+      <div class="list-row">
+        <span class="row-icon">🎂</span>
+        <div class="row-body">
+          <div class="row-title">Birthdays</div>
+          <div class="row-sub">Track &amp; celebrate every one</div>
+        </div>
+        <span class="row-badge">Gold</span>
+        <span class="row-chevron">›</span>
+      </div>
+      <div class="list-row">
+        <span class="row-icon">📍</span>
+        <div class="row-body">
+          <div class="row-title">Map &amp; Safety</div>
+          <div class="row-sub">See where everyone is</div>
+        </div>
+        <span class="row-chevron">›</span>
+      </div>
+      <div class="list-row">
+        <span class="row-icon">💳</span>
+        <div class="row-body">
+          <div class="row-title">Finances</div>
+          <div class="row-sub">Split, spend &amp; save</div>
+        </div>
+        <span class="row-chevron">›</span>
+      </div>
+      <div class="list-row">
+        <span class="row-icon">🤖</span>
+        <div class="row-body">
+          <div class="row-title">Family Assistant</div>
+          <div class="row-sub">AI for your family</div>
+        </div>
+        <span class="row-chevron">›</span>
+      </div>
+      <div class="list-row">
+        <span class="row-icon">🔒</span>
+        <div class="row-body">
+          <div class="row-title">Vault</div>
+          <div class="row-sub">Secure family docs &amp; info</div>
+        </div>
+        <span class="row-chevron">›</span>
+      </div>
+      <div class="list-row" style="border-bottom:none">
+        <span class="row-icon">🎯</span>
+        <div class="row-body">
+          <div class="row-title">Focus</div>
+          <div class="row-sub">Screen time &amp; family goals</div>
+        </div>
+        <span class="row-chevron">›</span>
+      </div>
+    </div>
+
+    <div style="height:16px"></div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab"><div class="ti">🏠</div><div class="tl">Home</div></div>
+    <div class="tab"><div class="ti">📅</div><div class="tl">Calendar</div></div>
+    <div class="tab"><div class="ti">📋</div><div class="tl">Lists</div></div>
+    <div class="tab"><div class="ti">🍽</div><div class="tl">Recipes</div></div>
+    <div class="tab on"><div class="ti">👨‍👩‍👧‍👦</div><div class="tl">Family</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     S2 — Carpool Home
+     ═══════════════════════════════════════════ -->
+<div class="screen" id="s2">
+  <div style="background:white;border-bottom:0.5px solid var(--separator)">
+    <div class="status">
+      <span class="time" style="color:var(--charcoal)">9:41</span>
+      <div class="icons" style="color:var(--charcoal)">▌▌▌ ⊀ ▬</div>
+    </div>
+    <div class="nav">
+      <button class="nav-btn" style="color:var(--link)" onclick="goto(1)">‹ Family</button>
+      <span class="nav-title" style="color:var(--charcoal)">Carpool</span>
+      <button class="nav-btn" style="color:var(--link);font-size:22px;font-weight:300" onclick="goto(3)">+</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Invite received -->
+    <div class="sh">Invite received</div>
+    <div class="invite-section">
+      <div class="invite-header-row">
+        <div class="av" style="background:var(--tangerine);width:32px;height:32px;font-size:13px">MT</div>
+        <span class="invite-from">From Mike Torres · Basketball team</span>
+      </div>
+      <div class="invite-name">🏀 Basketball Practice</div>
+      <div class="invite-meta">Tue &amp; Thu · 5:00 PM · Riverside Gym · Noah</div>
+      <div class="invite-actions">
+        <button class="btn-accept">Accept</button>
+        <button class="btn-decline">Decline</button>
+      </div>
+    </div>
+
+    <!-- Active carpools -->
+    <div class="sh">Active</div>
+    <div class="list-section">
+      <!-- Soccer Practice row -->
+      <div onclick="goto(4)" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
+        <div class="list-row" style="border-bottom:none">
+          <span class="row-icon">⚽</span>
+          <div class="row-body">
+            <div class="row-title">Soccer Practice</div>
+            <div class="row-sub">Mon/Wed/Fri · 3:30 PM · Emma, Olivia K., Liam T.</div>
+          </div>
+          <span class="row-chevron">›</span>
+        </div>
+        <div class="next-up-row">
+          <div class="next-up-av" style="background:var(--magenta)">SK</div>
+          <div class="next-up-text">Sarah Kowalski drives</div>
+          <div class="next-up-date">Oct 3</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div class="list-section">
+        <!-- Piano Lessons row -->
+        <div style="cursor:pointer;-webkit-tap-highlight-color:transparent">
+          <div class="list-row" style="border-bottom:none">
+            <span class="row-icon">🎹</span>
+            <div class="row-body">
+              <div class="row-title">Piano Lessons</div>
+              <div class="row-sub">Sat · 10:00 AM · Emma, Lily W.</div>
+            </div>
+            <span class="row-chevron">›</span>
+          </div>
+          <div class="next-up-row" style="background:var(--light-sage)">
+            <div class="next-up-av" style="background:var(--blue)">A</div>
+            <div class="next-up-text" style="color:#1a5e33">You drive</div>
+            <div class="next-up-date" style="color:#1a5e33">Oct 5</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:20px"></div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab"><div class="ti">🏠</div><div class="tl">Home</div></div>
+    <div class="tab"><div class="ti">📅</div><div class="tl">Calendar</div></div>
+    <div class="tab"><div class="ti">📋</div><div class="tl">Lists</div></div>
+    <div class="tab"><div class="ti">🍽</div><div class="tl">Recipes</div></div>
+    <div class="tab on"><div class="ti">👨‍👩‍👧‍👦</div><div class="tl">Family</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     S3 — New Carpool (modal sheet)
+     ═══════════════════════════════════════════ -->
+<div class="screen" id="s3" style="background:var(--white)">
+  <div class="modal-header">
+    <button class="nav-btn" style="color:var(--link)" onclick="goto(2)">Cancel</button>
+    <span class="modal-title">New carpool</span>
+    <button class="nav-btn" style="color:var(--link);opacity:0.4">Done</button>
+  </div>
+
+  <div class="content" style="background:var(--sys-bg)">
+    <!-- Activity name -->
+    <div class="form-label" style="padding-bottom:8px">Activity name</div>
+    <input class="form-input" type="text" value="Soccer Practice" placeholder="e.g. Soccer Practice">
+
+    <!-- Schedule -->
+    <div class="form-label">Schedule</div>
+    <div class="list-section">
+      <div class="list-row">
+        <span class="row-icon">📅</span>
+        <div class="row-body"><div class="row-title">Days</div></div>
+        <span class="row-right">Mon, Wed, Fri</span>
+        <span class="row-chevron">›</span>
+      </div>
+      <div class="list-row">
+        <span class="row-icon">🕒</span>
+        <div class="row-body"><div class="row-title">Time</div></div>
+        <span class="row-right">3:30 PM</span>
+        <span class="row-chevron">›</span>
+      </div>
+      <div class="list-row" style="border-bottom:none">
+        <span class="row-icon">📍</span>
+        <div class="row-body"><div class="row-title">Location</div></div>
+        <span class="row-right" style="font-size:13px;max-width:140px;text-align:right">Lincoln Park Field 3</span>
+        <span class="row-chevron">›</span>
+      </div>
+    </div>
+
+    <!-- Kids -->
+    <div class="form-label">Kids in carpool</div>
+    <div style="background:var(--white);padding:12px 16px;border-top:0.5px solid var(--separator);border-bottom:0.5px solid var(--separator)">
+      <div class="chip-row" style="padding:0">
+        <div class="member-chip sel">
+          <div class="mc-dot" style="background:var(--cornflower)"></div>Emma
+        </div>
+        <div class="member-chip">
+          <div class="mc-dot" style="background:var(--lime)"></div>Noah
+        </div>
+      </div>
+    </div>
+
+    <!-- Co-drivers -->
+    <div class="form-label">Co-drivers</div>
+    <div class="list-section">
+      <div class="list-row">
+        <div class="av" style="background:var(--blue);width:32px;height:32px;font-size:13px">A</div>
+        <div class="row-body"><div class="row-title">Andrew Schneider</div></div>
+        <span style="font-size:13px;color:var(--blue);font-weight:600">You</span>
+      </div>
+      <div class="list-row">
+        <div class="av" style="background:var(--magenta);width:32px;height:32px;font-size:13px">SK</div>
+        <div class="row-body"><div class="row-title">Sarah Kowalski</div></div>
+        <span class="row-right">Invite pending</span>
+      </div>
+      <div class="list-row">
+        <div class="av" style="background:var(--tangerine);width:32px;height:32px;font-size:13px">MT</div>
+        <div class="row-body"><div class="row-title">Mike Torres</div></div>
+        <span class="row-right">Invite pending</span>
+      </div>
+      <div class="list-row" style="border-bottom:none">
+        <span class="row-icon" style="color:var(--blue);font-size:22px;font-weight:300">+</span>
+        <div class="row-body"><div class="row-title" style="color:var(--blue)">Add co-driver</div></div>
+      </div>
+    </div>
+
+    <!-- Rotation preview -->
+    <div class="form-label">Rotation preview</div>
+    <div class="rotation-strip">
+      <div class="rot-row">
+        <div class="rot-date">Sep 29</div>
+        <div class="rot-dot" style="background:var(--blue)"></div>
+        <div class="rot-name">Andrew Schneider</div>
+        <div class="rot-you">You</div>
+      </div>
+      <div class="rot-row">
+        <div class="rot-date">Oct 1</div>
+        <div class="rot-dot" style="background:var(--magenta)"></div>
+        <div class="rot-name">Sarah Kowalski</div>
+      </div>
+      <div class="rot-row">
+        <div class="rot-date">Oct 3</div>
+        <div class="rot-dot" style="background:var(--tangerine)"></div>
+        <div class="rot-name">Mike Torres</div>
+      </div>
+      <div class="rot-row">
+        <div class="rot-date">Oct 6</div>
+        <div class="rot-dot" style="background:var(--blue)"></div>
+        <div class="rot-name">Andrew Schneider</div>
+        <div class="rot-you">You</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="goto(2)">Send invites</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     S4 — Soccer Practice detail
+     ═══════════════════════════════════════════ -->
+<div class="screen" id="s4">
+  <div class="detail-hero">
+    <div class="status">
+      <span class="time">9:41</span>
+      <div class="icons">▌▌▌ ⊀ ▬</div>
+    </div>
+    <div class="nav">
+      <button class="nav-btn" onclick="goto(2)">‹ Carpool</button>
+      <span class="nav-title"></span>
+      <button class="nav-btn" style="font-size:20px">···</button>
+    </div>
+    <div class="hero-body">
+      <span class="hero-emoji">⚽</span>
+      <div class="hero-title">Soccer Practice</div>
+      <div class="hero-meta">Mon · Wed · Fri &nbsp;·&nbsp; 3:30 PM<br>Lincoln Park Field 3</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Next-up floating card -->
+    <div class="next-card">
+      <div class="nc-av" style="background:var(--magenta)">SK</div>
+      <div>
+        <div class="nc-label">Next up</div>
+        <div class="nc-driver">Sarah Kowalski drives</div>
+        <div class="nc-date">Friday, Oct 3</div>
+      </div>
+    </div>
+
+    <!-- Rotation -->
+    <div class="sh" style="margin-top:12px">Rotation</div>
+    <div class="list-section">
+      <div class="rot-list-row">
+        <div class="rld">Sep 29</div>
+        <div class="rl-dot" style="background:var(--blue)"></div>
+        <div class="rl-name">Andrew</div>
+        <div class="rl-status done">✓ Done</div>
+      </div>
+      <div class="rot-list-row">
+        <div class="rld">Oct 1</div>
+        <div class="rl-dot" style="background:var(--magenta)"></div>
+        <div class="rl-name">Sarah K.</div>
+        <div class="rl-status done">✓ Done</div>
+      </div>
+      <div class="rot-list-row is-next">
+        <div class="rld next-color">Oct 3</div>
+        <div class="rl-dot" style="background:var(--magenta)"></div>
+        <div class="rl-name next-color">Sarah K.</div>
+        <div class="rl-status next-badge">Next</div>
+      </div>
+      <div class="rot-list-row">
+        <div class="rld">Oct 6</div>
+        <div class="rl-dot" style="background:var(--tangerine)"></div>
+        <div class="rl-name">Mike T.</div>
+        <div class="rl-status">Oct 6</div>
+      </div>
+      <div class="rot-list-row" style="border-bottom:none">
+        <div class="rld">Oct 8</div>
+        <div class="rl-dot" style="background:var(--blue)"></div>
+        <div class="rl-name">Andrew</div>
+        <div class="rl-status">Oct 8</div>
+      </div>
+    </div>
+
+    <!-- Drivers -->
+    <div class="sh">Drivers</div>
+    <div style="background:var(--white);border-top:0.5px solid var(--separator);border-bottom:0.5px solid var(--separator)">
+      <div class="people-grid">
+        <div class="person-item">
+          <div class="p-av" style="background:var(--blue)">A</div>
+          <div class="p-name">Andrew</div>
+        </div>
+        <div class="person-item">
+          <div class="p-av" style="background:var(--magenta)">SK</div>
+          <div class="p-name">Sarah K.</div>
+        </div>
+        <div class="person-item">
+          <div class="p-av" style="background:var(--tangerine)">MT</div>
+          <div class="p-name">Mike T.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kids -->
+    <div class="sh">Kids</div>
+    <div style="background:var(--white);border-top:0.5px solid var(--separator);border-bottom:0.5px solid var(--separator);margin-bottom:16px">
+      <div class="people-grid">
+        <div class="person-item">
+          <div class="p-av" style="background:var(--cornflower)">E</div>
+          <div class="p-name">Emma</div>
+        </div>
+        <div class="person-item">
+          <div class="p-av" style="background:var(--magenta)">OK</div>
+          <div class="p-name">Olivia K.</div>
+        </div>
+        <div class="person-item">
+          <div class="p-av" style="background:var(--tangerine)">LT</div>
+          <div class="p-name">Liam T.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab"><div class="ti">🏠</div><div class="tl">Home</div></div>
+    <div class="tab"><div class="ti">📅</div><div class="tl">Calendar</div></div>
+    <div class="tab"><div class="ti">📋</div><div class="tl">Lists</div></div>
+    <div class="tab"><div class="ti">🍽</div><div class="tl">Recipes</div></div>
+    <div class="tab on"><div class="ti">👨‍👩‍👧‍👦</div><div class="tl">Family</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     S5 — Calendar event (Oct 3)
+     ═══════════════════════════════════════════ -->
+<div class="screen" id="s5" style="background:var(--sys-bg)">
+  <div style="background:var(--white);border-bottom:0.5px solid var(--separator)">
+    <div class="status">
+      <span class="time" style="color:var(--charcoal)">9:41</span>
+      <div class="icons" style="color:var(--charcoal)">▌▌▌ ⊀ ▬</div>
+    </div>
+    <div class="nav">
+      <button class="nav-btn" style="color:var(--link)" onclick="goto(1)">‹ Calendar</button>
+      <span class="nav-title" style="color:var(--charcoal)">Oct 3</span>
+      <button class="nav-btn" style="color:var(--link)">Edit</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="event-color-bar"></div>
+    <div class="event-title-block">
+      <div class="event-title">Soccer Practice</div>
+      <div class="event-cal-tag">
+        <div class="cal-dot" style="background:var(--tangerine)"></div>
+        Emma's calendar
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div style="background:var(--white);border-top:0.5px solid var(--separator);border-bottom:0.5px solid var(--separator)">
+        <div class="event-row">
+          <div class="er-icon">📅</div>
+          <div>
+            <div class="er-main">Friday, October 3, 2025</div>
+            <div class="er-sub">3:30 PM – 4:30 PM</div>
+          </div>
+        </div>
+        <div class="event-row">
+          <div class="er-icon">🔁</div>
+          <div class="er-main">Mon, Wed, Fri · Every week</div>
+        </div>
+        <div class="event-row" style="border-bottom:none">
+          <div class="er-icon">📍</div>
+          <div class="er-main">Lincoln Park Field 3</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carpool block -->
+    <div class="carpool-block">
+      <div class="cb-header">
+        <span style="font-size:15px">🚗</span>
+        <div class="cb-label">Carpool</div>
+      </div>
+      <div class="cb-driver">Sarah Kowalski drives</div>
+      <div class="cb-kids">Emma, Olivia K., Liam T.</div>
+      <div class="cb-link" onclick="goto(4)">See full rotation →</div>
+    </div>
+
+    <!-- Assigned to -->
+    <div style="background:var(--white);border-top:0.5px solid var(--separator);border-bottom:0.5px solid var(--separator);margin-top:16px">
+      <div class="event-row" style="border-bottom:none">
+        <div class="er-icon">👤</div>
+        <div>
+          <div class="er-sub" style="margin-bottom:6px">Assigned to</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="p-av" style="background:var(--cornflower);width:32px;height:32px;font-size:13px">E</div>
+            <div class="er-main">Emma Schneider</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:20px"></div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab"><div class="ti">🏠</div><div class="tl">Home</div></div>
+    <div class="tab on"><div class="ti">📅</div><div class="tl">Calendar</div></div>
+    <div class="tab"><div class="ti">📋</div><div class="tl">Lists</div></div>
+    <div class="tab"><div class="ti">🍽</div><div class="tl">Recipes</div></div>
+    <div class="tab"><div class="ti">👨‍👩‍👧‍👦</div><div class="tl">Family</div></div>
+  </div>
+</div>
+
+</div><!-- /phone -->
+
+<div class="dots">
+  <div class="dot on" id="d1" onclick="goto(1)"></div>
+  <div class="dot" id="d2" onclick="goto(2)"></div>
+  <div class="dot" id="d3" onclick="goto(3)"></div>
+  <div class="dot" id="d4" onclick="goto(4)"></div>
+  <div class="dot" id="d5" onclick="goto(5)"></div>
+</div>
+<div class="dot-label" id="dlabel">1 of 5 — Family Tab</div>
+
+<script>
+const LABELS = [
+  '1 of 5 — Family Tab',
+  '2 of 5 — Carpool Home',
+  '3 of 5 — New Carpool',
+  '4 of 5 — Soccer Practice',
+  '5 of 5 — Calendar Event',
+];
+function goto(n) {
+  document.querySelectorAll('.screen').forEach((s,i) => s.classList.toggle('active', i===n-1));
+  document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('on', i===n-1));
+  document.getElementById('dlabel').textContent = LABELS[n-1];
+}
+</script>
+</body>
+</html>
