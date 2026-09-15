@@ -1,1726 +1,1559 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cozi - Settle Up</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            --blue:       #159AD2;
-            --blue-dk:    #10739E;
-            --blue-lt:    #D9F3FF;
-            --orange:     #E75526;
-            --charcoal:   #414349;
-            --grey:       #727272;
-            --grey-lt:    #EEEEEE;
-            --bg:         #F5F5F5;
-            --white:      #FFFFFF;
-            --dark-sage:  #467151;
-            --sage-lt:    #E3F5E7;
-            /* member colors — Cozi palette */
-            --m-you:      #E75526;
-            --m-chad:     #3C71E1;
-            --m-nick:     #9C5483;
-            --m-riley:    #F7932A;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-            background: #C8C8CC;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 32px 20px;
-        }
-
-        /* Phone shell with dark bezel */
-        .phone {
-            width: 390px;
-            height: 844px;
-            background: var(--bg);
-            border-radius: 52px;
-            overflow: hidden;
-            box-shadow: 0 0 0 10px #111, 0 0 0 12px #3A3A3A, 0 40px 80px rgba(0,0,0,.45);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Status bar */
-        .status-bar {
-            height: 50px;
-            background: var(--white);
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            padding: 0 24px 8px;
-            color: var(--charcoal);
-            font-size: 14px;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .status-icons {
-            display: flex;
-            gap: 5px;
-            align-items: center;
-            font-size: 12px;
-        }
-
-        /* Nav bar — white, iOS convention */
-        .nav-bar {
-            background: var(--white);
-            border-bottom: 1px solid var(--grey-lt);
-            padding: 0 16px;
-            height: 52px;
-            display: flex;
-            align-items: center;
-            flex-shrink: 0;
-        }
-
-        .nav-bar-title {
-            flex: 1;
-            text-align: center;
-            font-size: 17px;
-            font-weight: 600;
-            color: var(--charcoal);
-        }
-
-        .nav-bar-back {
-            background: none;
-            border: none;
-            color: var(--blue);
-            font-size: 17px;
-            font-weight: 400;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 0;
-            min-width: 60px;
-        }
-
-        .nav-bar-back svg {
-            width: 11px;
-            height: 18px;
-        }
-
-        .nav-bar-action {
-            background: none;
-            border: none;
-            color: var(--blue);
-            font-size: 17px;
-            font-weight: 400;
-            cursor: pointer;
-            min-width: 60px;
-            text-align: right;
-            padding: 0;
-        }
-
-        .nav-bar-action.icon-btn {
-            font-size: 26px;
-            line-height: 1;
-            font-weight: 300;
-            text-align: right;
-        }
-
-        /* Content */
-        .content {
-            flex: 1;
-            overflow-y: auto;
-            background: var(--bg);
-        }
-
-        /* Screens */
-        .screen {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-        }
-        .screen.active { display: flex; }
-
-        /* Bottom nav — 5 tabs: Home Calendar Lists Recipes Family */
-        .bottom-nav {
-            display: flex;
-            border-top: 1px solid var(--grey-lt);
-            background: var(--white);
-            padding: 6px 0 20px;
-            flex-shrink: 0;
-        }
-
-        .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            cursor: pointer;
-            padding: 4px 0;
-            border: none;
-            background: none;
-            color: var(--grey);
-            font-size: 10px;
-            font-weight: 500;
-        }
-
-        .nav-item.active { color: var(--blue); }
-
-        .nav-icon {
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-icon svg { width: 22px; height: 22px; }
-
-        /* ======= SECTION LABEL ======= */
-        .section-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--grey);
-            padding: 20px 16px 8px;
-        }
-
-        /* ======= CARDS ======= */
-        .card-group {
-            background: var(--white);
-            border-radius: 14px;
-            overflow: hidden;
-            margin: 0 16px 16px;
-            border: 1px solid var(--grey-lt);
-        }
-
-        .row {
-            display: flex;
-            align-items: center;
-            padding: 14px 16px;
-            background: var(--white);
-            gap: 12px;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .row:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 16px;
-            right: 0;
-            height: 1px;
-            background: var(--grey-lt);
-        }
-
-        .row:active { background: #F0F0F0; }
-
-        /* ======= BALANCE SUMMARY CARD ======= */
-        .balance-summary {
-            background: var(--white);
-            border-radius: 14px;
-            margin: 16px 16px 0;
-            padding: 18px 16px 16px;
-            border: 1px solid var(--grey-lt);
-        }
-
-        .balance-summary-label {
-            font-size: 13px;
-            color: var(--grey);
-            margin-bottom: 4px;
-        }
-
-        .balance-summary-amount {
-            font-size: 34px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 14px;
-        }
-
-        .balance-summary-amount.positive { color: var(--dark-sage); }
-        .balance-summary-amount.negative { color: var(--orange); }
-
-        .balance-person-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 0;
-        }
-
-        .balance-person-row:not(:last-child) {
-            border-bottom: 1px solid var(--grey-lt);
-        }
-
-        .balance-person-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .balance-person-name { font-size: 15px; color: var(--charcoal); font-weight: 500; }
-
-        .balance-owed { font-size: 14px; font-weight: 600; color: var(--dark-sage); }
-        .balance-owe  { font-size: 14px; font-weight: 600; color: var(--orange); }
-
-        .settle-pill {
-            padding: 5px 12px;
-            background: var(--blue);
-            color: white;
-            border: none;
-            border-radius: 100px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        /* ======= MEMBER DOT ======= */
-        .dot {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 15px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .dot-sm {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 11px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .dot-lg {
-            width: 46px;
-            height: 46px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 18px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        /* ======= EVENT CARD ======= */
-        .event-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            flex-shrink: 0;
-        }
-
-        .row-info { flex: 1; min-width: 0; }
-        .row-title { font-size: 16px; font-weight: 600; color: var(--charcoal); }
-        .row-sub   { font-size: 13px; color: var(--grey); margin-top: 2px; }
-
-        .row-amount {
-            font-size: 15px;
-            font-weight: 700;
-            white-space: nowrap;
-            margin-left: 4px;
-        }
-        .row-amount.pos    { color: var(--dark-sage); }
-        .row-amount.neg    { color: var(--orange); }
-        .row-amount.settle { color: var(--grey); font-weight: 500; font-size: 13px; }
-
-        .row-chevron {
-            color: var(--grey-lt);
-            font-size: 18px;
-            margin-left: 4px;
-        }
-
-        /* ======= FORM (Add Expense) ======= */
-        .form-section {
-            background: var(--white);
-            border-radius: 14px;
-            margin: 0 16px 16px;
-            border: 1px solid var(--grey-lt);
-            overflow: hidden;
-        }
-
-        .form-row {
-            display: flex;
-            align-items: center;
-            padding: 14px 16px;
-            gap: 12px;
-            position: relative;
-        }
-
-        .form-row:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 16px;
-            right: 0;
-            height: 1px;
-            background: var(--grey-lt);
-        }
-
-        .form-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: var(--blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .form-icon svg {
-            width: 18px;
-            height: 18px;
-            fill: white;
-        }
-
-        .form-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-size: 16px;
-            color: var(--charcoal);
-            font-family: inherit;
-            outline: none;
-        }
-
-        .form-input::placeholder { color: #C0C0C5; }
-
-        .form-label {
-            font-size: 14px;
-            color: var(--charcoal);
-            font-weight: 500;
-            min-width: 90px;
-        }
-
-        .form-value {
-            flex: 1;
-            font-size: 16px;
-            color: var(--charcoal);
-            text-align: right;
-        }
-
-        .form-select {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-size: 16px;
-            color: var(--charcoal);
-            font-family: inherit;
-            outline: none;
-            text-align: right;
-            -webkit-appearance: none;
-        }
-
-        /* Payer chips */
-        .payer-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 12px 16px 16px;
-            background: var(--white);
-            border-radius: 0 0 14px 14px;
-        }
-
-        .payer-chip {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 7px 12px 7px 7px;
-            border-radius: 100px;
-            background: var(--bg);
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--charcoal);
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-
-        .payer-chip.selected {
-            border-color: var(--blue);
-            background: var(--blue-lt);
-        }
-
-        /* Split pills */
-        .split-options {
-            display: flex;
-            gap: 8px;
-            padding: 12px 16px 16px;
-            background: var(--white);
-        }
-
-        .split-pill {
-            padding: 8px 18px;
-            border-radius: 100px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            border: 1.5px solid var(--grey-lt);
-            background: var(--bg);
-            color: var(--charcoal);
-        }
-
-        .split-pill.active {
-            background: var(--blue);
-            color: white;
-            border-color: var(--blue);
-        }
-
-        /* Primary button — pill */
-        .btn-primary {
-            display: block;
-            width: calc(100% - 32px);
-            margin: 8px 16px 24px;
-            padding: 16px;
-            background: var(--blue);
-            color: white;
-            border: none;
-            border-radius: 100px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-        }
-
-        .btn-primary:active { background: var(--blue-dk); }
-
-        /* ======= EVENT DETAIL ======= */
-        .detail-meta-bar {
-            background: var(--white);
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--grey-lt);
-            display: flex;
-            gap: 16px;
-        }
-
-        .detail-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: var(--grey);
-        }
-
-        .balance-bar {
-            background: var(--white);
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--grey-lt);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .balance-bar-text { font-size: 15px; color: var(--charcoal); }
-        .balance-bar-text strong.pos { color: var(--dark-sage); }
-        .balance-bar-text strong.neg { color: var(--orange); }
-
-        /* People strip */
-        .people-strip {
-            background: var(--white);
-            border-bottom: 1px solid var(--grey-lt);
-            padding: 14px 16px;
-        }
-
-        .people-strip-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .people-strip-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--grey);
-        }
-
-        .people-strip-edit {
-            font-size: 15px;
-            color: var(--blue);
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .people-bubbles {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-        }
-
-        .person-bubble {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            position: relative;
-        }
-
-        .person-bubble span { font-size: 11px; color: var(--grey); }
-
-        .remove-dot {
-            display: none;
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 17px;
-            height: 17px;
-            border-radius: 50%;
-            background: var(--orange);
-            color: white;
-            font-size: 11px;
-            line-height: 17px;
-            text-align: center;
-            border: none;
-            cursor: pointer;
-        }
-
-        .people-bubbles.managing .remove-dot { display: block; }
-
-        .add-person-bubble {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
-
-        .add-person-ring {
-            width: 46px;
-            height: 46px;
-            border-radius: 50%;
-            border: 2px dashed var(--blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            color: var(--blue);
-        }
-
-        .add-person-bubble span { font-size: 11px; color: var(--blue); }
-
-        /* Transaction items */
-        .txn-section-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--grey);
-            padding: 16px 16px 6px;
-        }
-
-        .txn-group {
-            background: var(--white);
-            border-radius: 14px;
-            margin: 0 16px 8px;
-            border: 1px solid var(--grey-lt);
-            overflow: hidden;
-        }
-
-        .txn-item {
-            cursor: pointer;
-        }
-
-        .txn-inner {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            gap: 10px;
-            position: relative;
-        }
-
-        .txn-item:not(:last-child) .txn-inner::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 16px;
-            right: 0;
-            height: 1px;
-            background: var(--grey-lt);
-        }
-
-        .txn-item.expanded .txn-inner::after { display: none; }
-
-        .txn-date {
-            width: 36px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        .txn-date .month { font-size: 10px; color: var(--grey); text-transform: uppercase; }
-        .txn-date .day   { font-size: 17px; font-weight: 700; color: var(--charcoal); }
-
-        .txn-emoji {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: var(--bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 17px;
-            flex-shrink: 0;
-        }
-
-        .txn-info { flex: 1; min-width: 0; }
-        .txn-info h4 { font-size: 15px; font-weight: 500; color: var(--charcoal); }
-        .txn-info p  { font-size: 12px; color: var(--grey); margin-top: 1px; }
-
-        .txn-amount-col { text-align: right; }
-        .txn-sublabel   { font-size: 10px; }
-        .txn-sublabel.lent { color: var(--dark-sage); }
-        .txn-sublabel.borrowed { color: var(--orange); }
-
-        .txn-amount { font-size: 14px; font-weight: 600; }
-        .txn-amount.lent    { color: var(--dark-sage); }
-        .txn-amount.borrowed { color: var(--orange); }
-        .txn-amount.neutral  { color: var(--grey); }
-
-        .txn-actions {
-            display: none;
-            padding: 8px 16px 12px 78px;
-            gap: 8px;
-        }
-
-        .txn-item.expanded .txn-actions { display: flex; }
-
-        .txn-btn {
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-        }
-
-        .txn-btn.edit   { background: rgba(21,154,210,.1); color: var(--blue); }
-        .txn-btn.delete { background: rgba(231,85,38,.1); color: var(--orange); }
-
-        /* ======= CHOOSE EVENT / GROUP PICKER ======= */
-        .group-pick-list { padding: 0; }
-
-        .divider-or {
-            display: flex;
-            align-items: center;
-            margin: 16px 16px 8px;
-        }
-
-        .divider-or::before, .divider-or::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--grey-lt);
-        }
-
-        .divider-or span {
-            padding: 0 12px;
-            font-size: 13px;
-            color: var(--grey);
-        }
-
-        .btn-new-event {
-            width: calc(100% - 32px);
-            margin: 0 16px 16px;
-            padding: 14px;
-            border: 2px dashed var(--blue);
-            border-radius: 14px;
-            background: var(--blue-lt);
-            color: var(--blue);
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-        }
-
-        .new-event-form {
-            display: none;
-            margin: 0 16px 16px;
-            background: var(--white);
-            border-radius: 14px;
-            border: 1px solid var(--grey-lt);
-            overflow: hidden;
-        }
-
-        .new-event-form.visible { display: block; }
-
-        .event-banner {
-            background: var(--white);
-            border-radius: 14px;
-            margin: 0 16px 12px;
-            padding: 12px 16px;
-            border: 1.5px solid var(--blue-lt);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .event-banner-label { font-size: 13px; color: var(--grey); }
-        .event-banner-name  { flex: 1; font-size: 15px; font-weight: 600; color: var(--charcoal); }
-        .event-banner-change {
-            font-size: 14px;
-            color: var(--blue);
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        /* Invite rows */
-        .invite-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--grey-lt);
-        }
-
-        .invite-row input[type="checkbox"] {
-            width: 22px;
-            height: 22px;
-            accent-color: var(--blue);
-        }
-
-        .invite-name { font-size: 15px; color: var(--charcoal); font-weight: 500; }
-
-        .add-person-inline {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            cursor: pointer;
-            color: var(--blue);
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        .add-person-ring-sm {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            border: 2px dashed var(--blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            color: var(--blue);
-        }
-
-        /* Percent split */
-        .percent-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 16px;
-            border-top: 1px solid var(--grey-lt);
-        }
-
-        .percent-person { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--charcoal); }
-
-        .percent-input-wrap { display: flex; align-items: center; gap: 4px; font-size: 14px; }
-
-        .percent-field {
-            width: 56px;
-            padding: 8px;
-            text-align: center;
-            border: 1px solid var(--grey-lt);
-            border-radius: 8px;
-            font-size: 15px;
-            background: var(--bg);
-            outline: none;
-            font-family: inherit;
-        }
-
-        .percent-field:focus { border-color: var(--blue); background: white; }
-
-        .percent-total {
-            padding: 8px 16px 12px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--grey);
-            text-align: right;
-        }
-
-        .percent-total.error { color: var(--orange); }
-
-        /* ======= BOTTOM SHEET MODAL ======= */
-        .sheet-overlay {
-            display: none;
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,.4);
-            z-index: 100;
-            align-items: flex-end;
-        }
-
-        .sheet-overlay.active { display: flex; }
-
-        .sheet {
-            background: var(--white);
-            border-radius: 20px 20px 0 0;
-            padding: 20px 0 32px;
-            width: 100%;
-        }
-
-        .sheet-handle {
-            width: 36px;
-            height: 4px;
-            background: var(--grey-lt);
-            border-radius: 2px;
-            margin: 0 auto 20px;
-        }
-
-        .sheet-title {
-            font-size: 17px;
-            font-weight: 600;
-            color: var(--charcoal);
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 0 16px;
-        }
-
-        .sheet-form-row {
-            display: flex;
-            align-items: center;
-            padding: 14px 16px;
-            gap: 12px;
-            border-bottom: 1px solid var(--grey-lt);
-        }
-
-        .sheet-form-label {
-            font-size: 15px;
-            color: var(--charcoal);
-            min-width: 100px;
-        }
-
-        .sheet-form-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-size: 16px;
-            color: var(--charcoal);
-            font-family: inherit;
-            outline: none;
-            text-align: right;
-        }
-
-        .sheet-form-select {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-size: 16px;
-            color: var(--charcoal);
-            font-family: inherit;
-            outline: none;
-            text-align: right;
-            -webkit-appearance: none;
-        }
-
-        .sheet-actions {
-            display: flex;
-            gap: 10px;
-            padding: 20px 16px 0;
-        }
-
-        .btn-sheet-cancel {
-            flex: 1;
-            padding: 15px;
-            background: var(--bg);
-            border: none;
-            border-radius: 100px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            color: var(--charcoal);
-            font-family: inherit;
-        }
-
-        .btn-sheet-confirm {
-            flex: 1;
-            padding: 15px;
-            background: var(--blue);
-            border: none;
-            border-radius: 100px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            color: white;
-            font-family: inherit;
-        }
-
-        /* Settled badge */
-        .settled-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            background: var(--sage-lt);
-            border-radius: 100px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--dark-sage);
-        }
-
-        /* Toast */
-        .toast {
-            position: absolute;
-            bottom: 110px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(65,67,73,.92);
-            color: white;
-            padding: 11px 22px;
-            border-radius: 100px;
-            font-size: 14px;
-            font-weight: 500;
-            z-index: 200;
-            display: none;
-            white-space: nowrap;
-        }
-
-        .toast.show {
-            display: block;
-            animation: fadeInOut 2.2s ease;
-        }
-
-        @keyframes fadeInOut {
-            0%   { opacity: 0; transform: translateX(-50%) translateY(10px); }
-            12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
-            85%  { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cozi - Settle Up</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Signal tokens (Cozi Everything App direction, DES-201) ── */
+  :root {
+    --indigo:        #4F46E5;  /* primary interactive — buttons, active tab, links */
+    --indigo-lt:      #818CF8; /* decorative content only — never text */
+    --indigo-bg:      #EEF2FF; /* tint — badges, tonal chips, active tab bg */
+    --sky:            #0EA5E9; /* structural — event bars, dots, filled avatars */
+    --sky-dk:         #0369A1; /* filled hero surfaces, active tab, today indicator */
+    --sky-bg:         #E0F2FE; /* tint — outlined/tonal secondary buttons */
+    --green:          #16A34A; /* content — shopping, success, done states */
+    --green-bg:       #DCFCE7;
+    --amber:          #D97706; /* content — chores, meals, food */
+    --amber-bg:       #FEF3C7;
+    /* extended family palette — 4th+ member avatars */
+    --fam-violet:     #7C3AED; --fam-violet-bg: #EDE9FE;
+    --fam-teal:       #0D9488; --fam-teal-bg:   #CCFBF1;
+    --fam-orange:     #EA580C; --fam-orange-bg: #FFEDD5;
+    --fam-pink:       #DB2777; --fam-pink-bg:   #FCE7F3;
+    /* neutrals */
+    --slate:          #1E293B; /* primary text, headings */
+    --slate-md:       #475569; /* secondary text */
+    --slate-lgt:      #94A3B8; /* large-only metadata */
+    --sep:            rgba(15,23,42,0.08);
+    --sys-bg:         #F8FAFC;
+    --white:          #FFFFFF;
+    --wash-top:       #BFDBFE;
+    --wash-bottom:    #BAE6FD;
+  }
+
+  body {
+    background: #1c1c1e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 56px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── Phone frame ── */
+  .phone-frame {
+    width: 393px;
+    height: 852px;
+    background: var(--sys-bg);
+    border-radius: 54px;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      0 0 0 1.5px #444,
+      0 0 0 3.5px #222,
+      0 40px 100px rgba(0,0,0,0.8);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Dynamic Island */
+  .phone-frame::before {
+    content: '';
+    position: absolute;
+    top: 13px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 35px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 300;
+  }
+
+  /* ── Screen base ── */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    background: var(--sys-bg);
+    overflow: hidden;
+  }
+  .screen.active { display: flex; }
+
+  /* Signal app-wash background */
+  .screen.wash {
+    background:
+      linear-gradient(0deg, rgba(255,255,255,0.25), rgba(255,255,255,0.25)),
+      linear-gradient(180deg, var(--wash-top) 0%, var(--wash-bottom) 100%);
+  }
+
+  /* ── Status bar ── */
+  .status {
+    height: 54px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 28px 10px;
+    flex-shrink: 0;
+    z-index: 10;
+    color: var(--slate);
+  }
+  .status .time { font-size: 15px; font-weight: 600; }
+  .status .icons { display: flex; align-items: center; gap: 5px; font-size: 13px; }
+
+  /* ── Nav bar ── */
+  .nav {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    position: relative;
+    flex-shrink: 0;
+    background: var(--sys-bg);
+  }
+  .nav-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--slate);
+    white-space: nowrap;
+  }
+  .nav-btn {
+    font-size: 17px;
+    color: var(--indigo);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 4px 0;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 1;
+  }
+  .nav-btn.disabled { color: var(--slate-lgt); }
+
+  /* ── Scrollable content ── */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .content::-webkit-scrollbar { display: none; }
+
+  /* ── Tab bar (glass surface, 4 tabs: Home · Calendar · Lists · More) ── */
+  .tab-bar {
+    height: 83px;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 0.5px solid var(--sep);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 8px;
+    flex-shrink: 0;
+  }
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab .ti { display: flex; align-items: center; justify-content: center; height: 24px; color: var(--slate-md); }
+  .tab .ti svg { width: 24px; height: 24px; }
+  .tab .tl { font-size: 10px; font-weight: 500; color: var(--slate-md); }
+  .tab.on .ti, .tab.on .tl { color: var(--indigo); }
+
+  /* ── Section headers (iOS grouped style) ── */
+  .sh {
+    padding: 20px 16px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--slate-md);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Glass list section (floats on wash) ── */
+  .list-section {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    margin: 0 16px;
+    overflow: hidden;
+  }
+  .list-section.flat {
+    background: var(--white);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 0;
+    margin: 0;
+    border-top: 0.5px solid var(--sep);
+    border-bottom: 0.5px solid var(--sep);
+  }
+  .list-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 12px;
+    border-bottom: 0.5px solid var(--sep);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
+  }
+  .list-row:last-child { border-bottom: none; }
+  .list-row:active { background: rgba(15,23,42,0.04); }
+  .row-icon { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+  .cat-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px;
+    flex-shrink: 0;
+  }
+  .row-body { flex: 1; min-width: 0; }
+  .row-title { font-size: 16px; color: var(--slate); }
+  .row-sub { font-size: 13px; color: var(--slate-md); margin-top: 1px; }
+  .row-right { font-size: 14px; color: var(--slate-md); white-space: nowrap; }
+  .row-chevron { color: var(--slate-lgt); font-size: 16px; flex-shrink: 0; }
+
+  .avatar {
+    width: 28px; height: 28px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--white); font-size: 12px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .avatar-sm { width: 22px; height: 22px; border-radius: 11px; font-size: 10px; }
+  .avatar-lg { width: 38px; height: 38px; border-radius: 19px; font-size: 14px; }
+
+  /* ── Summary card ── */
+  .summary-label { font-size: 13px; color: var(--slate-md); margin-bottom: 4px; }
+  .summary-amount { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
+  .summary-amount.positive { color: var(--green); }
+  .summary-amount.negative { color: var(--amber); }
+  .summary-breakdown { margin-top: 12px; padding-top: 12px; border-top: 0.5px solid var(--sep); }
+  .summary-breakdown-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; font-size: 14px; gap: 8px;
+  }
+  .summary-breakdown-row .name { color: var(--slate); }
+  .summary-breakdown-row .owes-you { color: var(--green); font-weight: 600; }
+  .summary-breakdown-row .you-owe { color: var(--amber); font-weight: 600; }
+
+  .settle-cta {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px;
+    background: var(--green);
+    color: var(--white);
+    border: none; border-radius: 12px;
+    font-size: 11px; font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ── FAB replacement: inline add row ── */
+  .inline-add-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    color: var(--indigo);
+    font-size: 15px; font-weight: 600;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .inline-add-row .add-icon {
+    width: 28px; height: 28px; border-radius: 14px;
+    border: 2px dashed var(--indigo);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--indigo);
+    flex-shrink: 0;
+  }
+
+  /* ── Form styles ── */
+  .form-content { padding: 16px 16px 40px; flex: 1; overflow-y: auto; }
+
+  .form-group { margin-bottom: 22px; }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--slate-md);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--sep);
+    border-radius: 10px;
+    font-size: 16px;
+    color: var(--slate);
+    background: var(--white);
+    -webkit-appearance: none;
+    font-family: inherit;
+    outline: none;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus { border-color: var(--indigo); }
+
+  .form-group input::placeholder { color: var(--slate-lgt); }
+
+  .field-error {
+    display: none;
+    color: var(--amber);
+    font-size: 11px;
+    margin-top: 6px;
+  }
+
+  .invite-blurb {
+    font-size: 13px;
+    color: var(--slate-md);
+    text-align: center;
+    line-height: 1.4;
+    margin: -8px 0 18px;
+  }
+
+  .quick-pick-section {
+    display: none;
+    margin-bottom: 18px;
+  }
+
+  .quick-pick-section.visible {
+    display: block;
+  }
+
+  .quick-pick-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--slate-md);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .quick-pick-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .quick-pick-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px 6px 6px;
+    border-radius: 24px;
+    background: var(--indigo-bg);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--slate);
+    cursor: pointer;
+    border: none;
+  }
+
+  /* Person chips — payer selector */
+  .payer-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .payer-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px 8px 8px;
+    border-radius: 24px;
+    background: var(--white);
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--sep);
+    color: var(--slate);
+  }
+  .payer-chip.selected { border-color: var(--indigo); background: var(--indigo-bg); }
+
+  /* Split options */
+  .split-pills { display: flex; gap: 8px; }
+  .split-pill {
+    padding: 8px 16px;
+    border-radius: 18px;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    background: var(--white);
+    border: 1px solid var(--sep);
+    color: var(--slate);
+  }
+  .split-pill.active { background: var(--indigo); color: var(--white); border-color: var(--indigo); }
+
+  .btn-primary {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: var(--indigo);
+    color: var(--white);
+    border: none;
+    border-radius: 99px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 12px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-primary:active { opacity: 0.85; }
+
+  /* Event detail */
+  .event-detail-meta { display: flex; gap: 16px; font-size: 13px; color: var(--slate-md); padding: 14px 16px 4px; }
+  .event-detail-meta span { display: flex; align-items: center; gap: 4px; }
+
+  .event-balance-bar {
+    padding: 14px 16px;
+    border-top: 0.5px solid var(--sep);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .event-balance-bar .balance-text { font-size: 15px; font-weight: 500; color: var(--slate); }
+  .event-balance-bar .balance-text strong { color: var(--green); }
+  .event-balance-bar .balance-text strong.owe { color: var(--amber); }
+
+  /* People row */
+  .people-row-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px 0;
+  }
+  .people-row-header h3 {
+    font-size: 12px; font-weight: 700; color: var(--slate-md);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .people-manage-btn {
+    font-size: 13px; color: var(--indigo);
+    background: none; border: none; cursor: pointer; font-weight: 600;
+  }
+
+  .people-row { display: flex; gap: 16px; padding: 14px 16px; flex-wrap: wrap; }
+
+  .person-bubble { display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; }
+  .person-bubble span { font-size: 11px; color: var(--slate-md); }
+  .not-on-cozi { font-size: 10px; color: var(--slate-lgt); }
+
+  .person-remove-btn {
+    display: none;
+    position: absolute; top: -4px; right: 4px;
+    width: 18px; height: 18px; border-radius: 9px;
+    background: var(--amber);
+    color: var(--white);
+    font-size: 12px; line-height: 18px; text-align: center;
+    border: none; cursor: pointer; z-index: 2;
+  }
+  .people-row.managing .person-remove-btn { display: block; }
+
+  .person-add-bubble { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+  .person-add-circle {
+    width: 38px; height: 38px; border-radius: 19px;
+    border: 2px dashed var(--indigo);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--indigo);
+  }
+  .person-add-bubble span { font-size: 11px; color: var(--indigo); }
+
+  /* Balances */
+  .balance-line-text { font-size: 14px; color: var(--slate); }
+  .balance-line-text strong { font-weight: 700; }
+  .settle-btn {
+    padding: 6px 14px;
+    background: var(--green);
+    color: var(--white);
+    border: none; border-radius: 14px;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Transactions */
+  .txn-item { position: relative; border-bottom: 0.5px solid var(--sep); cursor: pointer; }
+  .txn-item:last-child { border-bottom: none; }
+  .txn-inner { display: flex; align-items: center; padding: 12px 16px; gap: 10px; }
+
+  .txn-date { width: 34px; text-align: center; flex-shrink: 0; }
+  .txn-date .month { font-size: 10px; color: var(--slate-md); text-transform: uppercase; }
+  .txn-date .day { font-size: 16px; font-weight: 700; color: var(--slate); }
+
+  .txn-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--indigo-bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+  }
+
+  .txn-info { flex: 1; min-width: 0; }
+  .txn-info h4 { font-size: 15px; font-weight: 500; color: var(--slate); }
+  .txn-info p { font-size: 12px; color: var(--slate-md); margin-top: 1px; }
+
+  .txn-tap-actions { display: none; padding: 0 16px 12px 58px; gap: 8px; }
+  .txn-item.expanded .txn-tap-actions { display: flex; }
+
+  .txn-tap-btn {
+    padding: 6px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none;
+  }
+  .txn-tap-btn.edit { background: var(--indigo-bg); color: var(--indigo); }
+  .txn-tap-btn.delete { background: var(--amber-bg); color: var(--amber); }
+
+  .txn-amount { font-size: 14px; font-weight: 600; margin-left: 8px; white-space: nowrap; }
+  .txn-amount.lent { color: var(--green); }
+  .txn-amount.borrowed { color: var(--amber); }
+  .txn-amount.neutral { color: var(--slate-md); }
+  .txn-lent-label { font-size: 10px; color: var(--green); text-align: right; }
+  .txn-lent-label.owe { color: var(--amber); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .modal h3 {
+    font-size: 18px; font-weight: 700;
+    margin-bottom: 8px;
+    text-align: center;
+    color: var(--slate);
+  }
+
+  .modal .form-group { margin-bottom: 16px; }
+
+  .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-buttons button {
+    flex: 1; padding: 14px;
+    border-radius: 10px;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-cancel { background: var(--sys-bg); color: var(--slate); }
+  .btn-confirm { background: var(--green); color: var(--white); }
+
+  /* Toast */
+  .toast {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--slate);
+    color: var(--white);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    z-index: 200;
+    display: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+  .toast.show { display: block; animation: fadeInOut 2.2s ease; }
+
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    12% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  }
+
+  /* Invite list in new-event form */
+  .invite-list { margin-top: 4px; }
+  .invite-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 0.5px solid var(--sep);
+  }
+  .invite-row:last-child { border-bottom: none; }
+  .invite-row input[type="checkbox"] {
+    width: 22px; height: 22px;
+    accent-color: var(--indigo);
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .invite-name-wrap { display: flex; flex-direction: column; gap: 1px; }
+  .invite-name { font-size: 15px; color: var(--slate); font-weight: 500; }
+
+  /* Settled badge */
+  .settled-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 13px; font-weight: 600;
+    color: var(--slate-md);
+  }
+
+  /* New event inline section */
+  .new-group-form {
+    display: none;
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--white);
+    border: 1px solid var(--sep);
+    border-radius: 16px;
+  }
+  .new-group-form.visible { display: block; }
+
+  .add-person-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0;
+    cursor: pointer;
+    color: var(--indigo);
+    font-size: 15px; font-weight: 500;
+  }
+  .add-person-icon {
+    width: 28px; height: 28px; border-radius: 14px;
+    border: 2px dashed var(--indigo);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--indigo);
+    flex-shrink: 0;
+  }
+
+  /* Percent split inputs */
+  .percent-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--sep);
+  }
+  .percent-person { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--slate); }
+  .percent-input-wrap { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--slate); }
+  .percent-field {
+    width: 56px !important;
+    padding: 8px !important;
+    text-align: center;
+    border: 1px solid var(--sep) !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    background: var(--white) !important;
+  }
+  .percent-field:focus { border-color: var(--indigo) !important; }
+  .percent-total { margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--slate-md); text-align: right; }
+  .percent-total.error { color: var(--amber); }
+
+  /* Group picker */
+  .group-divider { display: flex; align-items: center; margin: 20px 16px; }
+  .group-divider::before, .group-divider::after { content: ''; flex: 1; height: 0.5px; background: var(--sep); }
+  .group-divider span { padding: 0 12px; font-size: 13px; color: var(--slate-md); }
+
+  .btn-new-group {
+    width: calc(100% - 32px);
+    margin: 0 16px;
+    padding: 14px;
+    border: 2px dashed var(--indigo);
+    border-radius: 16px;
+    background: var(--indigo-bg);
+    color: var(--indigo);
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  /* Selected group banner on add expense */
+  .selected-group-banner {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    background: var(--indigo-bg);
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+  .selected-group-label { font-size: 13px; color: var(--slate-md); }
+  .selected-group-name { font-size: 15px; font-weight: 600; color: var(--slate); flex: 1; }
+  .selected-group-change {
+    font-size: 13px; color: var(--indigo);
+    background: none; border: none; cursor: pointer; font-weight: 600;
+  }
+</style>
 </head>
 <body>
-<div class="phone">
-
-    <!-- ==================== DASHBOARD ==================== -->
-    <div class="screen active" id="screen-dashboard">
-        <div class="status-bar">
-            <span>12:50</span>
-            <div class="status-icons">
-                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13.5" y="1" width="2.5" height="11" rx="1" opacity=".3"/></svg>
-                <svg width="16" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="0" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="21" y="3.5" width="3" height="5" rx="1.5" fill="currentColor" opacity=".4"/><rect x="1.5" y="2.5" width="15" height="7" rx="1.5" fill="currentColor"/></svg>
+    <div class="phone-frame">
+        <!-- ==================== DASHBOARD SCREEN ==================== -->
+        <div class="screen wash active" id="screen-dashboard">
+            <div class="status">
+                <span class="time">12:50</span>
+                <div class="icons">▌▌▌ ⊀ ▬</div>
             </div>
-        </div>
-
-        <div class="nav-bar">
-            <div style="min-width:60px;"></div>
-            <div class="nav-bar-title">Settle up</div>
-            <button class="nav-bar-action icon-btn" onclick="showScreen('screen-pick-group')">+</button>
-        </div>
-
-        <div class="content">
-            <!-- Balance summary -->
-            <div class="balance-summary">
-                <div class="balance-summary-label">Overall, you are owed</div>
-                <div class="balance-summary-amount positive">$122.44</div>
-                <div class="balance-person-row">
-                    <div class="balance-person-left">
-                        <div class="dot-sm" style="background:var(--m-chad);">C</div>
-                        <span class="balance-person-name">Chad</span>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <span class="balance-owed">owes you $132.47</span>
-                        <button class="settle-pill" onclick="openSettleSheet('Chad', 132.47)">Settle</button>
-                    </div>
-                </div>
-                <div class="balance-person-row">
-                    <div class="balance-person-left">
-                        <div class="dot-sm" style="background:var(--m-nick);">N</div>
-                        <span class="balance-person-name">Nick</span>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <span class="balance-owe">you owe $10.03</span>
-                        <button class="settle-pill" style="background:var(--blue);" onclick="openSettleSheet('Nick', 10.03)">Settle</button>
-                    </div>
-                </div>
+            <div class="nav">
+                <button class="nav-btn" onclick="backToMore()">‹ More</button>
+                <span class="nav-title">Settle Up</span>
+                <button class="nav-btn" style="font-size:22px;font-weight:300" onclick="showScreen('screen-pick-group')">+</button>
             </div>
-
-            <div class="section-label">Events</div>
-
-            <div class="card-group">
-                <div class="row" onclick="showScreen('screen-event-detail')">
-                    <div class="event-icon" style="background:#E3F2FD;">⛳️</div>
-                    <div class="row-info">
-                        <div class="row-title">Golf Trip</div>
-                        <div class="row-sub">Feb 1–3 · 3 people</div>
-                    </div>
-                    <div class="row-amount pos">+$122.44</div>
-                    <div class="row-chevron">›</div>
-                </div>
-                <div class="row" onclick="showScreen('screen-event-detail-2')">
-                    <div class="event-icon" style="background:#FFF3E0;">🏠</div>
-                    <div class="row-info">
-                        <div class="row-title">Household</div>
-                        <div class="row-sub">Ongoing · 2 people</div>
-                    </div>
-                    <div class="row-amount neg">−$45.00</div>
-                    <div class="row-chevron">›</div>
-                </div>
-                <div class="row">
-                    <div class="event-icon" style="background:#E8F5E9;">🏕️</div>
-                    <div class="row-info">
-                        <div class="row-title">Lake House Weekend</div>
-                        <div class="row-sub">Jul 12–14 · 5 people</div>
-                    </div>
-                    <div class="row-amount settle"><span class="settled-badge">✓ Settled</span></div>
-                </div>
-            </div>
-        </div>
-
-        <nav class="bottom-nav">
-            <button class="nav-item">
-                <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg></div>
-                <span>Home</span>
-            </button>
-            <button class="nav-item">
-                <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-                <span>Calendar</span>
-            </button>
-            <button class="nav-item">
-                <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
-                <span>Lists</span>
-            </button>
-            <button class="nav-item">
-                <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><line x1="7" y1="2" x2="7" y2="22"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></div>
-                <span>Recipes</span>
-            </button>
-            <button class="nav-item active">
-                <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
-                <span>Family</span>
-            </button>
-        </nav>
-    </div>
-
-    <!-- ==================== CHOOSE EVENT ==================== -->
-    <div class="screen" id="screen-pick-group">
-        <div class="status-bar">
-            <span>12:50</span>
-            <div class="status-icons">
-                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13.5" y="1" width="2.5" height="11" rx="1" opacity=".3"/></svg>
-                <svg width="16" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="0" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="21" y="3.5" width="3" height="5" rx="1.5" fill="currentColor" opacity=".4"/><rect x="1.5" y="2.5" width="15" height="7" rx="1.5" fill="currentColor"/></svg>
-            </div>
-        </div>
-        <div class="nav-bar">
-            <button class="nav-bar-back" onclick="showScreen('screen-dashboard')">
-                <svg viewBox="0 0 11 18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9.5 1.5L1.5 9l8 7.5"/></svg>
-                Back
-            </button>
-            <div class="nav-bar-title">Choose an event</div>
-            <div style="min-width:60px;"></div>
-        </div>
-        <div class="content">
-            <div class="section-label">Your events</div>
-            <div class="card-group group-pick-list">
-                <div class="row" onclick="pickGroup('Golf Trip')">
-                    <div class="event-icon" style="background:#E3F2FD;">⛳️</div>
-                    <div class="row-info">
-                        <div class="row-title">Golf Trip</div>
-                        <div class="row-sub">You, Chad, Nick</div>
-                    </div>
-                    <div class="row-chevron">›</div>
-                </div>
-                <div class="row" onclick="pickGroup('Household')">
-                    <div class="event-icon" style="background:#FFF3E0;">🏠</div>
-                    <div class="row-info">
-                        <div class="row-title">Household</div>
-                        <div class="row-sub">You, Riley</div>
-                    </div>
-                    <div class="row-chevron">›</div>
-                </div>
-                <div class="row" onclick="pickGroup('Lake House Weekend')">
-                    <div class="event-icon" style="background:#E8F5E9;">🏕️</div>
-                    <div class="row-info">
-                        <div class="row-title">Lake House Weekend</div>
-                        <div class="row-sub">You, Chad, Nick, Riley, Mike</div>
-                    </div>
-                    <div class="row-chevron">›</div>
-                </div>
-            </div>
-
-            <div class="divider-or"><span>or</span></div>
-
-            <button class="btn-new-event" onclick="toggleNewEvent()">+ Create new event</button>
-
-            <div class="new-event-form" id="new-event-form">
-                <div class="form-row" style="border-bottom:1px solid var(--grey-lt);">
-                    <div class="form-icon">
-                        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
-                    </div>
-                    <input class="form-input" type="text" placeholder="Event name" id="new-event-name">
-                </div>
-                <div class="invite-row">
-                    <input type="checkbox" checked disabled>
-                    <div class="dot-sm" style="background:var(--m-you);">A</div>
-                    <span class="invite-name">You</span>
-                </div>
-                <div class="invite-row">
-                    <input type="checkbox" id="ng-chad">
-                    <div class="dot-sm" style="background:var(--m-chad);">C</div>
-                    <span class="invite-name">Chad</span>
-                </div>
-                <div class="invite-row">
-                    <input type="checkbox" id="ng-nick">
-                    <div class="dot-sm" style="background:var(--m-nick);">N</div>
-                    <span class="invite-name">Nick</span>
-                </div>
-                <div class="invite-row">
-                    <input type="checkbox" id="ng-riley">
-                    <div class="dot-sm" style="background:var(--m-riley);">R</div>
-                    <span class="invite-name">Riley</span>
-                </div>
-                <div class="add-person-inline" onclick="openInviteSheet()">
-                    <div class="add-person-ring-sm">+</div>
-                    Invite someone new
-                </div>
-                <button class="btn-primary" onclick="createAndPickGroup()">Create event &amp; continue</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==================== ADD EXPENSE ==================== -->
-    <div class="screen" id="screen-add-expense">
-        <div class="status-bar">
-            <span>12:50</span>
-            <div class="status-icons">
-                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13.5" y="1" width="2.5" height="11" rx="1" opacity=".3"/></svg>
-                <svg width="16" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="0" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="21" y="3.5" width="3" height="5" rx="1.5" fill="currentColor" opacity=".4"/><rect x="1.5" y="2.5" width="15" height="7" rx="1.5" fill="currentColor"/></svg>
-            </div>
-        </div>
-        <div class="nav-bar">
-            <button class="nav-bar-back" onclick="showScreen('screen-pick-group')">
-                <svg viewBox="0 0 11 18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9.5 1.5L1.5 9l8 7.5"/></svg>
-                Events
-            </button>
-            <div class="nav-bar-title">Add expense</div>
-            <button class="nav-bar-action" onclick="saveExpense()">Save</button>
-        </div>
-        <div class="content">
-            <div class="event-banner" id="event-banner">
-                <span class="event-banner-label">Event</span>
-                <span class="event-banner-name" id="event-banner-name">Golf Trip</span>
-                <button class="event-banner-change" onclick="showScreen('screen-pick-group')">Change</button>
-            </div>
-
-            <div class="section-label">Details</div>
-            <div class="form-section">
-                <div class="form-row">
-                    <div class="form-icon">
-                        <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg>
-                    </div>
-                    <input class="form-input" type="text" placeholder="What was this for?" id="expense-desc">
-                </div>
-                <div class="form-row">
-                    <div class="form-icon">
-                        <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-                    </div>
-                    <input class="form-input" type="number" placeholder="$0.00" id="expense-amount" step="0.01">
-                </div>
-                <div class="form-row">
-                    <div class="form-icon">
-                        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    </div>
-                    <label class="form-label">Date</label>
-                    <input class="form-input" type="date" id="expense-date" value="2026-08-13" style="text-align:right;">
-                </div>
-            </div>
-
-            <div class="section-label">Who paid</div>
-            <div class="form-section">
-                <div class="payer-grid">
-                    <div class="payer-chip selected" onclick="selectPayer(this)">
-                        <div class="dot-sm" style="background:var(--m-you);">A</div>
-                        You
-                    </div>
-                    <div class="payer-chip" onclick="selectPayer(this)">
-                        <div class="dot-sm" style="background:var(--m-chad);">C</div>
-                        Chad
-                    </div>
-                    <div class="payer-chip" onclick="selectPayer(this)">
-                        <div class="dot-sm" style="background:var(--m-nick);">N</div>
-                        Nick
-                    </div>
-                    <div class="payer-chip" onclick="selectPayer(this)">
-                        <div class="dot-sm" style="background:var(--m-riley);">R</div>
-                        Riley
-                    </div>
-                </div>
-            </div>
-
-            <div class="section-label">Split</div>
-            <div class="form-section">
-                <div class="split-options">
-                    <div class="split-pill active" onclick="selectSplitMode('equal')">Equal</div>
-                    <div class="split-pill" onclick="selectSplitMode('percent')">By %</div>
-                </div>
-                <div id="percent-inputs" style="display:none;">
-                    <div class="percent-row">
-                        <div class="percent-person"><div class="dot-sm" style="background:var(--m-you);">A</div> You</div>
-                        <div class="percent-input-wrap"><input type="number" class="percent-field" value="25" min="0" max="100">%</div>
-                    </div>
-                    <div class="percent-row">
-                        <div class="percent-person"><div class="dot-sm" style="background:var(--m-chad);">C</div> Chad</div>
-                        <div class="percent-input-wrap"><input type="number" class="percent-field" value="25" min="0" max="100">%</div>
-                    </div>
-                    <div class="percent-row">
-                        <div class="percent-person"><div class="dot-sm" style="background:var(--m-nick);">N</div> Nick</div>
-                        <div class="percent-input-wrap"><input type="number" class="percent-field" value="25" min="0" max="100">%</div>
-                    </div>
-                    <div class="percent-row">
-                        <div class="percent-person"><div class="dot-sm" style="background:var(--m-riley);">R</div> Riley</div>
-                        <div class="percent-input-wrap"><input type="number" class="percent-field" value="25" min="0" max="100">%</div>
-                    </div>
-                    <div class="percent-total" id="percent-total">Total: 100%</div>
-                </div>
-            </div>
-
-            <button class="btn-primary" onclick="saveExpense()">Add expense</button>
-        </div>
-    </div>
-
-    <!-- ==================== GOLF TRIP DETAIL ==================== -->
-    <div class="screen" id="screen-event-detail">
-        <div class="status-bar">
-            <span>12:50</span>
-            <div class="status-icons">
-                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13.5" y="1" width="2.5" height="11" rx="1" opacity=".3"/></svg>
-                <svg width="16" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="0" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="21" y="3.5" width="3" height="5" rx="1.5" fill="currentColor" opacity=".4"/><rect x="1.5" y="2.5" width="15" height="7" rx="1.5" fill="currentColor"/></svg>
-            </div>
-        </div>
-        <div class="nav-bar">
-            <button class="nav-bar-back" onclick="showScreen('screen-dashboard')">
-                <svg viewBox="0 0 11 18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9.5 1.5L1.5 9l8 7.5"/></svg>
-                Back
-            </button>
-            <div class="nav-bar-title">Golf Trip</div>
-            <button class="nav-bar-action" onclick="showScreen('screen-pick-group')">+</button>
-        </div>
-        <div class="content">
-            <div class="detail-meta-bar">
-                <div class="detail-meta-item">📅 Feb 1–3</div>
-                <div class="detail-meta-item">👥 3 people</div>
-            </div>
-
-            <div class="balance-bar">
-                <span class="balance-bar-text">You are owed <strong class="pos">$122.44</strong></span>
-            </div>
-
-            <div class="people-strip">
-                <div class="people-strip-row">
-                    <span class="people-strip-label">People</span>
-                    <button class="people-strip-edit" onclick="toggleManagePeople('bubbles-golf')">Edit</button>
-                </div>
-                <div class="people-bubbles" id="bubbles-golf">
-                    <div class="person-bubble">
-                        <button class="remove-dot" onclick="removePerson(this)">✕</button>
-                        <div class="dot-lg" style="background:var(--m-you);">A</div>
-                        <span>You</span>
-                    </div>
-                    <div class="person-bubble">
-                        <button class="remove-dot" onclick="removePerson(this)">✕</button>
-                        <div class="dot-lg" style="background:var(--m-chad);">C</div>
-                        <span>Chad</span>
-                    </div>
-                    <div class="person-bubble">
-                        <button class="remove-dot" onclick="removePerson(this)">✕</button>
-                        <div class="dot-lg" style="background:var(--m-nick);">N</div>
-                        <span>Nick</span>
-                    </div>
-                    <div class="add-person-bubble" onclick="openInviteSheet()">
-                        <div class="add-person-ring">+</div>
-                        <span style="font-size:11px;color:var(--blue);">Add</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section-label">Balances</div>
-            <div class="card-group">
-                <div class="row">
-                    <div class="dot-sm" style="background:var(--m-chad);">C</div>
-                    <div class="row-info">
-                        <div class="row-title" style="font-weight:500;">Chad owes you <strong style="color:var(--dark-sage);">$132.47</strong></div>
-                    </div>
-                    <button class="settle-pill" onclick="openSettleSheet('Chad', 132.47)">Settle</button>
-                </div>
-                <div class="row">
-                    <div class="dot-sm" style="background:var(--m-nick);">N</div>
-                    <div class="row-info">
-                        <div class="row-title" style="font-weight:500;">You owe Nick <strong style="color:var(--orange);">$10.03</strong></div>
-                    </div>
-                    <button class="settle-pill" style="background:var(--blue);" onclick="openSettleSheet('Nick', 10.03)">Settle</button>
-                </div>
-            </div>
-
-            <div class="txn-section-label">February 2024</div>
-            <div class="txn-group">
-                <div class="txn-item" onclick="toggleTxn(this)">
-                    <div class="txn-inner">
-                        <div class="txn-date"><div class="month">Feb</div><div class="day">3</div></div>
-                        <div class="txn-emoji">🍔</div>
-                        <div class="txn-info"><h4>Uber Eats – Beer</h4><p>You paid $40.72</p></div>
-                        <div class="txn-amount-col">
-                            <div class="txn-sublabel lent">you lent</div>
-                            <div class="txn-amount lent">$30.54</div>
+            <div class="content">
+                <div class="list-section" style="margin-top:16px">
+                    <div style="padding:16px">
+                        <div class="summary-label">Overall, you are owed</div>
+                        <div class="summary-amount positive">$122.44</div>
+                        <div class="summary-breakdown">
+                            <div class="summary-breakdown-row">
+                                <span class="name">Chad</span>
+                                <span style="display:flex;align-items:center;gap:6px">
+                                    <span class="owes-you">owes you $132.47</span>
+                                    <button class="settle-cta" onclick="openSettleModal('Chad', 132.47)">Settle</button>
+                                </span>
+                            </div>
+                            <div class="summary-breakdown-row">
+                                <span class="name">Nick</span>
+                                <span style="display:flex;align-items:center;gap:6px">
+                                    <span class="you-owe">you owe $10.03</span>
+                                    <button class="settle-cta" onclick="openSettleModal('Nick', 10.03)">Settle</button>
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <div class="txn-actions">
-                        <button class="txn-btn edit" onclick="event.stopPropagation();editExpense('Uber Eats – Beer')">Edit</button>
-                        <button class="txn-btn delete" onclick="event.stopPropagation();deleteTxn(this,'Uber Eats – Beer')">Delete</button>
+                </div>
+
+                <div class="sh">Events</div>
+
+                <div class="list-section">
+                    <div class="list-row" onclick="showScreen('screen-event-detail')">
+                        <span class="cat-icon" style="background:var(--sky-bg)">⛳</span>
+                        <div class="row-body">
+                            <div class="row-title">Golf Trip</div>
+                            <div class="row-sub">Feb 1-3 · 3 people</div>
+                        </div>
+                        <div class="row-right" style="color:var(--green);font-weight:700">+$122.44</div>
+                    </div>
+                    <div class="list-row" onclick="showScreen('screen-event-detail-2')">
+                        <span class="cat-icon" style="background:var(--amber-bg)">🏠</span>
+                        <div class="row-body">
+                            <div class="row-title">Household</div>
+                            <div class="row-sub">Ongoing · 2 people</div>
+                        </div>
+                        <div class="row-right" style="color:var(--amber);font-weight:700">-$45.00</div>
+                    </div>
+                    <div class="list-row">
+                        <span class="cat-icon" style="background:var(--green-bg)">🏖️</span>
+                        <div class="row-body">
+                            <div class="row-title">Lake House Weekend</div>
+                            <div class="row-sub">Jul 12-14 · 5 people</div>
+                        </div>
+                        <div class="settled-badge">Settled ✓</div>
                     </div>
                 </div>
-                <div class="txn-item" onclick="toggleTxn(this)">
-                    <div class="txn-inner">
-                        <div class="txn-date"><div class="month">Feb</div><div class="day">2</div></div>
-                        <div class="txn-emoji">💸</div>
-                        <div class="txn-info"><h4>Nick paid Riley B.</h4><p>Payment $32.73</p></div>
-                        <div class="txn-amount-col">
+
+                <div style="height:20px"></div>
+            </div>
+
+            <div class="tab-bar">
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M9.5 20v-5.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20"/></svg></div><div class="tl">Home</div></div>
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 2.5v5"/><path d="M16 2.5v5"/></svg></div><div class="tl">Calendar</div></div>
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4.5 6h.01"/><path d="M4.5 12h.01"/><path d="M4.5 18h.01"/></svg></div><div class="tl">Lists</div></div>
+                <div class="tab on"><div class="ti"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg></div><div class="tl">More</div></div>
+            </div>
+        </div>
+
+        <!-- ==================== PICK GROUP SCREEN ==================== -->
+        <div class="screen" id="screen-pick-group">
+            <div class="status">
+                <span class="time">12:50</span>
+                <div class="icons">▌▌▌ ⊀ ▬</div>
+            </div>
+            <div class="nav">
+                <button class="nav-btn" onclick="showScreen('screen-dashboard')">‹ Settle Up</button>
+                <span class="nav-title">Choose an event</span>
+                <span style="width:40px"></span>
+            </div>
+            <div class="content">
+                <div class="form-content">
+                    <div class="list-section flat" style="margin-bottom:0">
+                        <div class="list-row" onclick="pickGroup('Golf Trip')">
+                            <span class="cat-icon" style="background:var(--sky-bg)">⛳</span>
+                            <div class="row-body">
+                                <div class="row-title">Golf Trip</div>
+                                <div class="row-sub">You, Chad, Nick</div>
+                            </div>
+                            <span class="row-chevron">›</span>
+                        </div>
+                        <div class="list-row" onclick="pickGroup('Household')">
+                            <span class="cat-icon" style="background:var(--amber-bg)">🏠</span>
+                            <div class="row-body">
+                                <div class="row-title">Household</div>
+                                <div class="row-sub">You, Riley</div>
+                            </div>
+                            <span class="row-chevron">›</span>
+                        </div>
+                        <div class="list-row" onclick="pickGroup('Lake House Weekend')">
+                            <span class="cat-icon" style="background:var(--green-bg)">🏖️</span>
+                            <div class="row-body">
+                                <div class="row-title">Lake House Weekend</div>
+                                <div class="row-sub">You, Chad, Nick, Riley, Mike</div>
+                            </div>
+                            <span class="row-chevron">›</span>
+                        </div>
+                    </div>
+
+                    <div class="group-divider"><span>or</span></div>
+
+                    <div id="new-group-section">
+                        <button class="btn-new-group" onclick="toggleNewGroup()">+ Create new event</button>
+                        <div class="new-group-form" id="new-group-form">
+                            <div class="form-group">
+                                <label>Event name</label>
+                                <input type="text" placeholder="e.g. Beach Vacation" id="new-group-name">
+                            </div>
+                            <div class="form-group">
+                                <label>People</label>
+                                <div class="invite-list" id="new-group-invite-list">
+                                    <div class="invite-row">
+                                        <input type="checkbox" checked disabled>
+                                        <div class="avatar" style="background:var(--indigo);">A</div>
+                                        <span class="invite-name">You</span>
+                                    </div>
+                                    <div class="invite-row">
+                                        <input type="checkbox" id="ng-chad">
+                                        <div class="avatar" style="background:var(--sky);">C</div>
+                                        <span class="invite-name">Chad</span>
+                                    </div>
+                                    <div class="invite-row">
+                                        <input type="checkbox" id="ng-nick">
+                                        <div class="avatar" style="background:var(--fam-violet);">N</div>
+                                        <span class="invite-name">Nick</span>
+                                    </div>
+                                    <div class="invite-row">
+                                        <input type="checkbox" id="ng-riley">
+                                        <div class="avatar" style="background:var(--fam-orange);">R</div>
+                                        <span class="invite-name">Riley</span>
+                                    </div>
+                                    <div class="add-person-row" onclick="showInviteModal('invite-list','new-group-invite-list')">
+                                        <div class="add-person-icon">+</div>
+                                        Invite someone new
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn-primary" onclick="createAndPickGroup()">Create event &amp; continue</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-bar">
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M9.5 20v-5.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20"/></svg></div><div class="tl">Home</div></div>
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 2.5v5"/><path d="M16 2.5v5"/></svg></div><div class="tl">Calendar</div></div>
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4.5 6h.01"/><path d="M4.5 12h.01"/><path d="M4.5 18h.01"/></svg></div><div class="tl">Lists</div></div>
+                <div class="tab on"><div class="ti"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg></div><div class="tl">More</div></div>
+            </div>
+        </div>
+
+        <!-- ==================== ADD EXPENSE SCREEN ==================== -->
+        <div class="screen" id="screen-add-expense">
+            <div class="status">
+                <span class="time">12:50</span>
+                <div class="icons">▌▌▌ ⊀ ▬</div>
+            </div>
+            <div class="nav">
+                <button class="nav-btn" onclick="showScreen('screen-pick-group')">‹ Choose event</button>
+                <span class="nav-title">Add expense</span>
+                <button class="nav-btn" onclick="saveExpense()">Save</button>
+            </div>
+            <div class="content">
+                <div class="form-content">
+                    <div class="selected-group-banner" id="selected-group-banner">
+                        <span class="selected-group-label">Event:</span>
+                        <span class="selected-group-name" id="selected-group-name">Golf Trip</span>
+                        <button class="selected-group-change" onclick="showScreen('screen-pick-group')">Change</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" placeholder="What was this for?" id="expense-desc">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <input type="number" placeholder="$0.00" id="expense-amount" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Start date</label>
+                        <input type="date" id="expense-start-date" value="2026-07-28" onchange="defaultEndDate()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>End date</label>
+                        <input type="date" id="expense-end-date" value="2026-07-28">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Who paid</label>
+                        <div class="payer-chips">
+                            <div class="payer-chip selected" onclick="selectPayer(this)">
+                                <div class="avatar" style="background: var(--indigo);">A</div>
+                                You
+                            </div>
+                            <div class="payer-chip" onclick="selectPayer(this)">
+                                <div class="avatar" style="background: var(--sky);">C</div>
+                                Chad
+                            </div>
+                            <div class="payer-chip" onclick="selectPayer(this)">
+                                <div class="avatar" style="background: var(--fam-violet);">N</div>
+                                Nick
+                            </div>
+                            <div class="payer-chip" onclick="selectPayer(this)">
+                                <div class="avatar" style="background: var(--fam-orange);">R</div>
+                                Riley
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Split</label>
+                        <div class="split-pills">
+                            <div class="split-pill active" onclick="selectSplitMode('equal')">Equal</div>
+                            <div class="split-pill" onclick="selectSplitMode('percent')">By %</div>
+                        </div>
+                        <div class="percent-inputs" id="percent-inputs" style="display:none; margin-top:12px;">
+                            <div class="percent-row">
+                                <div class="percent-person"><div class="avatar avatar-sm" style="background:var(--indigo);">A</div> You</div>
+                                <div class="percent-input-wrap"><input type="number" class="percent-field" value="25" min="0" max="100">%</div>
+                            </div>
+                            <div class="percent-row">
+                                <div class="percent-person"><div class="avatar avatar-sm" style="background:var(--sky);">C</div> Chad</div>
+                                <div class="percent-input-wrap"><input type="number" class="percent-field" value="25" min="0" max="100">%</div>
+                            </div>
+                            <div class="percent-row">
+                                <div class="percent-person"><div class="avatar avatar-sm" style="background:var(--fam-violet);">N</div> Nick</div>
+                                <div class="percent-input-wrap"><input type="number" class="percent-field" value="25" min="0" max="100">%</div>
+                            </div>
+                            <div class="percent-row">
+                                <div class="percent-person"><div class="avatar avatar-sm" style="background:var(--fam-orange);">R</div> Riley</div>
+                                <div class="percent-input-wrap"><input type="number" class="percent-field" value="25" min="0" max="100">%</div>
+                            </div>
+                            <div class="percent-total" id="percent-total">Total: 100%</div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="saveExpense()">Add expense</button>
+                </div>
+            </div>
+
+            <div class="tab-bar">
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M9.5 20v-5.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20"/></svg></div><div class="tl">Home</div></div>
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 2.5v5"/><path d="M16 2.5v5"/></svg></div><div class="tl">Calendar</div></div>
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4.5 6h.01"/><path d="M4.5 12h.01"/><path d="M4.5 18h.01"/></svg></div><div class="tl">Lists</div></div>
+                <div class="tab on"><div class="ti"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg></div><div class="tl">More</div></div>
+            </div>
+        </div>
+
+        <!-- ==================== EVENT DETAIL SCREEN (Golf Trip) ==================== -->
+        <div class="screen wash" id="screen-event-detail">
+            <div class="status">
+                <span class="time">12:50</span>
+                <div class="icons">▌▌▌ ⊀ ▬</div>
+            </div>
+            <div class="nav">
+                <button class="nav-btn" onclick="showScreen('screen-dashboard')">‹ Settle Up</button>
+                <span class="nav-title">Golf Trip</span>
+                <button class="nav-btn" style="font-size:18px">⚙</button>
+            </div>
+            <div class="content">
+                <div class="list-section" style="margin-top:16px">
+                    <div class="event-detail-meta">
+                        <span>📅 Feb 1 - 3</span>
+                        <span>👥 3 people</span>
+                    </div>
+
+                    <div class="event-balance-bar">
+                        <span class="balance-text">You are owed <strong>$122.44</strong> overall</span>
+                    </div>
+
+                    <div class="people-row-header">
+                        <h3>People</h3>
+                        <button class="people-manage-btn" onclick="toggleManagePeople('people-row-golf')">Edit</button>
+                    </div>
+                    <div class="people-row" id="people-row-golf">
+                        <div class="person-bubble">
+                            <button class="person-remove-btn" onclick="removePerson(this)">&#215;</button>
+                            <div class="avatar avatar-lg" style="background: var(--indigo);">A</div>
+                            <span>You</span>
+                        </div>
+                        <div class="person-bubble">
+                            <button class="person-remove-btn" onclick="removePerson(this)">&#215;</button>
+                            <div class="avatar avatar-lg" style="background: var(--sky);">C</div>
+                            <span>Chad</span>
+                        </div>
+                        <div class="person-bubble">
+                            <button class="person-remove-btn" onclick="removePerson(this)">&#215;</button>
+                            <div class="avatar avatar-lg" style="background: var(--fam-violet);">N</div>
+                            <span>Nick</span>
+                        </div>
+                        <div class="person-add-bubble" onclick="showInviteModal('people-row','people-row-golf')">
+                            <div class="person-add-circle">+</div>
+                            <span>Add</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sh">Balances</div>
+                <div class="list-section">
+                    <div class="list-row">
+                        <div class="row-body">
+                            <div class="balance-line-text">Chad owes you <strong style="color:var(--green);">$132.47</strong></div>
+                        </div>
+                        <button class="settle-btn" onclick="openSettleModal('Chad', 132.47)">Settle</button>
+                    </div>
+                    <div class="list-row">
+                        <div class="row-body">
+                            <div class="balance-line-text">You owe Nick <strong style="color:var(--amber);">$10.03</strong></div>
+                        </div>
+                        <button class="settle-btn" onclick="openSettleModal('Nick', 10.03)">Settle</button>
+                    </div>
+                </div>
+
+                <div class="sh">February 2024</div>
+                <div class="list-section" style="margin-bottom:16px">
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Feb</div><div class="day">3</div></div>
+                            <div class="txn-icon">🍺</div>
+                            <div class="txn-info"><h4>Uber Eats - Beer</h4><p>You paid $40.72</p></div>
+                            <div><div class="txn-lent-label">you lent</div><div class="txn-amount lent">$30.54</div></div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Uber Eats - Beer')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Uber Eats - Beer')">Delete</button>
+                        </div>
+                    </div>
+
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Feb</div><div class="day">2</div></div>
+                            <div class="txn-icon">💰</div>
+                            <div class="txn-info"><h4>Nick paid Riley B.</h4><p>Payment $32.73</p></div>
                             <div class="txn-amount neutral">$32.73</div>
                         </div>
-                    </div>
-                    <div class="txn-actions">
-                        <button class="txn-btn edit" onclick="event.stopPropagation();editExpense('Nick paid Riley B.')">Edit</button>
-                        <button class="txn-btn delete" onclick="event.stopPropagation();deleteTxn(this,'Nick paid Riley B.')">Delete</button>
-                    </div>
-                </div>
-                <div class="txn-item" onclick="toggleTxn(this)">
-                    <div class="txn-inner">
-                        <div class="txn-date"><div class="month">Feb</div><div class="day">2</div></div>
-                        <div class="txn-emoji">⛳️</div>
-                        <div class="txn-info"><h4>Green Fees</h4><p>Chad paid $635.23</p></div>
-                        <div class="txn-amount-col">
-                            <div class="txn-sublabel borrowed">you borrowed</div>
-                            <div class="txn-amount borrowed">$158.81</div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Nick paid Riley B.')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Nick paid Riley B.')">Delete</button>
                         </div>
                     </div>
-                    <div class="txn-actions">
-                        <button class="txn-btn edit" onclick="event.stopPropagation();editExpense('Green Fees')">Edit</button>
-                        <button class="txn-btn delete" onclick="event.stopPropagation();deleteTxn(this,'Green Fees')">Delete</button>
-                    </div>
-                </div>
-                <div class="txn-item" onclick="toggleTxn(this)">
-                    <div class="txn-inner">
-                        <div class="txn-date"><div class="month">Feb</div><div class="day">1</div></div>
-                        <div class="txn-emoji">🍺</div>
-                        <div class="txn-info"><h4>Pioneer Creek Booze</h4><p>Riley paid $33.75</p></div>
-                        <div class="txn-amount-col">
-                            <div class="txn-sublabel borrowed">you borrowed</div>
-                            <div class="txn-amount borrowed">$11.25</div>
+
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Feb</div><div class="day">2</div></div>
+                            <div class="txn-icon">⛳</div>
+                            <div class="txn-info"><h4>Green Fees</h4><p>Chad paid $635.23</p></div>
+                            <div><div class="txn-lent-label owe">you borrowed</div><div class="txn-amount borrowed">$158.81</div></div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Green Fees')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Green Fees')">Delete</button>
                         </div>
                     </div>
-                    <div class="txn-actions">
-                        <button class="txn-btn edit" onclick="event.stopPropagation();editExpense('Pioneer Creek Booze')">Edit</button>
-                        <button class="txn-btn delete" onclick="event.stopPropagation();deleteTxn(this,'Pioneer Creek Booze')">Delete</button>
-                    </div>
-                </div>
-            </div>
-            <div style="height:32px;"></div>
-        </div>
-    </div>
 
-    <!-- ==================== HOUSEHOLD DETAIL ==================== -->
-    <div class="screen" id="screen-event-detail-2">
-        <div class="status-bar">
-            <span>12:50</span>
-            <div class="status-icons">
-                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13.5" y="1" width="2.5" height="11" rx="1" opacity=".3"/></svg>
-                <svg width="16" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="0" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="21" y="3.5" width="3" height="5" rx="1.5" fill="currentColor" opacity=".4"/><rect x="1.5" y="2.5" width="15" height="7" rx="1.5" fill="currentColor"/></svg>
-            </div>
-        </div>
-        <div class="nav-bar">
-            <button class="nav-bar-back" onclick="showScreen('screen-dashboard')">
-                <svg viewBox="0 0 11 18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9.5 1.5L1.5 9l8 7.5"/></svg>
-                Back
-            </button>
-            <div class="nav-bar-title">Household</div>
-            <button class="nav-bar-action" onclick="showScreen('screen-pick-group')">+</button>
-        </div>
-        <div class="content">
-            <div class="detail-meta-bar">
-                <div class="detail-meta-item">📅 Ongoing</div>
-                <div class="detail-meta-item">👥 2 people</div>
-            </div>
-
-            <div class="balance-bar">
-                <span class="balance-bar-text">You owe Riley <strong class="neg">$45.00</strong></span>
-            </div>
-
-            <div class="people-strip">
-                <div class="people-strip-row">
-                    <span class="people-strip-label">People</span>
-                    <button class="people-strip-edit" onclick="toggleManagePeople('bubbles-household')">Edit</button>
-                </div>
-                <div class="people-bubbles" id="bubbles-household">
-                    <div class="person-bubble">
-                        <button class="remove-dot" onclick="removePerson(this)">✕</button>
-                        <div class="dot-lg" style="background:var(--m-you);">A</div>
-                        <span>You</span>
-                    </div>
-                    <div class="person-bubble">
-                        <button class="remove-dot" onclick="removePerson(this)">✕</button>
-                        <div class="dot-lg" style="background:var(--m-riley);">R</div>
-                        <span>Riley</span>
-                    </div>
-                    <div class="add-person-bubble" onclick="openInviteSheet()">
-                        <div class="add-person-ring">+</div>
-                        <span style="font-size:11px;color:var(--blue);">Add</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section-label">Balances</div>
-            <div class="card-group">
-                <div class="row">
-                    <div class="dot-sm" style="background:var(--m-riley);">R</div>
-                    <div class="row-info">
-                        <div class="row-title" style="font-weight:500;">You owe Riley <strong style="color:var(--orange);">$45.00</strong></div>
-                    </div>
-                    <button class="settle-pill" style="background:var(--blue);" onclick="openSettleSheet('Riley', 45.00)">Settle</button>
-                </div>
-            </div>
-
-            <div class="txn-section-label">July 2026</div>
-            <div class="txn-group">
-                <div class="txn-item" onclick="toggleTxn(this)">
-                    <div class="txn-inner">
-                        <div class="txn-date"><div class="month">Jul</div><div class="day">25</div></div>
-                        <div class="txn-emoji">🛒</div>
-                        <div class="txn-info"><h4>Groceries – Costco</h4><p>Riley paid $90.00</p></div>
-                        <div class="txn-amount-col">
-                            <div class="txn-sublabel borrowed">you borrowed</div>
-                            <div class="txn-amount borrowed">$45.00</div>
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Feb</div><div class="day">1</div></div>
+                            <div class="txn-icon">🚙</div>
+                            <div class="txn-info"><h4>Nick paid Riley B.</h4><p>Payment $460.00</p></div>
+                            <div class="txn-amount neutral">$460.00</div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Nick paid Riley B.')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Nick paid Riley B.')">Delete</button>
                         </div>
                     </div>
-                    <div class="txn-actions">
-                        <button class="txn-btn edit" onclick="event.stopPropagation();editExpense('Groceries – Costco')">Edit</button>
-                        <button class="txn-btn delete" onclick="event.stopPropagation();deleteTxn(this,'Groceries – Costco')">Delete</button>
-                    </div>
-                </div>
-                <div class="txn-item" onclick="toggleTxn(this)">
-                    <div class="txn-inner">
-                        <div class="txn-date"><div class="month">Jul</div><div class="day">18</div></div>
-                        <div class="txn-emoji">⚡</div>
-                        <div class="txn-info"><h4>Electric Bill</h4><p>You paid $120.00</p></div>
-                        <div class="txn-amount-col">
-                            <div class="txn-sublabel lent">you lent</div>
-                            <div class="txn-amount lent">$60.00</div>
+
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Feb</div><div class="day">1</div></div>
+                            <div class="txn-icon">🍾</div>
+                            <div class="txn-info"><h4>Pioneer Creek Booze</h4><p>Riley paid $33.75</p></div>
+                            <div><div class="txn-lent-label owe">you borrowed</div><div class="txn-amount borrowed">$11.25</div></div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Pioneer Creek Booze')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Pioneer Creek Booze')">Delete</button>
                         </div>
                     </div>
-                    <div class="txn-actions">
-                        <button class="txn-btn edit" onclick="event.stopPropagation();editExpense('Electric Bill')">Edit</button>
-                        <button class="txn-btn delete" onclick="event.stopPropagation();deleteTxn(this,'Electric Bill')">Delete</button>
+
+                    <div class="inline-add-row" onclick="showScreen('screen-pick-group')">
+                        <div class="add-icon">+</div>
+                        Add expense
                     </div>
                 </div>
             </div>
-            <div style="height:32px;"></div>
-        </div>
-    </div>
 
-    <!-- ==================== SETTLE SHEET ==================== -->
-    <div class="sheet-overlay" id="settle-sheet">
-        <div class="sheet">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title">Record payment</div>
-            <div class="sheet-form-row">
-                <span class="sheet-form-label">Settling with</span>
-                <input class="sheet-form-input" type="text" id="settle-person" readonly>
-            </div>
-            <div class="sheet-form-row">
-                <span class="sheet-form-label">Amount</span>
-                <input class="sheet-form-input" type="number" id="settle-amount" step="0.01">
-            </div>
-            <div class="sheet-form-row">
-                <span class="sheet-form-label">Method</span>
-                <select class="sheet-form-select">
-                    <option>Cash</option>
-                    <option>Venmo</option>
-                    <option>Zelle</option>
-                    <option>Other</option>
-                </select>
-            </div>
-            <div class="sheet-actions">
-                <button class="btn-sheet-cancel" onclick="closeSettleSheet()">Cancel</button>
-                <button class="btn-sheet-confirm" onclick="confirmSettle()">Record payment</button>
+            <div class="tab-bar">
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M9.5 20v-5.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20"/></svg></div><div class="tl">Home</div></div>
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 2.5v5"/><path d="M16 2.5v5"/></svg></div><div class="tl">Calendar</div></div>
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4.5 6h.01"/><path d="M4.5 12h.01"/><path d="M4.5 18h.01"/></svg></div><div class="tl">Lists</div></div>
+                <div class="tab on"><div class="ti"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg></div><div class="tl">More</div></div>
             </div>
         </div>
-    </div>
 
-    <!-- ==================== INVITE SHEET ==================== -->
-    <div class="sheet-overlay" id="invite-sheet">
-        <div class="sheet">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title">Invite someone</div>
-            <div class="sheet-form-row">
-                <span class="sheet-form-label">Name</span>
-                <input class="sheet-form-input" type="text" id="invite-name" placeholder="Enter name">
+        <!-- ==================== EVENT DETAIL 2 (Household) ==================== -->
+        <div class="screen wash" id="screen-event-detail-2">
+            <div class="status">
+                <span class="time">12:50</span>
+                <div class="icons">▌▌▌ ⊀ ▬</div>
             </div>
-            <div class="sheet-form-row">
-                <span class="sheet-form-label">Email / Phone</span>
-                <input class="sheet-form-input" type="text" id="invite-contact" placeholder="Email or phone">
+            <div class="nav">
+                <button class="nav-btn" onclick="showScreen('screen-dashboard')">‹ Settle Up</button>
+                <span class="nav-title">Household</span>
+                <button class="nav-btn" style="font-size:18px">⚙</button>
             </div>
-            <div class="sheet-actions">
-                <button class="btn-sheet-cancel" onclick="closeInviteSheet()">Cancel</button>
-                <button class="btn-sheet-confirm" style="background:var(--blue);" onclick="confirmInvite()">Send invite</button>
+            <div class="content">
+                <div class="list-section" style="margin-top:16px">
+                    <div class="event-detail-meta">
+                        <span>📅 Ongoing</span>
+                        <span>👥 2 people</span>
+                    </div>
+
+                    <div class="event-balance-bar">
+                        <span class="balance-text">You owe <strong class="owe">$45.00</strong> overall</span>
+                    </div>
+
+                    <div class="people-row-header">
+                        <h3>People</h3>
+                        <button class="people-manage-btn" onclick="toggleManagePeople('people-row-household')">Edit</button>
+                    </div>
+                    <div class="people-row" id="people-row-household">
+                        <div class="person-bubble">
+                            <button class="person-remove-btn" onclick="removePerson(this)">&#215;</button>
+                            <div class="avatar avatar-lg" style="background: var(--indigo);">A</div>
+                            <span>You</span>
+                        </div>
+                        <div class="person-bubble">
+                            <button class="person-remove-btn" onclick="removePerson(this)">&#215;</button>
+                            <div class="avatar avatar-lg" style="background: var(--fam-orange);">R</div>
+                            <span>Riley</span>
+                        </div>
+                        <div class="person-add-bubble" onclick="showInviteModal('people-row','people-row-household')">
+                            <div class="person-add-circle">+</div>
+                            <span>Add</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sh">Balances</div>
+                <div class="list-section">
+                    <div class="list-row">
+                        <div class="row-body">
+                            <div class="balance-line-text">You owe Riley <strong class="owe" style="color:var(--amber);">$45.00</strong></div>
+                        </div>
+                        <button class="settle-btn" onclick="openSettleModal('Riley', 45.00)">Settle</button>
+                    </div>
+                </div>
+
+                <div class="sh">July 2026</div>
+                <div class="list-section" style="margin-bottom:16px">
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Jul</div><div class="day">25</div></div>
+                            <div class="txn-icon">🛒</div>
+                            <div class="txn-info"><h4>Groceries - Costco</h4><p>Riley paid $90.00</p></div>
+                            <div><div class="txn-lent-label owe">you borrowed</div><div class="txn-amount borrowed">$45.00</div></div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Groceries - Costco')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Groceries - Costco')">Delete</button>
+                        </div>
+                    </div>
+
+                    <div class="txn-item" onclick="toggleTxn(this)">
+                        <div class="txn-inner">
+                            <div class="txn-date"><div class="month">Jul</div><div class="day">18</div></div>
+                            <div class="txn-icon">⚡</div>
+                            <div class="txn-info"><h4>Electric Bill</h4><p>You paid $120.00</p></div>
+                            <div><div class="txn-lent-label">you lent</div><div class="txn-amount lent">$60.00</div></div>
+                        </div>
+                        <div class="txn-tap-actions">
+                            <button class="txn-tap-btn edit" onclick="event.stopPropagation(); editExpense('Electric Bill')">Edit</button>
+                            <button class="txn-tap-btn delete" onclick="event.stopPropagation(); deleteExpense(this, 'Electric Bill')">Delete</button>
+                        </div>
+                    </div>
+
+                    <div class="inline-add-row" onclick="showScreen('screen-pick-group')">
+                        <div class="add-icon">+</div>
+                        Add expense
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-bar">
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M9.5 20v-5.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20"/></svg></div><div class="tl">Home</div></div>
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 2.5v5"/><path d="M16 2.5v5"/></svg></div><div class="tl">Calendar</div></div>
+                <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4.5 6h.01"/><path d="M4.5 12h.01"/><path d="M4.5 18h.01"/></svg></div><div class="tl">Lists</div></div>
+                <div class="tab on"><div class="ti"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg></div><div class="tl">More</div></div>
             </div>
         </div>
+
+        <!-- ==================== SETTLE UP MODAL ==================== -->
+        <div class="modal-overlay" id="settle-modal">
+            <div class="modal">
+                <h3>Record payment</h3>
+                <div class="form-group">
+                    <label>Settling with</label>
+                    <input type="text" id="settle-person" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" id="settle-amount" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Method</label>
+                    <select>
+                        <option>Cash</option>
+                        <option>Venmo</option>
+                        <option>Zelle</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-cancel" onclick="closeSettleModal()">Cancel</button>
+                    <button class="btn-confirm" onclick="confirmSettle()">Record payment</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== INVITE MODAL ==================== -->
+        <div class="modal-overlay" id="invite-modal">
+            <div class="modal">
+                <h3>Add a friend</h3>
+                <p class="invite-blurb">They don't need the Cozi app to be part of this event.</p>
+                <div class="quick-pick-section" id="quick-pick-section">
+                    <div class="quick-pick-label">Added before</div>
+                    <div class="quick-pick-chips" id="quick-pick-chips"></div>
+                </div>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="invite-name" placeholder="Enter name">
+                    <div class="field-error" id="invite-name-error"></div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-cancel" onclick="closeInviteModal()">Cancel</button>
+                    <button class="btn-confirm" style="background:var(--indigo);" onclick="confirmInvite()">Add friend</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast"></div>
     </div>
 
-    <div class="toast" id="toast"></div>
-</div>
+    <script>
+        // rotating avatar colors for people added via the invite modal
+        const EXTERNAL_COLORS = ['fam-violet', 'fam-teal', 'fam-orange', 'fam-pink'];
+        let externalColorIndex = 0;
+        let inviteContext = null; // { type: 'people-row' | 'invite-list', targetId: string }
 
-<script>
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
+        // Non-Cozi friends persist at the account level (not per-event) so they can be
+        // reused across Settle Up events without re-entering their name each time.
+        const SAVED_FRIENDS_KEY = 'cozi-settleup-saved-friends';
 
-    function selectPayer(el) {
-        el.closest('.payer-grid').querySelectorAll('.payer-chip').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-    }
-
-    function pickGroup(name) {
-        document.getElementById('event-banner-name').textContent = name;
-        showScreen('screen-add-expense');
-    }
-
-    function toggleNewEvent() {
-        document.getElementById('new-event-form').classList.toggle('visible');
-    }
-
-    function createAndPickGroup() {
-        const name = document.getElementById('new-event-name').value.trim();
-        if (!name) { showToast('Please enter an event name'); return; }
-        document.getElementById('event-banner-name').textContent = name;
-        showScreen('screen-add-expense');
-        showToast('Event created: ' + name);
-    }
-
-    function selectSplitMode(mode) {
-        document.querySelectorAll('.split-pill').forEach(p => p.classList.remove('active'));
-        if (mode === 'equal') {
-            document.querySelectorAll('.split-pill')[0].classList.add('active');
-            document.getElementById('percent-inputs').style.display = 'none';
-        } else {
-            document.querySelectorAll('.split-pill')[1].classList.add('active');
-            document.getElementById('percent-inputs').style.display = 'block';
+        function getSavedFriends() {
+            try {
+                return JSON.parse(localStorage.getItem(SAVED_FRIENDS_KEY)) || [];
+            } catch (e) {
+                return [];
+            }
         }
-    }
 
-    document.addEventListener('input', e => {
-        if (e.target.classList.contains('percent-field')) {
-            let total = 0;
-            document.querySelectorAll('.percent-field').forEach(f => total += parseInt(f.value) || 0);
-            const el = document.getElementById('percent-total');
-            el.textContent = 'Total: ' + total + '%';
-            el.classList.toggle('error', total !== 100);
+        function saveFriend(name, color) {
+            const friends = getSavedFriends();
+            if (friends.some(f => f.name.toLowerCase() === name.toLowerCase())) return;
+            friends.push({ name: name, color: color });
+            localStorage.setItem(SAVED_FRIENDS_KEY, JSON.stringify(friends));
         }
-    });
 
-    function saveExpense() {
-        const desc   = document.getElementById('expense-desc').value;
-        const amount = document.getElementById('expense-amount').value;
-        if (!desc || !amount) { showToast('Please fill in description and amount'); return; }
-        showToast('Expense added: ' + desc + ' ($' + parseFloat(amount).toFixed(2) + ')');
-        setTimeout(() => showScreen('screen-dashboard'), 1200);
-    }
+        function namesAlreadyIn(context) {
+            if (!context) return [];
+            if (context.type === 'people-row') {
+                const row = document.getElementById(context.targetId);
+                if (!row) return [];
+                return Array.from(row.querySelectorAll('.person-bubble > span:not(.not-on-cozi)')).map(s => s.textContent.trim().toLowerCase());
+            }
+            if (context.type === 'invite-list') {
+                const list = document.getElementById(context.targetId);
+                if (!list) return [];
+                return Array.from(list.querySelectorAll('.invite-name')).map(s => s.textContent.trim().toLowerCase());
+            }
+            return [];
+        }
 
-    function openSettleSheet(person, amount) {
-        document.getElementById('settle-person').value = person;
-        document.getElementById('settle-amount').value = amount.toFixed(2);
-        document.getElementById('settle-sheet').classList.add('active');
-    }
+        function renderQuickPick() {
+            const section = document.getElementById('quick-pick-section');
+            const chipsEl = document.getElementById('quick-pick-chips');
+            chipsEl.innerHTML = '';
 
-    function closeSettleSheet() {
-        document.getElementById('settle-sheet').classList.remove('active');
-    }
+            const alreadyIn = namesAlreadyIn(inviteContext);
+            const candidates = getSavedFriends().filter(f => !alreadyIn.includes(f.name.toLowerCase()));
 
-    function confirmSettle() {
-        const person = document.getElementById('settle-person').value;
-        const amount = document.getElementById('settle-amount').value;
-        closeSettleSheet();
-        showToast('Payment of $' + parseFloat(amount).toFixed(2) + ' recorded');
-    }
+            if (!candidates.length) {
+                section.classList.remove('visible');
+                return;
+            }
 
-    function openInviteSheet() {
-        document.getElementById('invite-sheet').classList.add('active');
-    }
+            candidates.forEach(friend => {
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'quick-pick-chip';
+                chip.innerHTML =
+                    '<span class="avatar avatar-sm" style="background:var(--' + friend.color + ');">' + initials(friend.name) + '</span>' +
+                    friend.name;
+                chip.onclick = function () { addFriendToTarget(friend.name, friend.color); };
+                chipsEl.appendChild(chip);
+            });
 
-    function closeInviteSheet() {
-        document.getElementById('invite-sheet').classList.remove('active');
-    }
+            section.classList.add('visible');
+        }
 
-    function confirmInvite() {
-        const name = document.getElementById('invite-name').value.trim();
-        if (!name) { showToast('Please enter a name'); return; }
-        closeInviteSheet();
-        showToast('Invite sent to ' + name);
-    }
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
 
-    function toggleManagePeople(id) {
-        const row = document.getElementById(id);
-        const btn = row.previousElementSibling.querySelector('.people-strip-edit');
-        row.classList.toggle('managing');
-        btn.textContent = row.classList.contains('managing') ? 'Done' : 'Edit';
-    }
+        function backToMore() {
+            showToast('Returning to More');
+        }
 
-    function removePerson(btn) {
-        const bubble = btn.closest('.person-bubble');
-        const name = bubble.querySelector('span').textContent;
-        if (name === 'You') { showToast("You can't remove yourself"); return; }
-        bubble.style.transition = 'opacity .25s, transform .25s';
-        bubble.style.opacity = '0';
-        bubble.style.transform = 'scale(0.5)';
-        setTimeout(() => bubble.remove(), 250);
-        showToast('Removed ' + name);
-    }
+        function selectPayer(el) {
+            el.closest('.payer-chips').querySelectorAll('.payer-chip').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
 
-    function toggleTxn(el) {
-        const was = el.classList.contains('expanded');
-        document.querySelectorAll('.txn-item.expanded').forEach(i => i.classList.remove('expanded'));
-        if (!was) el.classList.add('expanded');
-    }
+        function pickGroup(name) {
+            document.getElementById('selected-group-name').textContent = name;
+            showScreen('screen-add-expense');
+        }
 
-    function editExpense(name) {
-        document.querySelectorAll('.txn-item.expanded').forEach(i => i.classList.remove('expanded'));
-        showScreen('screen-add-expense');
-        document.getElementById('expense-desc').value = name;
-        showToast('Editing: ' + name);
-    }
+        function toggleNewGroup() {
+            const form = document.getElementById('new-group-form');
+            form.classList.toggle('visible');
+        }
 
-    function deleteTxn(btn, name) {
-        const item = btn.closest('.txn-item');
-        item.style.transition = 'opacity .3s, max-height .3s';
-        item.style.opacity = '0';
-        item.style.maxHeight = '0';
-        item.style.overflow = 'hidden';
-        setTimeout(() => item.remove(), 300);
-        showToast('Deleted: ' + name);
-    }
+        function createAndPickGroup() {
+            const name = document.getElementById('new-group-name').value;
+            if (!name) {
+                showToast('Please enter an event name');
+                return;
+            }
+            document.getElementById('selected-group-name').textContent = name;
+            showScreen('screen-add-expense');
+            showToast('Event created: ' + name);
+        }
 
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.classList.remove('show');
-        void t.offsetWidth;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2200);
-    }
-</script>
+        function defaultEndDate() {
+            const start = document.getElementById('expense-start-date').value;
+            document.getElementById('expense-end-date').value = start;
+        }
+
+        function selectSplitMode(mode) {
+            document.querySelectorAll('.split-pill').forEach(c => c.classList.remove('active'));
+            if (mode === 'equal') {
+                document.querySelectorAll('.split-pill')[0].classList.add('active');
+                document.getElementById('percent-inputs').style.display = 'none';
+            } else {
+                document.querySelectorAll('.split-pill')[1].classList.add('active');
+                document.getElementById('percent-inputs').style.display = 'block';
+            }
+        }
+
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('percent-field')) {
+                const fields = document.querySelectorAll('.percent-field');
+                let total = 0;
+                fields.forEach(f => total += parseInt(f.value) || 0);
+                const totalEl = document.getElementById('percent-total');
+                totalEl.textContent = 'Total: ' + total + '%';
+                totalEl.classList.toggle('error', total !== 100);
+            }
+        });
+
+
+        function saveExpense() {
+            const desc = document.getElementById('expense-desc').value;
+            const amount = document.getElementById('expense-amount').value;
+            if (!desc || !amount) {
+                showToast('Please fill in description and amount');
+                return;
+            }
+            showToast('Expense added: ' + desc + ' ($' + parseFloat(amount).toFixed(2) + ')');
+            setTimeout(() => showScreen('screen-dashboard'), 1200);
+        }
+
+        function openSettleModal(person, amount) {
+            document.getElementById('settle-person').value = person;
+            document.getElementById('settle-amount').value = amount.toFixed(2);
+            document.getElementById('settle-modal').classList.add('active');
+        }
+
+        function closeSettleModal() {
+            document.getElementById('settle-modal').classList.remove('active');
+        }
+
+        function confirmSettle() {
+            const person = document.getElementById('settle-person').value;
+            const amount = document.getElementById('settle-amount').value;
+            closeSettleModal();
+            showToast('Payment of $' + parseFloat(amount).toFixed(2) + ' to ' + person + ' recorded');
+        }
+
+        function toggleManagePeople(rowId) {
+            const row = document.getElementById(rowId);
+            const btn = row.previousElementSibling.querySelector('.people-manage-btn');
+            row.classList.toggle('managing');
+            btn.textContent = row.classList.contains('managing') ? 'Done' : 'Edit';
+        }
+
+        function removePerson(btn) {
+            const bubble = btn.closest('.person-bubble');
+            const name = bubble.querySelector('span').textContent;
+            if (name === 'You') {
+                showToast("You can't remove yourself");
+                return;
+            }
+            bubble.style.transition = 'opacity 0.25s, transform 0.25s';
+            bubble.style.opacity = '0';
+            bubble.style.transform = 'scale(0.5)';
+            setTimeout(() => bubble.remove(), 250);
+            showToast('Removed ' + name);
+        }
+
+        function showInviteModal(type, targetId) {
+            inviteContext = type ? { type: type, targetId: targetId } : null;
+            clearInviteErrors();
+            document.getElementById('invite-name').value = '';
+            renderQuickPick();
+            document.getElementById('invite-modal').classList.add('active');
+        }
+
+        function closeInviteModal() {
+            document.getElementById('invite-modal').classList.remove('active');
+            clearInviteErrors();
+        }
+
+        function clearInviteErrors() {
+            const nameErr = document.getElementById('invite-name-error');
+            if (nameErr) { nameErr.style.display = 'none'; nameErr.textContent = ''; }
+        }
+
+        function initials(name) {
+            const parts = name.trim().split(/\s+/);
+            return parts.map(p => p[0]).join('').slice(0, 2).toUpperCase();
+        }
+
+        function nextExternalColor() {
+            const color = EXTERNAL_COLORS[externalColorIndex % EXTERNAL_COLORS.length];
+            externalColorIndex++;
+            return color;
+        }
+
+        function addExternalPersonBubble(rowId, name, color) {
+            const row = document.getElementById(rowId);
+            if (!row) return;
+            const addBubble = row.querySelector('.person-add-bubble');
+            const bubble = document.createElement('div');
+            bubble.className = 'person-bubble';
+            bubble.innerHTML =
+                '<button class="person-remove-btn" onclick="removePerson(this)">&#215;</button>' +
+                '<div class="avatar avatar-lg" style="background:var(--' + color + ');">' + initials(name) + '</div>' +
+                '<span>' + name + '</span>' +
+                '<span class="not-on-cozi">Not on Cozi</span>';
+            row.insertBefore(bubble, addBubble);
+        }
+
+        function addExternalInviteRow(listId, name, color) {
+            const list = document.getElementById(listId);
+            if (!list) return;
+            const addRow = list.querySelector('.add-person-row');
+            const row = document.createElement('div');
+            row.className = 'invite-row';
+            row.innerHTML =
+                '<input type="checkbox" checked>' +
+                '<div class="avatar" style="background:var(--' + color + ');">' + initials(name) + '</div>' +
+                '<div class="invite-name-wrap">' +
+                    '<span class="invite-name">' + name + '</span>' +
+                    '<span class="not-on-cozi">Not on Cozi</span>' +
+                '</div>';
+            list.insertBefore(row, addRow);
+        }
+
+        function addFriendToTarget(name, color) {
+            if (inviteContext && inviteContext.type === 'people-row') {
+                addExternalPersonBubble(inviteContext.targetId, name, color);
+            } else if (inviteContext && inviteContext.type === 'invite-list') {
+                addExternalInviteRow(inviteContext.targetId, name, color);
+            }
+            saveFriend(name, color);
+            closeInviteModal();
+            showToast('Added ' + name);
+        }
+
+        function confirmInvite() {
+            const nameInput = document.getElementById('invite-name');
+            const name = nameInput.value.trim();
+
+            const nameErr = document.getElementById('invite-name-error');
+
+            if (!name) {
+                nameErr.textContent = 'Enter a name.';
+                nameErr.style.display = 'block';
+                return;
+            }
+            nameErr.style.display = 'none';
+
+            const existing = getSavedFriends().find(f => f.name.toLowerCase() === name.toLowerCase());
+            const color = existing ? existing.color : nextExternalColor();
+            addFriendToTarget(name, color);
+        }
+
+        function toggleTxn(el) {
+            const wasExpanded = el.classList.contains('expanded');
+            document.querySelectorAll('.txn-item.expanded').forEach(item => item.classList.remove('expanded'));
+            if (!wasExpanded) el.classList.add('expanded');
+        }
+
+        function editExpense(name) {
+            document.querySelectorAll('.txn-item.expanded').forEach(item => item.classList.remove('expanded'));
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-add-expense').classList.add('active');
+            document.getElementById('expense-desc').value = name;
+            showToast('Editing: ' + name);
+        }
+
+        function deleteExpense(btn, name) {
+            const txnItem = btn.closest('.txn-item');
+            txnItem.style.transition = 'opacity 0.3s, max-height 0.3s';
+            txnItem.style.opacity = '0';
+            txnItem.style.maxHeight = '0';
+            txnItem.style.overflow = 'hidden';
+            setTimeout(() => txnItem.remove(), 300);
+            showToast('Deleted: ' + name);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('show');
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+    </script>
 </body>
 </html>
