@@ -130,8 +130,10 @@
     cursor: pointer;
     min-width: 56px;
   }
-  .nav-icon { font-size: 22px; line-height: 1; }
+  .nav-icon { color: var(--text-muted); line-height: 1; }
+  .nav-icon svg { width: 23px; height: 23px; display: block; }
   .nav-label { font-size: 10px; color: var(--text-muted); }
+  .nav-item.active .nav-icon { color: var(--blue); }
   .nav-item.active .nav-label { color: var(--blue); font-weight: 600; }
 
   /* ── App header ── */
@@ -145,7 +147,8 @@
   }
   .app-header h1 { color: #fff; font-size: 18px; font-weight: 700; }
   .header-actions { display: flex; gap: 12px; }
-  .header-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px; }
+  .header-btn { background: none; border: none; color: #fff; cursor: pointer; padding: 4px; display: flex; }
+  .header-btn svg { width: 21px; height: 21px; }
 
   /* tab bar */
   .tab-bar {
@@ -213,7 +216,11 @@
     cursor: pointer;
     white-space: nowrap;
     border: 1px solid rgba(59,187,233,.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
+  .allowance-chip svg { width: 13px; height: 13px; }
   .allowance-chip:hover { background: var(--blue); color: #fff; }
 
   /* chore item */
@@ -233,7 +240,7 @@
     display: flex; align-items: center; justify-content: center;
     transition: all .2s;
   }
-  .chore-check.checked { background: #4ade80; border-color: #4ade80; }
+  .chore-check.checked { background: var(--blue); border-color: var(--blue); }
   .chore-check.checked::after { content: '✓'; color: #fff; font-size: 11px; font-weight: 700; }
   .chore-label { font-size: 13px; color: var(--text); flex: 1; }
   .chore-label.done { text-decoration: line-through; color: var(--text-muted); }
@@ -317,10 +324,7 @@
     margin-bottom: 12px;
     gap: 8px;
   }
-  .card-header-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .card-title { font-size: 13px; font-weight: 700; color: var(--text-dark); }
-  .edit-link { font-size: 12px; color: var(--orange); font-weight: 600; cursor: pointer; white-space: nowrap; }
-  .edit-link:hover { color: var(--orange-dk); }
 
   /* progress */
   .earn-amount { font-size: 26px; font-weight: 700; color: var(--text-dark); }
@@ -361,9 +365,14 @@
   .activity-icon {
     width: 36px; height: 36px; border-radius: 50%;
     background: var(--bg-section);
+    color: var(--text-muted);
     display: flex; align-items: center; justify-content: center;
-    font-size: 16px; flex-shrink: 0;
+    flex-shrink: 0;
   }
+  .activity-icon svg { width: 18px; height: 18px; }
+  .activity-icon.chore { background: var(--light-sage, #E3F5E7); color: #16a34a; }
+  .activity-icon.bonus { background: var(--light-tangerine, #FFE5CB); color: var(--orange-dk); }
+  .activity-icon.settled { background: var(--bg-section); color: var(--text-muted); }
   .activity-info { flex: 1; }
   .activity-name { font-size: 13px; font-weight: 600; color: var(--text-dark); }
   .activity-date { font-size: 11px; color: var(--text-muted); }
@@ -372,76 +381,12 @@
   .activity-amount.settled { color: var(--text-muted); }
   .activity-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 8px 0; }
 
-  /* ── Allowance settings screen ── */
-  .allowance-header {
-    background: var(--bg-section);
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .back-btn-lt {
-    background: none; border: none;
-    color: var(--blue); font-size: 22px;
-    cursor: pointer; padding: 4px 8px 4px 0;
-  }
-  .allowance-title { flex: 1; text-align: center; font-size: 17px; font-weight: 700; color: var(--text-dark); }
-  .history-btn {
-    background: none; border: none;
-    color: var(--blue); font-size: 13px; font-weight: 600;
-    cursor: pointer; padding: 4px;
-  }
-
-  .section-label {
-    font-size: 11px; font-weight: 700; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: .6px;
-    padding: 14px 16px 6px;
-  }
-
-  /* amount row */
-  .amount-row {
-    background: #fff;
-    display: flex; align-items: center;
-    padding: 14px 16px;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-  .amount-value { font-size: 28px; font-weight: 700; color: var(--text-dark); flex: 1; }
-  .amount-unit { font-size: 14px; color: var(--text-muted); align-self: flex-end; margin-bottom: 4px; }
-
-  .amount-meta {
-    background: #fff;
-    padding: 8px 16px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .amount-meta p { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
-
-  /* partial payment circle */
-  .partial-card { background: #fff; border-radius: 12px; margin: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-  .partial-header { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 14px; }
-  .partial-body { display: flex; align-items: center; gap: 16px; }
-  .partial-circle-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
-  .partial-circle { width: 80px; height: 80px; border-radius: 50%; }
-  .partial-inner {
-    position: absolute; inset: 9px;
-    border-radius: 50%; background: #fff;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-  }
-  .partial-pct { font-size: 14px; font-weight: 700; color: var(--text-dark); }
-  .partial-info { flex: 1; }
-  .partial-earned { font-size: 20px; font-weight: 700; color: var(--text-dark); }
-  .partial-label { font-size: 12px; color: var(--text-muted); }
-  .partial-chores { font-size: 13px; color: var(--orange); font-weight: 600; margin-top: 6px; }
-
-  /* toggle */
+  /* allowance on/off toggle (inline in Earnings card) */
   .toggle-row {
-    background: #fff;
     display: flex; align-items: center; gap: 12px;
-    padding: 14px 16px;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
+    padding-top: 12px;
     margin-top: 12px;
+    border-top: 1px solid var(--border);
     cursor: pointer;
   }
   .toggle-label { flex: 1; font-size: 14px; font-weight: 600; color: var(--text-dark); }
@@ -461,23 +406,7 @@
     transition: transform .2s;
   }
   .toggle-switch.on::after { transform: translateX(20px); }
-  .toggle-note { font-size: 12px; color: var(--text-muted); padding: 8px 16px 14px; background: #fff; border-bottom: 1px solid var(--border); }
-
-  /* CTA card */
-  .cta-card {
-    margin: 12px;
-    background: var(--blue-lt);
-    border: 1px solid rgba(59,187,233,.3);
-    border-radius: 12px;
-    padding: 14px 16px;
-    display: flex; align-items: center; gap: 12px;
-    cursor: pointer;
-  }
-  .cta-card:hover { background: var(--blue); }
-  .cta-card:hover .cta-text, .cta-card:hover .cta-sub { color: #fff; }
-  .cta-icon { font-size: 28px; flex-shrink: 0; }
-  .cta-text { font-size: 14px; font-weight: 700; color: var(--blue-dk); }
-  .cta-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .toggle-note { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
 
   /* ── iOS-style alert ── */
   .alert-overlay {
@@ -527,8 +456,8 @@
       <div class="app-header">
         <h1>Lists</h1>
         <div class="header-actions">
-          <button class="header-btn">🔔</button>
-          <button class="header-btn">👤</button>
+          <button class="header-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10a6 6 0 0 1 12 0c0 3 1 4.5 2 5.5H4c1-1 2-2.5 2-5.5Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg></button>
+          <button class="header-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c.6-4 3-6.2 7-6.2s6.4 2.2 7 6.2"/></svg></button>
         </div>
       </div>
 
@@ -555,11 +484,11 @@
       <div class="screen-body" id="chores-body"></div>
 
       <div class="bottom-nav">
-        <div class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
-        <div class="nav-item"><div class="nav-icon">📅</div><div class="nav-label">Calendar</div></div>
-        <div class="nav-item active"><div class="nav-icon">📋</div><div class="nav-label">Lists</div></div>
-        <div class="nav-item"><div class="nav-icon">🍽</div><div class="nav-label">Meals</div></div>
-        <div class="nav-item"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Family</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1h4v-6h3v6h4a1 1 0 0 0 1-1v-9"/></svg></div><div class="nav-label">Home</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/></svg></div><div class="nav-label">Calendar</div></div>
+        <div class="nav-item active"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="15" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1v1.5H8V4.5a1 1 0 0 1 1-1Z"/><path d="M8.3 13l2.2 2.2 5.2-5.4"/></svg></div><div class="nav-label">Lists</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v6M9 2v6M7 8c0 1.3 1 1.8 2 1.8s2-.5 2-1.8M8 9.8V21"/><path d="M16.5 2c2 3 2 6.5 0 8.7V21"/></svg></div><div class="nav-label">Meals</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.6"/><path d="M4 19c0-3 2.2-5 5-5s5 2 5 5"/><circle cx="17.2" cy="9" r="2.1"/><path d="M14.6 19c.2-2.4 1.6-4 3.7-4 2.2 0 4 1.7 4.2 4.5"/></svg></div><div class="nav-label">Family</div></div>
       </div>
     </div>
 
@@ -599,32 +528,11 @@
       </div>
 
       <div class="bottom-nav">
-        <div class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
-        <div class="nav-item"><div class="nav-icon">📅</div><div class="nav-label">Calendar</div></div>
-        <div class="nav-item active"><div class="nav-icon">📋</div><div class="nav-label">Lists</div></div>
-        <div class="nav-item"><div class="nav-icon">🍽</div><div class="nav-label">Meals</div></div>
-        <div class="nav-item"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Family</div></div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════
-         SCREEN 3 — ALLOWANCE SETTINGS
-    ══════════════════════════════════════ -->
-    <div class="screen offscreen-right" id="screen-allowance">
-      <div class="allowance-header">
-        <button class="back-btn-lt" onclick="goBack('screen-dashboard')">‹</button>
-        <span class="allowance-title" id="allowance-child-name">Karla</span>
-        <button class="history-btn">History</button>
-      </div>
-
-      <div class="screen-body" id="allowance-body"></div>
-
-      <div class="bottom-nav">
-        <div class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
-        <div class="nav-item"><div class="nav-icon">📅</div><div class="nav-label">Calendar</div></div>
-        <div class="nav-item active"><div class="nav-icon">📋</div><div class="nav-label">Lists</div></div>
-        <div class="nav-item"><div class="nav-icon">🍽</div><div class="nav-label">Meals</div></div>
-        <div class="nav-item"><div class="nav-icon">👨‍👩‍👧</div><div class="nav-label">Family</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1h4v-6h3v6h4a1 1 0 0 0 1-1v-9"/></svg></div><div class="nav-label">Home</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/></svg></div><div class="nav-label">Calendar</div></div>
+        <div class="nav-item active"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="15" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1v1.5H8V4.5a1 1 0 0 1 1-1Z"/><path d="M8.3 13l2.2 2.2 5.2-5.4"/></svg></div><div class="nav-label">Lists</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v6M9 2v6M7 8c0 1.3 1 1.8 2 1.8s2-.5 2-1.8M8 9.8V21"/><path d="M16.5 2c2 3 2 6.5 0 8.7V21"/></svg></div><div class="nav-label">Meals</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.6"/><path d="M4 19c0-3 2.2-5 5-5s5 2 5 5"/><circle cx="17.2" cy="9" r="2.1"/><path d="M14.6 19c.2-2.4 1.6-4 3.7-4 2.2 0 4 1.7 4.2 4.5"/></svg></div><div class="nav-label">Family</div></div>
       </div>
     </div>
 
@@ -651,9 +559,9 @@
       allowanceOn: true,
       nextPayment: 'Monday, Sep 21',
       history: [
-        { icon: '💰', name: 'Paid out', date: 'Sep 8', amount: 9.00, type: 'settled' },
-        { icon: '🎁', name: 'Bonus from Grandma', date: 'Sep 5', amount: 5.00, type: 'credit' },
-        { icon: '✅', name: 'Mowed the lawn', date: 'Sep 3', amount: 3.00, type: 'credit' },
+        { icon: 'coin', name: 'Paid out', date: 'Sep 8', amount: 9.00, type: 'settled' },
+        { icon: 'gift', name: 'Bonus from Grandma', date: 'Sep 5', amount: 5.00, type: 'credit' },
+        { icon: 'check', name: 'Mowed the lawn', date: 'Sep 3', amount: 3.00, type: 'credit' },
       ],
     },
     sarah: {
@@ -667,9 +575,9 @@
       allowanceOn: true,
       nextPayment: 'Monday, Sep 21',
       history: [
-        { icon: '💰', name: 'Allowance paid out', date: 'Sep 8', amount: 8.00, type: 'settled' },
-        { icon: '🎁', name: 'Bonus from Mom', date: 'Aug 28', amount: 5.00, type: 'credit' },
-        { icon: '✅', name: 'Wiped bathroom sink', date: 'Sep 1', amount: 2.00, type: 'credit' },
+        { icon: 'coin', name: 'Allowance paid out', date: 'Sep 8', amount: 8.00, type: 'settled' },
+        { icon: 'gift', name: 'Bonus from Mom', date: 'Aug 28', amount: 5.00, type: 'credit' },
+        { icon: 'check', name: 'Wiped bathroom sink', date: 'Sep 1', amount: 2.00, type: 'credit' },
       ],
     },
   };
@@ -680,6 +588,12 @@
 
   function getEl(id) { return document.getElementById(id); }
   function money(n) { return '$' + n.toFixed(2); }
+
+  const ICON = {
+    coin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.5 9.7c0-1.2 1.1-2.1 2.5-2.1s2.5.7 2.5 1.8c0 2.6-5 1.4-5 4 0 1.1 1.1 1.9 2.5 1.9s2.5-.8 2.5-1.9"/></svg>',
+    gift: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9.5" width="16" height="10.5" rx="1.5"/><path d="M4 13h16M12 9.5v10.5"/><path d="M12 9.5c-1-3-3-4-4.3-3-1.3 1 0 3 1.3 3M12 9.5c1-3 3-4 4.3-3 1.3 1 0 3-1.3 3"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.2 12.3l2.4 2.4 5.2-5.4"/></svg>',
+  };
 
   function computeTotal(child) {
     return child.chores.reduce((sum, c) => sum + c.value, 0);
@@ -701,7 +615,7 @@
     const child = state[key];
     const choresHtml = child.chores.map(c => renderChoreItem(key, c)).join('');
     const chip = child.isParent ? '' :
-      `<div class="allowance-chip" onclick="goTo('screen-dashboard','${key}')">💰 Allowance</div>`;
+      `<div class="allowance-chip" onclick="goTo('screen-dashboard','${key}')">${ICON.coin} Allowance</div>`;
     return `
       <div class="person-section" style="${key === 'sarah' ? 'margin-bottom:12px' : ''}">
         <div class="person-header">
@@ -773,22 +687,24 @@
       : `<p class="payout-empty">No earnings yet — check off a chore to get started.</p>`;
 
     const historyHtml = child.history.length
-      ? child.history.map(h => `
+      ? child.history.map(h => {
+          const iconClass = h.icon === 'check' ? 'chore' : h.icon === 'gift' ? 'bonus' : 'settled';
+          return `
         <div class="activity-item">
-          <div class="activity-icon">${h.icon}</div>
+          <div class="activity-icon ${iconClass}">${ICON[h.icon]}</div>
           <div class="activity-info">
             <div class="activity-name">${h.name}</div>
             <div class="activity-date">${h.date}</div>
           </div>
           <span class="activity-amount ${h.type}">${h.type === 'settled' ? '−' : '+'}${money(h.amount)}</span>
-        </div>`).join('')
+        </div>`;
+        }).join('')
       : `<p class="activity-empty">No activity yet.</p>`;
 
     getEl('dash-body').innerHTML = `
       <div class="card">
         <div class="card-header">
           <span class="card-title">Earnings</span>
-          <span class="edit-link" onclick="goTo('screen-allowance','${activeChild}')">Edit →</span>
         </div>
         <div class="earn-amount">${money(earned)} <span class="earn-total" style="font-size:16px">/ ${money(total)}</span></div>
         <div class="progress-row">
@@ -797,6 +713,12 @@
         </div>
         <p class="next-payment">Next payment: ${child.nextPayment}</p>
         ${payoutHtml}
+
+        <div class="toggle-row" onclick="toggleAllowance('${activeChild}')">
+          <span class="toggle-label">Allowance is ${child.allowanceOn ? 'on' : 'off'}</span>
+          <div class="toggle-switch ${child.allowanceOn ? 'on' : ''}"></div>
+        </div>
+        ${!child.allowanceOn ? `<p class="toggle-note">${child.name} can still check off chores, but won't get paid until you turn this back on.</p>` : ''}
       </div>
 
       <div class="card">
@@ -810,6 +732,11 @@
   function switchChild(child) {
     activeChild = child;
     ['karla', 'sarah'].forEach(c => getEl('tab-' + c).classList.toggle('active', c === child));
+    renderDashboard();
+  }
+
+  function toggleAllowance(key) {
+    state[key].allowanceOn = !state[key].allowanceOn;
     renderDashboard();
   }
 
@@ -834,7 +761,7 @@
     const amt = computeEarned(child);
     if (amt <= 0) return;
     child.history.unshift({
-      icon: '💰',
+      icon: 'coin',
       name: 'Paid out',
       date: 'Today',
       amount: amt,
@@ -842,65 +769,6 @@
     });
     child.chores.forEach(c => { if (c.done) c.done = false; });
     renderAll();
-  }
-
-  // ── Allowance settings screen ──
-  function renderAllowanceScreen(key) {
-    const child = state[key];
-    getEl('allowance-child-name').textContent = child.name;
-
-    const earned = computeEarned(child);
-    const total = computeTotal(child);
-    const pct = total > 0 ? Math.round((earned / total) * 100) : 0;
-    const left = choresLeft(child);
-
-    getEl('allowance-body').innerHTML = `
-      <div class="section-label">Allowance</div>
-
-      <div class="amount-row">
-        <span class="amount-value">${money(total)}</span>
-        <span class="amount-unit" style="margin-left:6px;">potential this week</span>
-      </div>
-      <div class="amount-meta">
-        <p>Each chore has its own value — tap a chore's amount in the Chores list to change it.</p>
-      </div>
-
-      <div class="partial-card">
-        <div class="partial-header">This week</div>
-        <div class="partial-body">
-          <div class="partial-circle-wrap">
-            <div class="partial-circle" style="background:conic-gradient(var(--blue) ${pct}%, #e5e7eb ${pct}%)"></div>
-            <div class="partial-inner"><span class="partial-pct">${pct}%</span></div>
-          </div>
-          <div class="partial-info">
-            <div class="partial-earned">${money(earned)} earned</div>
-            <div class="partial-label">of ${money(total)} potential</div>
-            <div class="partial-chores">${left > 0 ? `${left} chore${left !== 1 ? 's' : ''} remaining` : 'All chores done'}</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="toggle-row" onclick="toggleAllowance('${key}')">
-        <span class="toggle-label">Allowance is ${child.allowanceOn ? 'on' : 'off'}</span>
-        <div class="toggle-switch ${child.allowanceOn ? 'on' : ''}"></div>
-      </div>
-      <div class="toggle-note">
-        Turn off to pause payouts. ${child.name} can still check off chores, but won't get paid until you turn it back on.
-      </div>
-
-      <div class="cta-card" onclick="goBack('screen-chores')">
-        <div class="cta-icon">📋</div>
-        <div>
-          <div class="cta-text">Keep them on track</div>
-          <div class="cta-sub">View and manage chores</div>
-        </div>
-        <div style="margin-left:auto;color:var(--blue-dk);font-size:18px;">›</div>
-      </div>`;
-  }
-
-  function toggleAllowance(key) {
-    state[key].allowanceOn = !state[key].allowanceOn;
-    renderAllowanceScreen(key);
   }
 
   // ── Navigation ──
@@ -911,7 +779,6 @@
     next.classList.remove('offscreen-right');
     next.classList.remove('offscreen-left');
     if (screenId === 'screen-dashboard' && child) switchChild(child);
-    if (screenId === 'screen-allowance') renderAllowanceScreen(child || activeChild);
     currentScreen = screenId;
   }
 
@@ -927,7 +794,6 @@
   function renderAll() {
     renderChores();
     renderDashboard();
-    if (currentScreen === 'screen-allowance') renderAllowanceScreen(activeChild);
   }
 
   renderAll();
