@@ -319,11 +319,6 @@
   }
   .card-header-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .card-title { font-size: 13px; font-weight: 700; color: var(--text-dark); }
-  .mode-pill {
-    background: var(--blue-lt); color: var(--blue-dk);
-    font-size: 11px; font-weight: 700;
-    padding: 3px 9px; border-radius: 20px; white-space: nowrap;
-  }
   .edit-link { font-size: 12px; color: var(--orange); font-weight: 600; cursor: pointer; white-space: nowrap; }
   .edit-link:hover { color: var(--orange-dk); }
 
@@ -404,26 +399,6 @@
     padding: 14px 16px 6px;
   }
 
-  /* mode selector */
-  .mode-select {
-    display: flex;
-    background: var(--bg-section);
-    border-radius: 8px;
-    padding: 3px;
-    margin: 0 16px 12px;
-  }
-  .mode-option {
-    flex: 1;
-    text-align: center;
-    padding: 8px 0;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px; font-weight: 600;
-    color: var(--text-muted);
-    transition: all .2s;
-  }
-  .mode-option.active { background: #fff; color: var(--blue-dk); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-
   /* amount row */
   .amount-row {
     background: #fff;
@@ -434,10 +409,6 @@
   }
   .amount-value { font-size: 28px; font-weight: 700; color: var(--text-dark); flex: 1; }
   .amount-unit { font-size: 14px; color: var(--text-muted); align-self: flex-end; margin-bottom: 4px; }
-  .edit-pencil {
-    background: none; border: none; color: var(--blue);
-    font-size: 18px; cursor: pointer; padding: 6px;
-  }
 
   .amount-meta {
     background: #fff;
@@ -507,14 +478,6 @@
   .cta-icon { font-size: 28px; flex-shrink: 0; }
   .cta-text { font-size: 14px; font-weight: 700; color: var(--blue-dk); }
   .cta-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-  /* inline edit input */
-  .amount-input {
-    font-size: 28px; font-weight: 700; color: var(--text-dark);
-    border: none; border-bottom: 2px solid var(--blue);
-    outline: none; width: 120px; background: transparent;
-    font-family: var(--font);
-  }
 
   /* ── iOS-style alert ── */
   .alert-overlay {
@@ -678,8 +641,7 @@
       ],
     },
     karla: {
-      name: 'Karla', color: 'var(--orange)', initial: 'K', mode: 'perchore',
-      weeklyAmount: 12.00,
+      name: 'Karla', color: 'var(--orange)', initial: 'K',
       chores: [
         { id: 'k1', label: 'Unload dishwasher', value: 3.00, done: true },
         { id: 'k2', label: 'Feed the dog', value: 3.00, done: true },
@@ -695,13 +657,12 @@
       ],
     },
     sarah: {
-      name: 'Sarah', color: 'var(--purple)', initial: 'S', mode: 'fixed',
-      weeklyAmount: 8.00,
+      name: 'Sarah', color: 'var(--purple)', initial: 'S',
       chores: [
-        { id: 's1', label: 'Set the table', done: true },
-        { id: 's2', label: 'Put away toys', done: false },
-        { id: 's3', label: 'Read for 20 min', done: false },
-        { id: 's4', label: 'Wipe bathroom sink', done: false },
+        { id: 's1', label: 'Set the table', value: 2.00, done: true },
+        { id: 's2', label: 'Put away toys', value: 2.00, done: false },
+        { id: 's3', label: 'Read for 20 min', value: 2.00, done: false },
+        { id: 's4', label: 'Wipe bathroom sink', value: 2.00, done: false },
       ],
       allowanceOn: true,
       nextPayment: 'Monday, Sep 21',
@@ -720,25 +681,14 @@
   function getEl(id) { return document.getElementById(id); }
   function money(n) { return '$' + n.toFixed(2); }
 
-  function choreShare(child) {
-    return child.weeklyAmount / child.chores.length;
-  }
-  function choreValue(child, chore) {
-    return child.mode === 'perchore' ? chore.value : choreShare(child);
-  }
   function computeTotal(child) {
-    return child.mode === 'perchore'
-      ? child.chores.reduce((sum, c) => sum + c.value, 0)
-      : child.weeklyAmount;
+    return child.chores.reduce((sum, c) => sum + c.value, 0);
   }
   function computeEarned(child) {
-    return child.chores.filter(c => c.done).reduce((sum, c) => sum + choreValue(child, c), 0);
+    return child.chores.filter(c => c.done).reduce((sum, c) => sum + c.value, 0);
   }
   function choresLeft(child) {
     return child.chores.filter(c => !c.done).length;
-  }
-  function modeLabel(child) {
-    return child.mode === 'perchore' ? '🔁 Pay per chore' : '📅 Fixed weekly';
   }
 
   // ── Chores screen ──
@@ -768,11 +718,9 @@
     const child = state[key];
     let valueHtml = '';
     if (!child.isParent) {
-      const val = choreValue(child, chore);
-      const editable = child.mode === 'perchore';
-      valueHtml = `<span class="chore-value ${chore.done ? 'earned' : ''} ${editable ? 'editable' : ''}"
-        ${editable ? `onclick="editChoreValue(event,'${key}','${chore.id}')"` : ''}
-        id="value-${key}-${chore.id}">${money(val)}</span>`;
+      valueHtml = `<span class="chore-value ${chore.done ? 'earned' : ''} editable"
+        onclick="editChoreValue(event,'${key}','${chore.id}')"
+        id="value-${key}-${chore.id}">${money(chore.value)}</span>`;
     }
     return `
       <div class="chore-item">
@@ -839,10 +787,7 @@
     getEl('dash-body').innerHTML = `
       <div class="card">
         <div class="card-header">
-          <div class="card-header-left">
-            <span class="card-title">Earnings</span>
-            <span class="mode-pill">${modeLabel(child)}</span>
-          </div>
+          <span class="card-title">Earnings</span>
           <span class="edit-link" onclick="goTo('screen-allowance','${activeChild}')">Edit →</span>
         </div>
         <div class="earn-amount">${money(earned)} <span class="earn-total" style="font-size:16px">/ ${money(total)}</span></div>
@@ -890,7 +835,7 @@
     if (amt <= 0) return;
     child.history.unshift({
       icon: '💰',
-      name: child.mode === 'perchore' ? 'Paid out' : 'Allowance paid out',
+      name: 'Paid out',
       date: 'Today',
       amount: amt,
       type: 'settled',
@@ -909,34 +854,16 @@
     const pct = total > 0 ? Math.round((earned / total) * 100) : 0;
     const left = choresLeft(child);
 
-    const amountBlock = child.mode === 'fixed'
-      ? `
-        <div class="amount-row">
-          <span class="amount-value" id="allow-amount-display">${money(child.weeklyAmount)}</span>
-          <span class="amount-unit" style="margin-left:6px;">weekly</span>
-          <button class="edit-pencil" onclick="startEditAmount('${key}')">✏️</button>
-        </div>
-        <div class="amount-meta">
-          <p>Paid every ${child.nextPayment.split(',')[0]}, split evenly across ${child.name}'s chores.</p>
-        </div>`
-      : `
-        <div class="amount-row">
-          <span class="amount-value">${money(total)}</span>
-          <span class="amount-unit" style="margin-left:6px;">potential this week</span>
-        </div>
-        <div class="amount-meta">
-          <p>Each chore has its own value — tap a chore's amount in the Chores list to change it.</p>
-        </div>`;
-
     getEl('allowance-body').innerHTML = `
       <div class="section-label">Allowance</div>
 
-      <div class="mode-select">
-        <div class="mode-option ${child.mode === 'fixed' ? 'active' : ''}" onclick="setMode('${key}','fixed')">📅 Fixed weekly</div>
-        <div class="mode-option ${child.mode === 'perchore' ? 'active' : ''}" onclick="setMode('${key}','perchore')">🔁 Pay per chore</div>
+      <div class="amount-row">
+        <span class="amount-value">${money(total)}</span>
+        <span class="amount-unit" style="margin-left:6px;">potential this week</span>
       </div>
-
-      ${amountBlock}
+      <div class="amount-meta">
+        <p>Each chore has its own value — tap a chore's amount in the Chores list to change it.</p>
+      </div>
 
       <div class="partial-card">
         <div class="partial-header">This week</div>
@@ -947,7 +874,7 @@
           </div>
           <div class="partial-info">
             <div class="partial-earned">${money(earned)} earned</div>
-            <div class="partial-label">of ${money(total)} ${child.mode === 'fixed' ? 'allowance' : 'potential'}</div>
+            <div class="partial-label">of ${money(total)} potential</div>
             <div class="partial-chores">${left > 0 ? `${left} chore${left !== 1 ? 's' : ''} remaining` : 'All chores done'}</div>
           </div>
         </div>
@@ -958,7 +885,7 @@
         <div class="toggle-switch ${child.allowanceOn ? 'on' : ''}"></div>
       </div>
       <div class="toggle-note">
-        Turn off to pause allowance payments. ${child.name} won't receive her weekly payment until you turn it back on.
+        Turn off to pause payouts. ${child.name} can still check off chores, but won't get paid until you turn it back on.
       </div>
 
       <div class="cta-card" onclick="goBack('screen-chores')">
@@ -971,40 +898,9 @@
       </div>`;
   }
 
-  function setMode(key, mode) {
-    const child = state[key];
-    if (mode === 'perchore' && child.mode !== 'perchore') {
-      const share = choreShare(child);
-      child.chores.forEach(c => { if (c.value === undefined) c.value = share; });
-    }
-    child.mode = mode;
-    renderAll();
-  }
-
   function toggleAllowance(key) {
     state[key].allowanceOn = !state[key].allowanceOn;
     renderAllowanceScreen(key);
-  }
-
-  function startEditAmount(key) {
-    const child = state[key];
-    const display = getEl('allow-amount-display');
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'amount-input';
-    input.value = child.weeklyAmount.toFixed(2);
-    display.replaceWith(input);
-    input.focus();
-    input.select();
-
-    function commit() {
-      let val = parseFloat(input.value.replace(/[^0-9.]/g, ''));
-      if (isNaN(val) || val < 0) val = child.weeklyAmount;
-      child.weeklyAmount = val;
-      renderAll();
-    }
-    input.addEventListener('blur', commit);
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
   }
 
   // ── Navigation ──
