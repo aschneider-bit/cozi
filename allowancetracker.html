@@ -4,33 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cozi Allowance Tracker — Prototype</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --orange:      #f26522;
-    --orange-dk:   #d4541a;
-    --blue:        #3bbbe9;
-    --blue-dk:     #29ABE2;
-    --blue-lt:     #e8f7fd;
-    --text:        #494949;
-    --text-dark:   #1a1a1a;
-    --text-muted:  #727473;
+    /* Signal tokens (Cozi Everything App direction, DES-201) */
+    --blue:        #4F46E5;  /* indigo-600 — primary interactive */
+    --blue-dk:     #4338CA;  /* indigo-700 — hover/pressed */
+    --blue-lt:     #EEF2FF;  /* indigo-50 — tint fills */
+    --sky:         #0EA5E9;  /* structural — avatars, never text */
+    --amber:       #D97706;  /* content — chores, meals, food */
+    --amber-bg:    #FEF3C7;
+    --orange:      #EA580C;  /* fam-orange — member avatar only */
+    --purple:      #7C3AED;  /* fam-violet — member avatar only */
+    --pink:        #DB2777;  /* fam-pink — bonus/gift accent */
+    --pink-bg:     #FCE7F3;
+    --text:        #334155;  /* slate-600 */
+    --text-dark:   #1E293B;  /* slate-800 */
+    --text-muted:  #64748B;  /* slate-500 */
     --bg-page:     #ffffff;
-    --bg-section:  #f7f7f5;
+    --bg-section:  #F8FAFC;  /* sys-bg */
     --bg-card:     #ffffff;
-    --border:      #e0e0e0;
+    --border:      #E2E8F0;  /* slate-200 */
     --green:       #C9EBCF;
     --green-text:  #03563A;
-    --purple:      #8b5cf6;
-    --font: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Helvetica, Arial, sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     font-family: var(--font);
-    background: #e8edf2;
+    background: #1c1c1e;
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -42,43 +45,43 @@
   .phone {
     width: 390px;
     height: 844px;
-    background: #000;
-    border-radius: 50px;
+    background: var(--bg-section);
+    border-radius: 52px;
     box-shadow:
-      0 0 0 2px #555,
-      0 0 0 4px #222,
-      0 32px 80px rgba(0,0,0,.45);
+      0 0 0 1.5px #444,
+      0 0 0 3.5px #222,
+      0 40px 90px rgba(0,0,0,.6);
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
   }
 
-  /* notch */
+  /* dynamic island */
   .phone::before {
     content: '';
     position: absolute;
-    top: 0; left: 50%;
+    top: 13px; left: 50%;
     transform: translateX(-50%);
-    width: 130px; height: 34px;
+    width: 120px; height: 35px;
     background: #000;
-    border-radius: 0 0 20px 20px;
+    border-radius: 20px;
     z-index: 100;
   }
 
   /* status bar */
   .status-bar {
-    height: 44px;
-    background: var(--blue);
+    height: 50px;
+    background: transparent;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    padding: 0 24px 6px;
+    padding: 0 28px 8px;
     flex-shrink: 0;
     position: relative;
     z-index: 10;
   }
-  .status-bar span { color: #fff; font-size: 12px; font-weight: 600; }
+  .status-bar span { color: var(--text-dark); font-size: 12px; font-weight: 600; }
 
   /* screen container */
   .screen-wrap {
@@ -112,8 +115,10 @@
   /* ── Bottom nav ── */
   .bottom-nav {
     height: 83px;
-    background: #fff;
-    border-top: 1px solid var(--border);
+    background: rgba(255,255,255,.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 0.5px solid var(--border);
     display: flex;
     align-items: flex-start;
     justify-content: space-around;
@@ -138,35 +143,35 @@
 
   /* ── App header ── */
   .app-header {
-    background: var(--blue);
+    background: var(--bg-page);
     padding: 12px 16px 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
+    border-bottom: 0.5px solid var(--border);
   }
-  .app-header h1 { color: #fff; font-size: 18px; font-weight: 700; }
+  .app-header h1 { color: var(--text-dark); font-size: 18px; font-weight: 700; }
   .header-actions { display: flex; gap: 12px; }
-  .header-btn { background: none; border: none; color: #fff; cursor: pointer; padding: 4px; display: flex; }
-  .header-btn svg { width: 21px; height: 21px; }
+  .header-btn { background: none; border: none; color: var(--blue); font-size: 24px; line-height: 1; cursor: pointer; padding: 4px; display: flex; }
 
-  /* tab bar */
+  /* tab bar (segmented pills) */
   .tab-bar {
     display: flex;
-    background: var(--blue-dk);
+    gap: 8px;
+    background: var(--bg-page);
+    padding: 10px 16px;
     flex-shrink: 0;
   }
   .tab {
-    flex: 1;
-    text-align: center;
-    padding: 10px 0;
-    color: rgba(255,255,255,.7);
+    padding: 6px 14px;
+    border-radius: 18px;
+    color: var(--text-muted);
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    border-bottom: 3px solid transparent;
   }
-  .tab.active { color: #fff; border-bottom-color: #fff; }
+  .tab.active { color: #fff; background: var(--blue); }
 
   /* week nav */
   .week-nav {
@@ -215,7 +220,7 @@
     border-radius: 20px;
     cursor: pointer;
     white-space: nowrap;
-    border: 1px solid rgba(59,187,233,.3);
+    border: 1px solid rgba(79,70,229,.25);
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -269,25 +274,26 @@
 
   /* ── Dashboard header ── */
   .dash-header {
-    background: var(--blue);
+    background: var(--bg-page);
     padding: 12px 16px 14px;
     display: flex;
     align-items: center;
     flex-shrink: 0;
+    border-bottom: 0.5px solid var(--border);
   }
   .back-btn {
     background: none; border: none;
-    color: #fff; font-size: 22px;
+    color: var(--blue); font-size: 22px;
     cursor: pointer; padding: 4px 8px 4px 0;
     display: flex; align-items: center; gap: 4px;
   }
   .back-btn span { font-size: 14px; font-weight: 600; }
-  .dash-title { flex: 1; text-align: center; color: #fff; font-size: 17px; font-weight: 700; }
+  .dash-title { flex: 1; text-align: center; color: var(--text-dark); font-size: 17px; font-weight: 700; }
 
   /* child tabs */
   .child-tabs {
     display: flex;
-    background: rgba(0,0,0,.15);
+    background: var(--bg-section);
     margin: 0 16px 14px;
     border-radius: 8px;
     padding: 3px;
@@ -298,17 +304,16 @@
     padding: 6px 0;
     border-radius: 6px;
     cursor: pointer;
-    color: rgba(255,255,255,.7);
+    color: var(--text-muted);
     font-size: 13px; font-weight: 600;
     transition: all .2s;
   }
-  .child-tab.active { background: #fff; color: var(--blue-dk); }
+  .child-tab.active { background: var(--blue); color: #fff; }
   .child-avatar {
     width: 22px; height: 22px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 10px; font-weight: 700; color: #fff;
   }
-  .child-tab.active .child-avatar { color: #fff; }
 
   /* cards */
   .card {
@@ -333,7 +338,7 @@
   .progress-bar { flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
   .progress-fill { height: 100%; background: var(--blue); border-radius: 4px; transition: width .4s; }
   .chores-left { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
-  .chores-left strong { color: var(--orange); }
+  .chores-left strong { color: var(--amber); }
   .next-payment { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
 
   .payout-btn {
@@ -370,8 +375,8 @@
     flex-shrink: 0;
   }
   .activity-icon svg { width: 18px; height: 18px; }
-  .activity-icon.chore { background: var(--light-sage, #E3F5E7); color: #16a34a; }
-  .activity-icon.bonus { background: var(--light-tangerine, #FFE5CB); color: var(--orange-dk); }
+  .activity-icon.chore { background: var(--amber-bg); color: var(--amber); }
+  .activity-icon.bonus { background: var(--pink-bg); color: var(--pink); }
   .activity-icon.settled { background: var(--bg-section); color: var(--text-muted); }
   .activity-info { flex: 1; }
   .activity-name { font-size: 13px; font-weight: 600; color: var(--text-dark); }
@@ -419,7 +424,9 @@
   .alert-overlay.visible { display: flex; }
   .alert-box {
     width: 270px;
-    background: #fff;
+    background: rgba(248,248,248,.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-radius: 14px;
     overflow: hidden;
     text-align: center;
@@ -454,11 +461,9 @@
     ══════════════════════════════════════ -->
     <div class="screen" id="screen-chores">
       <div class="app-header">
+        <span style="width:24px;"></span>
         <h1>Lists</h1>
-        <div class="header-actions">
-          <button class="header-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10a6 6 0 0 1 12 0c0 3 1 4.5 2 5.5H4c1-1 2-2.5 2-5.5Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg></button>
-          <button class="header-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c.6-4 3-6.2 7-6.2s6.4 2.2 7 6.2"/></svg></button>
-        </div>
+        <button class="header-btn">+</button>
       </div>
 
       <div class="tab-bar">
@@ -484,11 +489,10 @@
       <div class="screen-body" id="chores-body"></div>
 
       <div class="bottom-nav">
-        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1h4v-6h3v6h4a1 1 0 0 0 1-1v-9"/></svg></div><div class="nav-label">Home</div></div>
-        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/></svg></div><div class="nav-label">Calendar</div></div>
-        <div class="nav-item active"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="15" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1v1.5H8V4.5a1 1 0 0 1 1-1Z"/><path d="M8.3 13l2.2 2.2 5.2-5.4"/></svg></div><div class="nav-label">Lists</div></div>
-        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v6M9 2v6M7 8c0 1.3 1 1.8 2 1.8s2-.5 2-1.8M8 9.8V21"/><path d="M16.5 2c2 3 2 6.5 0 8.7V21"/></svg></div><div class="nav-label">Meals</div></div>
-        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.6"/><path d="M4 19c0-3 2.2-5 5-5s5 2 5 5"/><circle cx="17.2" cy="9" r="2.1"/><path d="M14.6 19c.2-2.4 1.6-4 3.7-4 2.2 0 4 1.7 4.2 4.5"/></svg></div><div class="nav-label">Family</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M9.5 20v-5.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20"/></svg></div><div class="nav-label">Home</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 2.5v5"/><path d="M16 2.5v5"/></svg></div><div class="nav-label">Calendar</div></div>
+        <div class="nav-item active"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4.5 6h.01"/><path d="M4.5 12h.01"/><path d="M4.5 18h.01"/></svg></div><div class="nav-label">Lists</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg></div><div class="nav-label">More</div></div>
       </div>
     </div>
 
@@ -528,11 +532,10 @@
       </div>
 
       <div class="bottom-nav">
-        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1h4v-6h3v6h4a1 1 0 0 0 1-1v-9"/></svg></div><div class="nav-label">Home</div></div>
-        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/></svg></div><div class="nav-label">Calendar</div></div>
-        <div class="nav-item active"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="15" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1v1.5H8V4.5a1 1 0 0 1 1-1Z"/><path d="M8.3 13l2.2 2.2 5.2-5.4"/></svg></div><div class="nav-label">Lists</div></div>
-        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v6M9 2v6M7 8c0 1.3 1 1.8 2 1.8s2-.5 2-1.8M8 9.8V21"/><path d="M16.5 2c2 3 2 6.5 0 8.7V21"/></svg></div><div class="nav-label">Meals</div></div>
-        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.6"/><path d="M4 19c0-3 2.2-5 5-5s5 2 5 5"/><circle cx="17.2" cy="9" r="2.1"/><path d="M14.6 19c.2-2.4 1.6-4 3.7-4 2.2 0 4 1.7 4.2 4.5"/></svg></div><div class="nav-label">Family</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M9.5 20v-5.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20"/></svg></div><div class="nav-label">Home</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 2.5v5"/><path d="M16 2.5v5"/></svg></div><div class="nav-label">Calendar</div></div>
+        <div class="nav-item active"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4.5 6h.01"/><path d="M4.5 12h.01"/><path d="M4.5 18h.01"/></svg></div><div class="nav-label">Lists</div></div>
+        <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg></div><div class="nav-label">More</div></div>
       </div>
     </div>
 
@@ -542,7 +545,7 @@
 <script>
   const state = {
     andrew: {
-      name: 'Andrew', color: '#3bbbe9', initial: 'A', isParent: true,
+      name: 'Andrew', color: 'var(--sky)', initial: 'A', isParent: true,
       chores: [
         { id: 'a1', label: 'Take out recycling', done: false },
         { id: 'a2', label: 'Mow the lawn', done: false },
