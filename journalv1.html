@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cozi Family Journal — v1 (Signal Direction, iOS)</title>
+<style>
+  /* ── Signal tokens (Cozi Everything App direction, DES-201) ── */
+  :root {
+    --indigo:        #4F46E5;  /* primary interactive — buttons, active tab, links */
+    --indigo-lt:      #818CF8; /* decorative content only — never text */
+    --indigo-bg:      #EEF2FF; /* tint — badges, tonal chips, active tab bg */
+    --sky:            #0EA5E9; /* structural — event bars, dots, filled avatars */
+    --sky-dk:         #0369A1; /* filled hero surfaces, active tab, today indicator */
+    --sky-bg:         #E0F2FE; /* tint — outlined/tonal secondary buttons */
+    --green:          #16A34A; /* content — shopping, success, done states */
+    --green-bg:       #DCFCE7;
+    --amber:          #D97706; /* content — chores, meals, food; also error/negative */
+    --amber-bg:       #FEF3C7;
+    /* extended family palette — 4th+ member avatars */
+    --fam-violet:     #7C3AED; --fam-violet-bg: #EDE9FE;
+    --fam-teal:       #0D9488; --fam-teal-bg:   #CCFBF1;
+    --fam-orange:     #EA580C; --fam-orange-bg: #FFEDD5;
+    --fam-pink:       #DB2777; --fam-pink-bg:   #FCE7F3;
+    /* neutrals */
+    --slate:          #1E293B; /* primary text, headings */
+    --slate-md:       #475569; /* secondary text */
+    --slate-lgt:      #94A3B8; /* large-only metadata */
+    --sep:            rgba(15,23,42,0.08);
+    --sys-bg:         #F8FAFC;
+    --white:          #FFFFFF;
+    --wash-top:       #BFDBFE;
+    --wash-bottom:    #BAE6FD;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1c1c1e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 56px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
+    min-height: 100vh;
+  }
+
+  body > h1 {
+    color: rgba(255,255,255,0.4);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  /* ── Phone frame ── */
+  .phone {
+    width: 393px;
+    height: 852px;
+    background: var(--sys-bg);
+    border-radius: 54px;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      0 0 0 1.5px #444,
+      0 0 0 3.5px #222,
+      0 40px 100px rgba(0,0,0,0.8);
+    flex-shrink: 0;
+  }
+
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 13px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 35px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 300;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    background: var(--sys-bg);
+    overflow: hidden;
+  }
+  .screen.active { display: flex; }
+
+  .screen.wash {
+    background:
+      linear-gradient(0deg, rgba(255,255,255,0.25), rgba(255,255,255,0.25)),
+      linear-gradient(180deg, var(--wash-top) 0%, var(--wash-bottom) 100%);
+  }
+
+  .status {
+    height: 54px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 28px 10px;
+    flex-shrink: 0;
+    z-index: 10;
+    color: var(--slate);
+  }
+  .status .time { font-size: 15px; font-weight: 600; }
+  .status .icons { display: flex; align-items: center; gap: 5px; font-size: 13px; }
+
+  .nav {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .nav-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--slate);
+    white-space: nowrap;
+  }
+  .nav-btn {
+    font-size: 17px;
+    color: var(--indigo);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 4px 0;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 1;
+  }
+
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .content::-webkit-scrollbar { display: none; }
+
+  .tab-bar {
+    height: 83px;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 0.5px solid var(--sep);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 8px;
+    flex-shrink: 0;
+  }
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab .ti { display: flex; align-items: center; justify-content: center; height: 24px; color: var(--slate-md); }
+  .tab .ti svg { width: 24px; height: 24px; }
+  .tab .tl { font-size: 10px; font-weight: 500; color: var(--slate-md); }
+  .tab.on .ti, .tab.on .tl { color: var(--indigo); }
+
+  .sh {
+    padding: 20px 16px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--slate-md);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .list-section {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    margin: 0 16px;
+    overflow: hidden;
+  }
+  .list-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 12px;
+    border-bottom: 0.5px solid var(--sep);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
+  }
+  .list-row:last-child { border-bottom: none; }
+  .list-row:active { background: rgba(15,23,42,0.04); }
+  .row-body { flex: 1; }
+
+  /* ── Icon badges (colored square, line-icon inside — matches Cozi app icon system) ── */
+  .icon-badge {
+    width: 40px; height: 40px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .icon-badge svg { width: 20px; height: 20px; }
+  .icon-badge.lg { width: 48px; height: 48px; border-radius: 14px; }
+  .icon-badge.lg svg { width: 24px; height: 24px; }
+  .icon-badge.sm { width: 32px; height: 32px; border-radius: 9px; }
+  .icon-badge.sm svg { width: 17px; height: 17px; }
+  .icon-inline { display: inline-flex; vertical-align: -3px; margin-right: 3px; flex-shrink: 0; }
+  .icon-inline svg { width: 15px; height: 15px; display: block; }
+  .row-title { font-size: 16px; color: var(--slate); }
+  .row-sub { font-size: 13px; color: var(--slate-md); margin-top: 1px; }
+  .row-chevron { color: var(--slate-lgt); font-size: 16px; flex-shrink: 0; }
+
+  .av {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; color: var(--white);
+  }
+
+  /* ── S1 — More hub ── */
+  .greeting { padding: 8px 16px 18px; }
+  .greeting h2 { font-size: 24px; font-weight: 700; color: var(--slate); line-height: 1.25; }
+  .avatar-stack { display: flex; margin-top: 10px; }
+  .avatar-stack .av { width: 32px; height: 32px; font-size: 13px; border: 2px solid var(--white); margin-left: -6px; }
+  .avatar-stack .av:first-child { margin-left: 0; }
+
+  .featured-tile {
+    grid-column: 1 / -1;
+    background: linear-gradient(145deg, rgba(255,255,255,0.72) 0%, var(--sky-bg) 100%);
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 14px rgba(0,0,0,0.05);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .featured-tile:active { transform: scale(0.98); }
+  .featured-body { flex: 1; }
+  .featured-title { font-size: 16px; font-weight: 700; color: var(--slate); }
+  .featured-sub { font-size: 13px; color: var(--slate-md); margin-top: 1px; }
+
+  .tile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 4px 16px 8px; }
+  .tile {
+    border-radius: 18px; padding: 16px; min-height: 108px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 14px rgba(0,0,0,0.05);
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+  }
+  .tile:active { transform: scale(0.97); }
+  .tile-name { font-size: 14px; font-weight: 600; color: var(--slate); margin-top: 10px; }
+  .tile-desc { font-size: 11.5px; color: var(--slate-md); margin-top: 2px; line-height: 1.3; }
+
+  /* ── S2 — Journal home ── */
+  .journal-hero {
+    background: var(--sky-dk);
+    padding: 4px 16px 20px;
+    flex-shrink: 0;
+  }
+  .journal-hero .status { color: var(--white); }
+  .journal-hero .nav-btn { color: var(--white); }
+  .journal-hero .nav-title { color: var(--white); }
+  .journal-hero-body { padding: 6px 0 16px; display: flex; align-items: center; justify-content: space-between; }
+  .journal-hero-title { font-size: 24px; font-weight: 700; color: var(--white); }
+  .journal-hero-sub { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 3px; }
+
+  .action-btn {
+    width: 100%;
+    height: 42px;
+    border-radius: 99px;
+    font-size: 14.5px;
+    font-weight: 600;
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    -webkit-tap-highlight-color: transparent;
+    background: var(--white);
+    color: var(--sky-dk);
+  }
+  .action-btn:active { opacity: 0.8; }
+
+  .entry-feed { padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .entry-card {
+    background: var(--white);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 14px rgba(0,0,0,0.05);
+  }
+  .entry-photo {
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 56px;
+  }
+  .entry-body { padding: 14px 16px 16px; }
+  .entry-text { font-size: 14.5px; color: var(--slate); line-height: 1.55; }
+  .entry-text strong { font-weight: 700; }
+  .entry-date { font-size: 12.5px; color: var(--slate-md); margin-top: 10px; display: block; }
+
+  .journal-empty {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 44px 32px;
+  }
+  .journal-empty.visible { display: flex; }
+  .journal-empty-title { font-size: 18px; font-weight: 700; color: var(--slate); margin-bottom: 6px; }
+  .journal-empty-body { font-size: 13.5px; color: var(--slate-md); line-height: 1.5; margin-bottom: 20px; max-width: 250px; }
+
+  /* ── Modal sheet shared ── */
+  .modal-header {
+    height: calc(54px + 44px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 16px 10px;
+    background: var(--white);
+    border-bottom: 0.5px solid var(--sep);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .modal-title {
+    position: absolute;
+    left: 50%; bottom: 10px;
+    transform: translateX(-50%);
+    font-size: 17px; font-weight: 600; color: var(--slate);
+    white-space: nowrap;
+  }
+
+  /* ── S3 — New entry ── */
+  .compose-photo-well {
+    margin: 16px 16px 0;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+  }
+  .compose-photo-empty {
+    background: var(--sky-bg);
+    height: 130px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .compose-photo-empty-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: var(--sky-dk);
+    color: var(--white);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .compose-photo-empty-label { font-size: 14px; font-weight: 600; color: var(--sky-dk); }
+  .compose-photo-selected {
+    display: none;
+    height: 170px;
+    background: var(--indigo-bg);
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .compose-photo-remove {
+    position: absolute; top: 10px; right: 10px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(30,41,59,0.6); color: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 2;
+  }
+  .compose-textarea {
+    width: calc(100% - 32px);
+    margin: 16px 16px 0;
+    font-size: 16px;
+    color: var(--slate);
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    resize: none;
+    min-height: 120px;
+    line-height: 1.6;
+  }
+  .compose-textarea::placeholder { color: var(--slate-lgt); }
+  .compose-hint { padding: 6px 16px 0; font-size: 12px; color: var(--slate-lgt); }
+
+  /* ── Nav dots (prototype only) ── */
+  .dots { display: flex; gap: 10px; margin-top: 22px; align-items: center; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.2s; }
+  .dot.on { background: var(--white); width: 20px; border-radius: 4px; }
+  .dot-label { color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 8px; letter-spacing: 0.03em; }
+
+  #toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(30,41,59,0.92);
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 18px;
+    border-radius: 999px;
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+<h1>Cozi Family Journal — v1 (Signal Direction, iOS)</h1>
+
+<div class="phone">
+
+<!-- ═══════════════════════════════════════════
+     S1 — More (feature hub)
+     ═══════════════════════════════════════════ -->
+<div class="screen wash active" id="s1">
+  <div class="status">
+    <span class="time">9:41</span>
+    <div class="icons">▌▌▌ ⊀ ▬</div>
+  </div>
+  <div class="nav">
+    <span style="width:40px"></span>
+    <span class="nav-title">More</span>
+    <button class="nav-btn" style="width:24px;height:24px;padding:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M4.5 6.3l1.8 1.8M17.7 15.9l1.8 1.8M3 12h2.5M18.5 12H21M4.5 17.7l1.8-1.8M17.7 8.1l1.8-1.8"/></svg></button>
+  </div>
+
+  <div class="content">
+    <div class="greeting">
+      <h2>Good morning,<br>Schneider family!</h2>
+      <div class="avatar-stack">
+        <div class="av" style="background:var(--indigo)">A</div>
+        <div class="av" style="background:var(--sky)">S</div>
+        <div class="av" style="background:var(--fam-violet)">E</div>
+        <div class="av" style="background:var(--fam-teal)">N</div>
+      </div>
+    </div>
+
+    <div class="tile-grid">
+      <div class="featured-tile" onclick="goto(2)">
+        <div class="icon-badge lg" style="background:rgba(255,255,255,0.85);color:var(--sky-dk)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.2c0-.7.6-1.2 1.3-1.1 2 .3 4.2 1 6.7 2.4V19c-2.5-1.4-4.7-2.1-6.7-2.4-.7-.1-1.3-.6-1.3-1.1V5.2Z"/><path d="M20 5.2c0-.7-.6-1.2-1.3-1.1-2 .3-4.2 1-6.7 2.4V19c2.5-1.4 4.7-2.1 6.7-2.4.7-.1 1.3-.6 1.3-1.1V5.2Z"/></svg></div>
+        <div class="featured-body">
+          <div class="featured-title">Family Journal</div>
+          <div class="featured-sub">Capture everyday moments</div>
+        </div>
+        <span class="row-chevron">›</span>
+      </div>
+
+      <div class="tile" style="background:linear-gradient(145deg, rgba(255,255,255,0.72) 0%, var(--fam-pink-bg) 100%)">
+        <div class="icon-badge" style="background:rgba(255,255,255,0.75);color:var(--fam-pink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="9" rx="1.5"/><path d="M4 10.5h16"/><path d="M12 10.5V20"/><path d="M12 10.5c-1-3.2-3.2-4.5-4.8-3.7-1.6.8-1 3.7 4.8 3.7Z"/><path d="M12 10.5c1-3.2 3.2-4.5 4.8-3.7 1.6.8 1 3.7-4.8 3.7Z"/></svg></div>
+        <div>
+          <div class="tile-name">Birthdays</div>
+          <div class="tile-desc">Track &amp; celebrate every one</div>
+        </div>
+      </div>
+      <div class="tile" style="background:linear-gradient(145deg, rgba(255,255,255,0.72) 0%, var(--sky-bg) 100%)">
+        <div class="icon-badge" style="background:rgba(255,255,255,0.75);color:var(--sky-dk)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.9-6.5-10.5a6.5 6.5 0 1 1 13 0C18.5 15.1 12 21 12 21Z"/><circle cx="12" cy="10.3" r="2.4"/></svg></div>
+        <div>
+          <div class="tile-name">Map &amp; Safety</div>
+          <div class="tile-desc">See where everyone is</div>
+        </div>
+      </div>
+      <div class="tile" style="background:linear-gradient(145deg, rgba(255,255,255,0.72) 0%, var(--indigo-bg) 100%)">
+        <div class="icon-badge" style="background:rgba(255,255,255,0.75);color:var(--indigo)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.3"/><path d="M3 10.3h18"/><path d="M6.5 15h4"/></svg></div>
+        <div>
+          <div class="tile-name">Finances</div>
+          <div class="tile-desc">Split, spend &amp; save</div>
+        </div>
+      </div>
+      <div class="tile" style="background:linear-gradient(145deg, rgba(255,255,255,0.72) 0%, var(--fam-violet-bg) 100%)">
+        <div class="icon-badge" style="background:rgba(255,255,255,0.75);color:var(--fam-violet)"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 3.2c.5 3.4 1.9 5.1 5.2 5.8-3.3.5-4.7 2.2-5.2 5.8-.5-3.4-1.9-5.1-5.2-5.8 3.3-.5 4.7-2.2 5.2-5.8Z"/><path d="M19 13.5c.2 1.5.9 2.3 2.3 2.6-1.4.3-2.1 1-2.3 2.6-.2-1.5-.9-2.3-2.3-2.6 1.4-.3 2.1-1 2.3-2.6Z"/></svg></div>
+        <div>
+          <div class="tile-name">Family Assistant</div>
+          <div class="tile-desc">AI for your family</div>
+        </div>
+      </div>
+      <div class="tile" style="background:linear-gradient(145deg, rgba(255,255,255,0.72) 0%, var(--fam-teal-bg) 100%)">
+        <div class="icon-badge" style="background:rgba(255,255,255,0.75);color:var(--fam-teal)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+        <div>
+          <div class="tile-name">Vault</div>
+          <div class="tile-desc">Secure family docs &amp; info</div>
+        </div>
+      </div>
+      <div class="tile" style="background:linear-gradient(145deg, rgba(255,255,255,0.72) 0%, var(--green-bg) 100%)">
+        <div class="icon-badge" style="background:rgba(255,255,255,0.75);color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.3"/><circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"/></svg></div>
+        <div>
+          <div class="tile-name">Focus</div>
+          <div class="tile-desc">Screen time &amp; family goals</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sh" style="padding-top:12px">Food &amp; general</div>
+    <div class="list-section">
+      <div class="list-row">
+        <div class="icon-badge sm" style="background:var(--amber-bg);color:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.2c0-.7.6-1.2 1.3-1.1 2 .3 4.2 1 6.7 2.4V19c-2.5-1.4-4.7-2.1-6.7-2.4-.7-.1-1.3-.6-1.3-1.1V5.2Z"/><path d="M20 5.2c0-.7-.6-1.2-1.3-1.1-2 .3-4.2 1-6.7 2.4V19c2.5-1.4 4.7-2.1 6.7-2.4.7-.1 1.3-.6 1.3-1.1V5.2Z"/></svg></div>
+        <div class="row-body">
+          <div class="row-title">Recipes</div>
+          <div class="row-sub">47 saved · 3 new this week</div>
+        </div>
+        <span class="row-chevron">›</span>
+      </div>
+      <div class="list-row" style="border-bottom:none">
+        <div class="icon-badge sm" style="background:rgba(15,23,42,0.06);color:var(--slate-md)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M4.5 6.3l1.8 1.8M17.7 15.9l1.8 1.8M3 12h2.5M18.5 12H21M4.5 17.7l1.8-1.8M17.7 8.1l1.8-1.8"/></svg></div>
+        <div class="row-body">
+          <div class="row-title">Settings</div>
+          <div class="row-sub">Notifications, account, plan</div>
+        </div>
+        <span class="row-chevron">›</span>
+      </div>
+    </div>
+
+    <div style="height:16px"></div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M9.5 20v-5.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20"/></svg></div><div class="tl">Home</div></div>
+    <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 2.5v5"/><path d="M16 2.5v5"/></svg></div><div class="tl">Calendar</div></div>
+    <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4.5 6h.01"/><path d="M4.5 12h.01"/><path d="M4.5 18h.01"/></svg></div><div class="tl">Lists</div></div>
+    <div class="tab on"><div class="ti"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg></div><div class="tl">More</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     S2 — Journal home
+     ═══════════════════════════════════════════ -->
+<div class="screen" id="s2">
+  <div class="journal-hero">
+    <div class="status">
+      <span class="time">9:41</span>
+      <div class="icons">▌▌▌ ⊀ ▬</div>
+    </div>
+    <div class="nav">
+      <button class="nav-btn" onclick="goto(1)">‹ More</button>
+      <span class="nav-title">Journal</span>
+      <span style="width:40px"></span>
+    </div>
+    <div class="journal-hero-body">
+      <div>
+        <div class="journal-hero-title">Family Journal</div>
+        <div class="journal-hero-sub" id="hero-count">4 memories</div>
+      </div>
+      <div class="icon-badge lg" style="background:rgba(255,255,255,0.2);color:var(--white)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.2c0-.7.6-1.2 1.3-1.1 2 .3 4.2 1 6.7 2.4V19c-2.5-1.4-4.7-2.1-6.7-2.4-.7-.1-1.3-.6-1.3-1.1V5.2Z"/><path d="M20 5.2c0-.7-.6-1.2-1.3-1.1-2 .3-4.2 1-6.7 2.4V19c2.5-1.4 4.7-2.1 6.7-2.4.7-.1 1.3-.6 1.3-1.1V5.2Z"/></svg></div>
+    </div>
+    <button class="action-btn" onclick="goto(3)"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l.9-3.6L15.6 5.7a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1L7.6 19.1 4 20Z"/><path d="M14 7.3l2.7 2.7"/></svg></span>Jot a moment</button>
+  </div>
+
+  <div class="content">
+    <div class="entry-feed" id="entry-feed"></div>
+
+    <div class="journal-empty" id="journal-empty">
+      <div class="icon-badge lg" style="width:72px;height:72px;border-radius:20px;background:var(--sky-bg);color:var(--sky-dk);margin-bottom:16px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="34" height="34"><path d="M4 5.2c0-.7.6-1.2 1.3-1.1 2 .3 4.2 1 6.7 2.4V19c-2.5-1.4-4.7-2.1-6.7-2.4-.7-.1-1.3-.6-1.3-1.1V5.2Z"/><path d="M20 5.2c0-.7-.6-1.2-1.3-1.1-2 .3-4.2 1-6.7 2.4V19c2.5-1.4 4.7-2.1 6.7-2.4.7-.1 1.3-.6 1.3-1.1V5.2Z"/></svg></div>
+      <div class="journal-empty-title">Your family's story starts here</div>
+      <div class="journal-empty-body">Jot down a moment — a big win, a quiet Sunday, anything worth remembering. A sentence or two is plenty.</div>
+      <button class="action-btn" style="width:auto;background:var(--indigo);color:var(--white);padding:0 24px" onclick="goto(3)"><span class="icon-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l.9-3.6L15.6 5.7a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1L7.6 19.1 4 20Z"/><path d="M14 7.3l2.7 2.7"/></svg></span>Jot down a moment</button>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M9.5 20v-5.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V20"/></svg></div><div class="tl">Home</div></div>
+    <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 2.5v5"/><path d="M16 2.5v5"/></svg></div><div class="tl">Calendar</div></div>
+    <div class="tab"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4.5 6h.01"/><path d="M4.5 12h.01"/><path d="M4.5 18h.01"/></svg></div><div class="tl">Lists</div></div>
+    <div class="tab on"><div class="ti"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg></div><div class="tl">More</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     S3 — Jot down a moment (new entry)
+     ═══════════════════════════════════════════ -->
+<div class="screen" id="s3" style="background:var(--white)">
+  <div class="modal-header">
+    <button class="nav-btn" onclick="goto(2)">Cancel</button>
+    <span class="modal-title">New entry</span>
+    <button class="nav-btn" id="entry-save-btn" onclick="saveEntry()">Save</button>
+  </div>
+
+  <div class="content">
+    <div class="compose-photo-well" onclick="togglePhoto()" id="photo-well">
+      <div class="compose-photo-empty" id="compose-photo-empty">
+        <div class="compose-photo-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="3" y="7.5" width="18" height="12.5" rx="2.3"/><path d="M8.3 7.5l1.3-2.2h4.8l1.3 2.2"/><circle cx="12" cy="13.5" r="3.3"/></svg></div>
+        <span class="compose-photo-empty-label">Add a photo</span>
+      </div>
+      <div class="compose-photo-selected" id="compose-photo-selected">
+        <span style="color:var(--indigo);display:flex"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="46" height="46"><rect x="3" y="4.5" width="18" height="15" rx="2.3"/><circle cx="8.3" cy="9.8" r="1.5" fill="currentColor" stroke="none"/><path d="M4 17l4.8-4.8a1.5 1.5 0 0 1 2.1 0l2 2 2.6-2.6a1.5 1.5 0 0 1 2.1 0L20.5 14.5"/></svg></span>
+        <div class="compose-photo-remove" onclick="removePhoto(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="13" height="13"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg></div>
+      </div>
+    </div>
+
+    <textarea class="compose-textarea" id="compose-text" placeholder="What's the story? No need to write a novel — a sentence or two is plenty." rows="5"></textarea>
+    <div class="compose-hint">We'll bold your first sentence as the headline.</div>
+  </div>
+</div>
+
+</div><!-- /phone -->
+
+<div class="dots">
+  <div class="dot on" id="d1" onclick="goto(1)"></div>
+  <div class="dot" id="d2" onclick="goto(2)"></div>
+  <div class="dot" id="d3" onclick="goto(3)"></div>
+</div>
+<div class="dot-label" id="dlabel">1 of 3 — More</div>
+
+<div id="toast"></div>
+
+<script>
+const LABELS = [
+  '1 of 3 — More',
+  '2 of 3 — Journal Home',
+  '3 of 3 — Jot Down a Moment',
+];
+
+let entries = [
+  { emoji: '🏖️', bg: 'var(--sky-bg)', text: "Last beach day of summer. The kids refused to leave, even after sunset — Riley found a sand dollar and Noah buried Emma up to her neck in sand. Best day in a long time.", date: 'Aug 28' },
+  { emoji: '⚽', bg: 'var(--fam-violet-bg)', text: "Emma made the travel soccer team. She's been practicing every day since June, and when they posted the roster and her name was on it, the look on her face said it all.", date: 'Aug 15' },
+  { emoji: '🍫', bg: 'var(--fam-orange-bg)', text: "We did a family chocolate taste test tonight — six different bars, rated 1 to 5. Nobody liked the ruby chocolate. Andrew still finished the whole bar anyway.", date: 'Jul 22' },
+  { emoji: '⛳', bg: 'var(--green-bg)', text: "Ladder golf tournament in the backyard turned into a full family bracket. Sarah won, and she will not let us forget it.", date: 'Jul 20' },
+];
+
+let photoSelected = false;
+
+function goto(n) {
+  document.querySelectorAll('.screen').forEach((s,i) => s.classList.toggle('active', i===n-1));
+  document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('on', i===n-1));
+  document.getElementById('dlabel').textContent = LABELS[n-1];
+  if (n === 2) renderFeed();
+}
+
+function boldFirstSentence(text) {
+  const m = text.match(/^(.*?[.!?])(\s|$)/);
+  if (!m) return text;
+  const rest = text.slice(m[0].length);
+  return '<strong>' + m[1] + '</strong>' + (rest ? ' ' + rest : '');
+}
+
+function renderFeed() {
+  const feed = document.getElementById('entry-feed');
+  const empty = document.getElementById('journal-empty');
+  const isEmpty = entries.length === 0;
+  feed.style.display = isEmpty ? 'none' : 'flex';
+  empty.classList.toggle('visible', isEmpty);
+  document.getElementById('hero-count').textContent = entries.length + (entries.length === 1 ? ' memory' : ' memories');
+
+  feed.innerHTML = entries.map(e => `
+    <div class="entry-card">
+      ${e.emoji ? `<div class="entry-photo" style="background:${e.bg}">${e.emoji}</div>` : ''}
+      <div class="entry-body">
+        <div class="entry-text">${boldFirstSentence(e.text)}</div>
+        <span class="entry-date">${e.date}</span>
+      </div>
+    </div>`).join('');
+}
+
+function togglePhoto() {
+  if (photoSelected) return;
+  photoSelected = true;
+  document.getElementById('compose-photo-empty').style.display = 'none';
+  document.getElementById('compose-photo-selected').style.display = 'flex';
+}
+function removePhoto(ev) {
+  ev.stopPropagation();
+  photoSelected = false;
+  document.getElementById('compose-photo-empty').style.display = 'flex';
+  document.getElementById('compose-photo-selected').style.display = 'none';
+}
+
+function saveEntry() {
+  const text = document.getElementById('compose-text').value.trim();
+  if (!text) { showToast('Write a sentence or two first'); return; }
+  const bgs = ['var(--sky-bg)', 'var(--fam-violet-bg)', 'var(--fam-orange-bg)', 'var(--green-bg)', 'var(--fam-teal-bg)'];
+  const emojis = ['✨', '🌟', '💛', '🎉', '📌'];
+  const idx = entries.length % bgs.length;
+  entries.unshift({
+    emoji: photoSelected ? '🌅' : emojis[idx],
+    bg: photoSelected ? 'var(--indigo-bg)' : bgs[idx],
+    text, date: 'Sep 18',
+  });
+  document.getElementById('compose-text').value = '';
+  removePhoto({ stopPropagation: () => {} });
+  goto(2);
+  showToast('✓ Entry saved');
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.style.opacity = '0', 2200);
+}
+
+renderFeed();
+</script>
+</body>
+</html>
